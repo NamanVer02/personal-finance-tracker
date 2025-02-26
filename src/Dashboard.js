@@ -1,15 +1,16 @@
-import { BarChart3, MoreHorizontal, Settings, Star } from "lucide-react"
+import { BarChart3, History, MoreHorizontal, Settings, Star } from "lucide-react"
 
 export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-background">
+      
       {/* Sidebar */}
       <div className="hidden w-64 border-r bg-background p-6 lg:block">
         <div className="flex items-center gap-3 mb-8">
           <div className="h-8 w-8 rounded-full bg-purple-600" />
           <div>
-            <h3 className="font-medium">Wildan</h3>
-            <p className="text-sm text-muted-foreground">Admin Manager</p>
+            <h3 className="font-medium">Naman Verma</h3>
+            <p className="text-sm text-muted-foreground">Personal</p>
           </div>
         </div>
 
@@ -22,8 +23,8 @@ export default function Dashboard() {
                 Dashboard
               </button>
               <button className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md text-gray-600">
-                <BarChart3 className="h-4 w-4" />
-                Analytics
+                <History className="h-4 w-4" />
+                History
               </button>
             </div>
           </div>
@@ -45,7 +46,6 @@ export default function Dashboard() {
         <div className="mx-auto max-w-6xl space-y-8">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-gray-600">All general information appears in this field</p>
           </div>
 
           <div className="space-y-4">
@@ -57,25 +57,24 @@ export default function Dashboard() {
             <div className="bg-white rounded-lg shadow">
               <div className="p-6 space-y-2">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold">December Report</h2>
+                  <h2 className="text-xl font-semibold">Current Month Report</h2>
                   <div className="flex gap-2">
                     <button className="px-3 py-1 text-sm bg-gray-100 rounded-md">Download</button>
-                    <button className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md">Analyze This</button>
+                    <button className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md">Add Transaction</button>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-purple-600" />
-                  <span className="text-sm text-gray-600">Published</span>
-                  <span className="text-sm text-gray-600">Draft</span>
+                  <button className="text-sm text-gray-600">Active</button>
+                  <button className="text-sm text-gray-600">Draft</button>
                 </div>
               </div>
               <div className="px-6 pb-6">
                 <table className="w-full">
                   <thead>
                     <tr className="text-left text-sm text-gray-600">
-                      <th className="pb-2">PRODUCT NAME</th>
-                      <th className="pb-2">FIRST STOCK</th>
-                      <th className="pb-2">SOLD</th>
+                      <th className="pb-2">LABEL</th>
+                      <th className="pb-2">AMOUNT</th>
+                      <th className="pb-2">CATEGORY</th>
                       <th className="pb-2">DATE ADDED</th>
                       <th className="pb-2">PRICING</th>
                       <th className="pb-2">RATING</th>
@@ -131,7 +130,7 @@ export default function Dashboard() {
 
 function Card({ title, value, change, changeType }) {
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-lg shadow p-6 outline outline-1 outline-gray-300">
       <div className="flex items-center justify-between pb-2">
         <h3 className="text-sm font-medium">{title}</h3>
         <MoreHorizontal className="h-4 w-4 text-gray-400" />
