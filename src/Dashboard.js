@@ -1,7 +1,9 @@
-import { BarChart3, History, Settings, LogOut, Trash2, MoreHorizontal, Edit} from "lucide-react"
+import { BarChart3, History, Settings, LogOut, Trash2, Edit} from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "./AuthContext";
 import { useState } from "react";
+import AddTransaction from "./AddTransaction"; // Add this import
+
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -9,9 +11,82 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
 
+  const [showAddPopup, setShowAddPopup] = useState(false); // Add popup state
+  const [products, setProducts] = useState([ // Add products state
+    {
+      id: 1,
+      name: "MacBook Pro with M2 Chip",
+      stock: "4,159",
+      sold: "878",
+      date: "Jul 14, 2023",
+      price: "1,200",
+      rating: "4.8",
+    },
+    {
+      id: 2,
+      name: "iPhone 15 128/256/512 80X",
+      stock: "1,590",
+      sold: "981",
+      date: "Aug 09, 2023",
+      price: "1,600",
+      rating: "5.0",
+    },
+    {
+      id: 3,
+      name: "Apple Watch Ultra 2 Alpine",
+      stock: "1,090",
+      sold: "184",
+      date: "Aug 12, 2023",
+      price: "999",
+      rating: "4.7",
+    },
+    {
+      id: 4,
+      name: "iPhone 15 Pro Max 256",
+      stock: "2,590",
+      sold: "995",
+      date: "Aug 24, 2023",
+      price: "1,600",
+      rating: "4.2",
+    },
+    {
+      id: 5,
+      name: "MacBook Pro with M4 Chip",
+      stock: "4,500",
+      sold: "645",
+      date: "Nov 30, 2023",
+      price: "1,700",
+      rating: "5.0",
+    },
+    {
+      id: 6,
+      name: "Apple Watch Series 8 45MM",
+      stock: "3,140",
+      sold: "931",
+      date: "Dec 04, 2023",
+      price: "899",
+      rating: "4.5",
+    },
+    {
+      id: 7,
+      name: "Apple Watch Ultra 2 Alpine",
+      stock: "2,150",
+      sold: "187",
+      date: "Dec 08, 2023",
+      price: "799",
+      rating: "4.8",
+    },
+  ]);
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const totalPages = Math.ceil((products?.length || 0) / itemsPerPage);
+
+
+  // Add this function to handle new products
+  const handleAddProduct = (newProduct) => {
+    setProducts(prev => [...prev, newProduct]);
+  };
 
   const handleLogout = () => {
     logout();
@@ -38,6 +113,13 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-background">
+      {/* Add the popup component */}
+      {showAddPopup && (
+        <AddTransaction
+          onClose={() => setShowAddPopup(false)}
+          onSubmit={handleAddProduct}
+        />
+      )}
       
       {/* Sidebar */}
       <div className="hidden w-64 border-r bg-background p-6 lg:block">
@@ -102,7 +184,12 @@ export default function Dashboard() {
                   <h2 className="text-xl font-semibold">Current Month Report</h2>
                   <div className="flex gap-2">
                     <button className="px-3 py-1 text-sm bg-gray-100 rounded-md">Download</button>
-                    <button className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md">Add Transaction</button>
+                    <button 
+                      className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md"
+                      onClick={() => setShowAddPopup(true)} // Add click handler
+                    >
+                      Add Transaction
+                    </button>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -179,7 +266,6 @@ function Card({ title, value, change, changeType }) {
     <div className="bg-white rounded-lg shadow p-6 outline outline-1 outline-gray-300">
       <div className="flex items-center justify-between pb-2">
         <h3 className="text-sm font-medium">{title}</h3>
-        <MoreHorizontal className="h-4 w-4 text-gray-400" />
       </div>
       <div className="text-2xl font-bold">{value}</div>
       <div className="mt-4 h-[80px] w-full bg-purple-50 rounded-md" />
@@ -193,69 +279,3 @@ function Card({ title, value, change, changeType }) {
     </div>
   )
 }
-
-const products = [
-  {
-    id: 1,
-    name: "MacBook Pro with M2 Chip",
-    stock: "4,159",
-    sold: "878",
-    date: "Jul 14, 2023",
-    price: "1,200",
-    rating: "4.8",
-  },
-  {
-    id: 2,
-    name: "iPhone 15 128/256/512 80X",
-    stock: "1,590",
-    sold: "981",
-    date: "Aug 09, 2023",
-    price: "1,600",
-    rating: "5.0",
-  },
-  {
-    id: 3,
-    name: "Apple Watch Ultra 2 Alpine",
-    stock: "1,090",
-    sold: "184",
-    date: "Aug 12, 2023",
-    price: "999",
-    rating: "4.7",
-  },
-  {
-    id: 4,
-    name: "iPhone 15 Pro Max 256",
-    stock: "2,590",
-    sold: "995",
-    date: "Aug 24, 2023",
-    price: "1,600",
-    rating: "4.2",
-  },
-  {
-    id: 5,
-    name: "MacBook Pro with M4 Chip",
-    stock: "4,500",
-    sold: "645",
-    date: "Nov 30, 2023",
-    price: "1,700",
-    rating: "5.0",
-  },
-  {
-    id: 6,
-    name: "Apple Watch Series 8 45MM",
-    stock: "3,140",
-    sold: "931",
-    date: "Dec 04, 2023",
-    price: "899",
-    rating: "4.5",
-  },
-  {
-    id: 7,
-    name: "Apple Watch Ultra 2 Alpine",
-    stock: "2,150",
-    sold: "187",
-    date: "Dec 08, 2023",
-    price: "799",
-    rating: "4.8",
-  },
-];
