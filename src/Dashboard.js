@@ -1,6 +1,41 @@
-import { BarChart3, History, MoreHorizontal, Settings, Star } from "lucide-react"
+import { BarChart3, History, Settings, LogOut, Trash2, MoreHorizontal, Edit} from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "./AuthContext";
+import { useState } from "react";
 
 export default function Dashboard() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  }
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    console.log(page);
+  }
+
+  const handlePrevPage = () => {
+    setCurrentPage((prevPage) => Math.max(prevPage-1, 1));
+  }
+
+  const handleNextPage = () => {
+    setCurrentPage((prevPage) => Math.max(prevPage+1, totalPages));
+  }
+
+  if(!user) {
+    navigate("/login");
+    return null;
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       
@@ -10,7 +45,7 @@ export default function Dashboard() {
           <div className="h-8 w-8 rounded-full bg-purple-600" />
           <div>
             <h3 className="font-medium">Naman Verma</h3>
-            <p className="text-sm text-muted-foreground">Personal</p>
+            <p className="text-sm text-muted-foreground">{user.role}</p>
           </div>
         </div>
 
@@ -35,6 +70,13 @@ export default function Dashboard() {
               <button className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md text-gray-600">
                 <Settings className="h-4 w-4" />
                 Settings
+              </button>
+              <button
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md text-red-600 hover:bg-red-50"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
               </button>
             </div>
           </div>
@@ -76,28 +118,22 @@ export default function Dashboard() {
                       <th className="pb-2">AMOUNT</th>
                       <th className="pb-2">CATEGORY</th>
                       <th className="pb-2">DATE ADDED</th>
-                      <th className="pb-2">PRICING</th>
-                      <th className="pb-2">RATING</th>
-                      <th className="pb-2">ACTION</th>
+                      <th className="pb-2">ACTIONS</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((product) => (
+                    {products.slice((currentPage-1)*itemsPerPage, Math.min((currentPage)*itemsPerPage, indexOfLastItem)).map((product) => (
                       <tr key={product.name} className="border-t">
                         <td className="py-3 font-medium">{product.name}</td>
                         <td className="py-3">{product.stock}</td>
                         <td className="py-3">{product.sold}</td>
                         <td className="py-3">{product.date}</td>
-                        <td className="py-3">${product.price}</td>
-                        <td className="py-3">
-                          <div className="flex items-center gap-1">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            <span>{product.rating}</span>
-                          </div>
-                        </td>
-                        <td className="py-3">
+                        <td className="py-3 flex items-center gap-3">
                           <button className="text-gray-600">
-                            <MoreHorizontal className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                          <button className="text-gray-600">
+                            <Edit className="h-4 w-4" />
                           </button>
                         </td>
                       </tr>
@@ -105,18 +141,28 @@ export default function Dashboard() {
                   </tbody>
                 </table>
                 <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-gray-600">Showing 7 of 120 entries</div>
+                  <div className="text-sm text-gray-600">Showing {indexOfFirstItem} to {Math.min(indexOfLastItem, products.length)} of {products.length} entries</div>
                   <div className="flex items-center gap-2">
-                    <button className="px-3 py-1 text-sm border rounded-md">Prev</button>
-                    {[1, 2, 3, 9].map((page) => (
+                    <button 
+                      onClick={handlePrevPage}
+                      className="px-3 py-1 text-sm border rounded-md"
+                      disabled={currentPage === 1}>Prev</button>
+                    {[...Array(totalPages)].map((_, index) => (
                       <button
-                        key={page}
-                        className={`px-3 py-1 text-sm rounded-md ${page === 1 ? "bg-purple-600 text-white" : "border"}`}
+                        key={index}
+                        onClick={() => handlePageChange(index + 1)}
+                        className={`px-3 py-1 text-sm rounded-md ${currentPage === index + 1 ? "bg-purple-600 text-white" : "border"}`}
                       >
-                        {page}
+                        {index+1}
                       </button>
                     ))}
-                    <button className="px-3 py-1 text-sm border rounded-md">Next</button>
+                    <button 
+                    onClick={handleNextPage}
+                      className="px-3 py-1 text-sm border rounded-md"
+                      disabled={currentPage === totalPages}
+                      >
+                      Next
+                      </button>
                   </div>
                 </div>
               </div>
@@ -150,6 +196,7 @@ function Card({ title, value, change, changeType }) {
 
 const products = [
   {
+    id: 1,
     name: "MacBook Pro with M2 Chip",
     stock: "4,159",
     sold: "878",
@@ -158,6 +205,7 @@ const products = [
     rating: "4.8",
   },
   {
+    id: 2,
     name: "iPhone 15 128/256/512 80X",
     stock: "1,590",
     sold: "981",
@@ -166,6 +214,7 @@ const products = [
     rating: "5.0",
   },
   {
+    id: 3,
     name: "Apple Watch Ultra 2 Alpine",
     stock: "1,090",
     sold: "184",
@@ -174,6 +223,7 @@ const products = [
     rating: "4.7",
   },
   {
+    id: 4,
     name: "iPhone 15 Pro Max 256",
     stock: "2,590",
     sold: "995",
@@ -182,6 +232,7 @@ const products = [
     rating: "4.2",
   },
   {
+    id: 5,
     name: "MacBook Pro with M4 Chip",
     stock: "4,500",
     sold: "645",
@@ -190,6 +241,7 @@ const products = [
     rating: "5.0",
   },
   {
+    id: 6,
     name: "Apple Watch Series 8 45MM",
     stock: "3,140",
     sold: "931",
@@ -198,6 +250,7 @@ const products = [
     rating: "4.5",
   },
   {
+    id: 7,
     name: "Apple Watch Ultra 2 Alpine",
     stock: "2,150",
     sold: "187",
@@ -205,5 +258,4 @@ const products = [
     price: "799",
     rating: "4.8",
   },
-]
-
+];
