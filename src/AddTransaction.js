@@ -32,6 +32,7 @@ export default function AddTransaction({ onClose, onSubmit }) {
     category: "Miscellaneous", // Default to first category
     date: new Date().toISOString().split("T")[0], // Default to today's date
   });
+  let categories = formData.type === "Expense" ? expenseCategories : incomeCategories;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,6 +47,7 @@ export default function AddTransaction({ onClose, onSubmit }) {
       ...prevData,
       type,
     }));
+    categories = type === "Expense" ? expenseCategories : incomeCategories;
   };
 
   const handleSubmit = (e) => {
@@ -155,7 +157,7 @@ export default function AddTransaction({ onClose, onSubmit }) {
               className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
               required
             >
-              {expenseCategories.map((category) => (
+              {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>

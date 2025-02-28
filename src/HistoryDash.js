@@ -6,7 +6,7 @@ import { AnimatePresence } from "framer-motion";
 import AddTransaction from "./AddTransaction"; // Add this import
 
 
-export default function Dashboard() {
+export default function HistoryDash() {
   const navigate = useNavigate();
   const location = useLocation();
   const month = new Date().toLocaleString("default", { month: "long" });
@@ -162,13 +162,13 @@ export default function Dashboard() {
           <div className="px-2 py-1">
             <h4 className="mb-2 text-sm font-medium text-gray-600">MENU</h4> 
             <div className="space-y-1">
-              <button className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === '/dashboard' ? 'shadow-neumorphic-inset-button' : 'shadow-neumorphic-button'}`}>
+              <button className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === '/dashboard' ? 'shadow-neumorphic-inset' : 'shadow-neumorphic'}`}  onClick={() => {navigate("/dashboard")}}>
                 <BarChart3 className="h-4 w-4 text-gray-600" /> 
                 Dashboard
               </button>
               {/* Conditionally render History tab */}
               {user.role !== 'user' && (
-                <button className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === '/history' ? 'shadow-neumorphic-inset-button' : 'shadow-neumorphic-button'}`}  onClick={() => {navigate("/history")}}>
+                <button className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === '/history' ? 'shadow-neumorphic-inset' : 'shadow-neumorphic'}`}>
                   <History className="h-4 w-4 text-gray-600" /> 
                   History
                 </button>
@@ -208,14 +208,14 @@ export default function Dashboard() {
               <Card title={`Total Income`} value="4.5k" change="-0.85%" changeType="negative" />
             </div>
   
-            <div className="rounded-lg bg-gray-100 p-6">
+            <div className="rounded-lg bg-gray-100 shadow-neumorphic p-6">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-gray-700">{month} Report</h2>
-                  <div className="flex gap-4">
-                    <button className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button">Download</button>
+                  <div className="flex gap-2">
+                    <button className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic">Download</button>
                     <button
-                      className="px-3 py-1 text-sm rounded-lg bg-purple-500 text-white shadow-neumorphic-purple"
+                      className="px-3 py-1 text-sm rounded-lg bg-purple-600 text-white shadow-neumorphic-purple"
                       onClick={() => setShowAddPopup(true)}
                     >
                       Add Transaction
@@ -271,7 +271,7 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handlePrevPage}
-                      className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                      className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic"
                       disabled={currentPage === 1}
                     >
                       Prev
@@ -281,7 +281,7 @@ export default function Dashboard() {
                         key={index}
                         onClick={() => handlePageChange(index + 1)}
                         className={`px-3 py-1 text-sm rounded-lg ${
-                          currentPage === index + 1 ? "shadow-neumorphic-inset-button" : "bg-gray-100 shadow-neumorphic-button"
+                          currentPage === index + 1 ? "bg-purple-600 text-white shadow-neumorphic-purple" : "bg-gray-100 shadow-neumorphic"
                         }`}
                       >
                         {index + 1}
@@ -289,7 +289,7 @@ export default function Dashboard() {
                     ))}
                     <button
                       onClick={handleNextPage}
-                      className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                      className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic"
                       disabled={currentPage === totalPages}
                     >
                       Next
@@ -307,7 +307,7 @@ export default function Dashboard() {
   // Updated Card Component with Neumorphism
   function Card({ title, value, change, changeType }) {
     return (
-      <div className="rounded-lg bg-gray-100 shadow-neumorphic p-6" id="test">
+      <div className="rounded-lg bg-gray-100 shadow-neumorphic p-6"> 
         <div className="flex items-center justify-between pb-2">
           <h3 className="text-sm font-medium text-gray-600">{title}</h3>
         </div>

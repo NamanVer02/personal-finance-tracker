@@ -4,6 +4,7 @@ import { useAuth } from "./AuthContext";
 import Dashboard from "./Dashboard";
 import Login from "./Login";
 import Settings from "./Settings";
+import HistoryDash from "./HistoryDash";
 
 const App = () => {
     const {user} = useAuth();
@@ -11,7 +12,8 @@ const App = () => {
     return (
         <div>
         <Routes>
-            <Route path="/" element={user ? <Dashboard /> : <Login />} />
+            <Route path="/dashboard" element={user ? <Dashboard /> : <Login />} />
+            <Route path="/history" element={user ? <HistoryDash /> : <Login />} />
             <Route path="/login" element={<Login />} />
             <Route path="/settings" element={<Settings />} />
         </Routes>
