@@ -7,9 +7,9 @@ export default function Settings() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    // Here you would typically implement the actual dark mode toggle
-    document.documentElement.classList.toggle('dark');
+    const isDarkMode = document.documentElement.classList.toggle("dark");
+    setIsDarkMode(isDarkMode);
+    localStorage.setItem("darkMode", isDarkMode ? "enabled" : "disabled");
   };
 
   const clearAllData = () => {
@@ -25,13 +25,13 @@ export default function Settings() {
           <ArrowLeft className="h-8 w-8" />
           <h1 className="text-3xl font-bold">Settings</h1> 
         </button>
-        <div className="grid gap-12 md:grid-cols-3">
+        <div className="grid gap-10 md:grid-cols-3">
           <button
             onClick={toggleDarkMode}
             className={`flex items-center justify-center gap-4 p-6 aspect-square text-xl font-semibold rounded-lg transition-colors ${
               isDarkMode
-                ? 'bg-gray-800 text-white hover:bg-gray-700'
-                : 'bg-gray-100 text-gray-800 hover:bg-gray-100'
+                ? 'bg-gray-800 text-white'
+                : 'bg-gray-100 text-gray-700'
             } shadow-neumorphic-button`}
           >
             <Moon className="h-8 w-8" />

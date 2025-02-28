@@ -84,7 +84,7 @@ export default function Login() {
           {/* Login Button */}
           <button
             type="submit"
-            className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg shadow-neumorphic-purple hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+            className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg shadow-neumorphic-purple"
           >
             Log In
           </button>

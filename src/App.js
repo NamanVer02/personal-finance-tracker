@@ -1,6 +1,6 @@
-import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import { useEffect, React } from "react";
 import Dashboard from "./Dashboard";
 import Login from "./Login";
 import Settings from "./Settings";
@@ -8,6 +8,15 @@ import HistoryDash from "./HistoryDash";
 
 const App = () => {
     const {user} = useAuth();
+    useEffect(() => {
+        // Check localStorage for dark mode preference
+        const savedDarkMode = localStorage.getItem("darkMode");
+        if (savedDarkMode === "enabled") {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+      }, []);
 
     return (
         <div>

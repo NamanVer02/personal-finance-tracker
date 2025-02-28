@@ -21,3 +21,37 @@
 .shadow-neumorphic-purple {
     box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1), -4px -4px 10px rgba(255, 255, 255, 1);
 }
+
+.dark {
+    background-color: #13171f;
+    color: #e2e8f0;
+}
+
+.dark .bg-gray-100 {
+    background-color: #13171f;
+}
+
+.dark .text-gray-700 {
+    color: #e2e8f0;
+}
+
+/* Dark Mode Shadows */
+.dark .shadow-neumorphic {
+    box-shadow: 8px 8px 10px rgba(0, 0, 0, 0.2), -4px -4px 12px rgba(255, 255, 255, 0.01);
+}
+
+.dark .shadow-neumorphic-button {
+    box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.2), -4px -4px 6px rgba(255, 255, 255, 0.02);
+}
+
+.dark .shadow-neumorphic-inset {
+    box-shadow: inset 4px 4px 4px rgba(0, 0, 0, 0.2), inset -4px -4px 4px rgba(255, 255, 255, 0.02);
+}
+
+.dark .shadow-neumorphic-inset-button {
+    box-shadow: inset 4px 4px 4px rgba(0, 0, 0, 0.2), inset -4px -4px 4px rgba(255, 255, 255, 0.02);
+}
+
+.dark .shadow-neumorphic-purple {
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 10px rgba(255, 255, 255, 0.02), 0 0 0 2px rgba(147, 51, 234, 0.2);
+}
