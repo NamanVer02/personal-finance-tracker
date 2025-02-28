@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
+import { motion } from "framer-motion";
 
 const expenseCategories = [
   "Housing",
@@ -25,13 +26,11 @@ const incomeCategories = [
 
 export default function AddTransaction({ onClose, onSubmit }) {
   const [formData, setFormData] = useState({
-    id: Date.now(), // Generate unique ID
     name: "",
-    stock: "",
-    sold: "Miscellaneous", // Default to first category
-    date: new Date().toISOString().split('T')[0], // Default to today's date
-    price: "",
-    rating: "5.0",
+    amount: "",
+    type: "Expense", // Default to Expense
+    category: "Miscellaneous", // Default to first category
+    date: new Date().toISOString().split("T")[0], // Default to today's date
   });
 
   const handleChange = (e) => {
@@ -42,30 +41,78 @@ export default function AddTransaction({ onClose, onSubmit }) {
     }));
   };
 
+  const handleTypeChange = (type) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      type,
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit({
       ...formData,
-      // Format numbers with commas
-      stock: Number(formData.stock).toLocaleString(),
-      price: `$${Number(formData.price).toLocaleString()}`,
+      amount: formData.type === "Expense" ? `-${formData.amount}` : `+${formData.amount}`,
     });
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-50">
-      <div className="absolute right-0 top-0 w-96 bg-white h-full p-6 shadow-lg overflow-y-auto">
+    <motion.div
+      className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="absolute right-0 top-0 w-96 bg-gray-100 h-full p-6 overflow-y-auto"
+        initial={{ x: "100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "100%" }}
+        transition={{ type: "tween", duration: 0.3 }}
+      >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Add New Product</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <h2 className="text-2xl font-bold text-gray-700">Add New Transaction</h2>
+          <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
             <X className="h-6 w-6" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Type Selector */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Product Name
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Type
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleTypeChange("Expense")}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium ${
+                  formData.type === "Expense"
+                    ? "bg-red-100 text-red-600 shadow-neumorphic-inset"
+                    : "bg-gray-100 text-gray-600 shadow-neumorphic"
+                }`}
+              >
+                Expense
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTypeChange("Income")}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium ${
+                  formData.type === "Income"
+                    ? "bg-green-100 text-green-600 shadow-neumorphic-inset"
+                    : "bg-gray-100 text-gray-600 shadow-neumorphic"
+                }`}
+              >
+                Income
+              </button>
+            </div>
+          </div>
+
+          {/* Transaction Label */}
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-600">
+              Transaction Label
             </label>
             <input
               type="text"
@@ -73,35 +120,39 @@ export default function AddTransaction({ onClose, onSubmit }) {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+              className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
               required
             />
           </div>
+
+          {/* Amount */}
           <div>
-            <label htmlFor="stock" className="block text-sm font-medium text-gray-700">
-              Initial Stock
+            <label htmlFor="amount" className="block text-sm font-medium text-gray-600">
+              Amount
             </label>
             <input
               type="number"
-              id="stock"
-              name="stock"
-              value={formData.stock}
+              id="amount"
+              name="amount"
+              value={formData.amount}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+              className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
               min="0"
               required
             />
           </div>
+
+          {/* Category */}
           <div>
-            <label htmlFor="sold" className="block text-sm font-medium text-gray-700">
-              Sold Category
+            <label htmlFor="category" className="block text-sm font-medium text-gray-600">
+              Category
             </label>
             <select
-              id="sold"
-              name="sold"
-              value={formData.sold}
+              id="category"
+              name="category"
+              value={formData.category}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+              className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
               required
             >
               {expenseCategories.map((category) => (
@@ -111,9 +162,11 @@ export default function AddTransaction({ onClose, onSubmit }) {
               ))}
             </select>
           </div>
+
+          {/* Date */}
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700">
-              Release Date
+            <label htmlFor="date" className="block text-sm font-medium text-gray-600">
+              Date
             </label>
             <input
               type="date"
@@ -121,51 +174,20 @@ export default function AddTransaction({ onClose, onSubmit }) {
               name="date"
               value={formData.date}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+              className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
               required
             />
           </div>
-          <div>
-            <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-              Price (USD)
-            </label>
-            <input
-              type="number"
-              id="price"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              min="0"
-              step="0.01"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="rating" className="block text-sm font-medium text-gray-700">
-              Rating
-            </label>
-            <input
-              type="number"
-              id="rating"
-              name="rating"
-              value={formData.rating}
-              onChange={handleChange}
-              min="0"
-              max="5"
-              step="0.1"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-              required
-            />
-          </div>
+
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+            className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg shadow-neumorphic-purple hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
           >
-            Add Product
+            Add Transaction
           </button>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

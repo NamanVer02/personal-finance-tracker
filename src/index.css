@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.shadow-neumorphic {
+    box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.05), -8px -8px 16px rgba(255, 255, 255, 0.5);
+}
+
+.shadow-neumorphic-inset {
+    box-shadow: inset 4px 4px 4px rgba(0, 0, 0, 0.05), inset -4px -4px 4px rgba(255, 255, 255, 0.6);
+}
+
+.shadow-neumorphic-purple {
+    box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.1), -8px -8px 16px rgba(255, 255, 255, 0.8), 0 0 0 2px rgba(147, 51, 234, 0.2);
+}
