@@ -21,7 +21,7 @@ export default function Dashboard() {
     .then((res) => res.json())
     .then((data) => setTransactions(data))
     .catch((err) => console.error(err));
-  });
+  }, []);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -55,6 +55,25 @@ export default function Dashboard() {
   const handleSettings = () => {
     navigate("/settings");
   }
+
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this transaction?");
+    if (!confirmDelete) { return; }
+
+    try{
+      const response = await fetch(`http://localhost:8080/api/delete/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to delete transaction");
+      }
+      setTransactions((prev) => prev.filter((transaction) => transaction.id !== id));
+    }
+    catch (error) {
+      console.error(error);
+    }
+  }
+  
 
   if(!user) {
     navigate("/login");
@@ -179,7 +198,7 @@ export default function Dashboard() {
                           <td className="py-3 text-gray-600">{transaction.date}</td> 
                           <td className="py-3 flex items-center gap-3">
                             <button className="text-gray-600 hover:text-red-600">
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" onClick={() => (handleDelete(transaction.id))} />
                             </button>
                             <button className="text-gray-600 hover:text-purple-600">
                               <Edit className="h-4 w-4" />
