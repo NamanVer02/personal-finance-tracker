@@ -26,7 +26,7 @@ const incomeCategories = [
 
 export default function AddTransaction({ onClose, onSubmit }) {
   const [formData, setFormData] = useState({
-    name: "",
+    label: "",
     amount: "",
     type: "Expense", // Default to Expense
     category: "Miscellaneous", // Default to first category
@@ -50,13 +50,28 @@ export default function AddTransaction({ onClose, onSubmit }) {
     categories = type === "Expense" ? expenseCategories : incomeCategories;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({
-      ...formData,
-      amount: formData.type === "Expense" ? `-${formData.amount}` : `+${formData.amount}`,
-    });
-    onClose();
+    
+    try{
+      const response = await fetch("http://localhost:8080/api/post", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData), 
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add transaction");
+      }
+
+      onSubmit(formData);
+      onClose();
+    }
+    catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -113,14 +128,14 @@ export default function AddTransaction({ onClose, onSubmit }) {
 
           {/* Transaction Label */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-600">
+            <label htmlFor="label" className="block text-sm font-medium text-gray-600">
               Transaction Label
             </label>
             <input
               type="text"
-              id="name"
-              name="name"
-              value={formData.name}
+              id="label"
+              name="label"
+              value={formData.label}
               onChange={handleChange}
               className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
               required

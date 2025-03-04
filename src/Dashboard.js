@@ -1,9 +1,9 @@
 import { BarChart3, History, Settings, LogOut, Trash2, Edit, ArrowDownLeft, ArrowUpRight} from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "./AuthContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import AddTransaction from "./AddTransaction"; // Add this import
+import AddTransaction from "./AddTransaction";
 
 
 export default function Dashboard() {
@@ -14,89 +14,14 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
 
-  const [showAddPopup, setShowAddPopup] = useState(false); // Add popup state
-  const [transactions, setTransactions] = useState([
-    {
-      id: 1,
-      label: "Groceries",
-      type: "Expense",
-      amount: "-$150",
-      category: "Food",
-      date: "Oct 10, 2023",
-    },
-    {
-      id: 2,
-      label: "Salary",
-      type: "Income",
-      amount: "+$3,000",
-      category: "Salary",
-      date: "Oct 15, 2023",
-    },
-    {
-      id: 3,
-      label: "Rent",
-      type: "Expense",
-      amount: "-$1,200",
-      category: "Housing",
-      date: "Oct 1, 2023",
-    },
-    {
-      id: 4,
-      label: "Freelance Work",
-      type: "Income",
-      amount: "+$800",
-      category: "Freelance",
-      date: "Oct 20, 2023",
-    },
-    {
-      id: 5,
-      label: "Netflix Subscription",
-      type: "Expense",
-      amount: "-$15",
-      category: "Entertainment",
-      date: "Oct 5, 2023",
-    },
-    {
-      id: 6,
-      label: "Electricity Bill",
-      type: "Expense",
-      amount: "-$120",
-      category: "Utilities",
-      date: "Oct 12, 2023",
-    },
-    {
-      id: 7,
-      label: "Car Maintenance",
-      type: "Expense",
-      amount: "-$300",
-      category: "Transportation",
-      date: "Oct 18, 2023",
-    },
-    {
-      id: 8,
-      label: "Bonus",
-      type: "Income",
-      amount: "+$500",
-      category: "Bonus",
-      date: "Oct 25, 2023",
-    },
-    {
-      id: 9,
-      label: "Dinner Out",
-      type: "Expense",
-      amount: "-$75",
-      category: "Food",
-      date: "Oct 22, 2023",
-    },
-    {
-      id: 10,
-      label: "Gym Membership",
-      type: "Expense",
-      amount: "-$50",
-      category: "Health",
-      date: "Oct 3, 2023",
-    },
-  ]);
+  const [showAddPopup, setShowAddPopup] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  useEffect(() => {
+    fetch("http://localhost:8080/api/get")
+    .then((res) => res.json())
+    .then((data) => setTransactions(data))
+    .catch((err) => console.error(err));
+  });
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -137,7 +62,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100"> {/* Changed background color */}
+    <div className="flex min-h-screen bg-gray-100">
       {/* Add the popup component */}
       <AnimatePresence>
         {showAddPopup && (
@@ -149,9 +74,9 @@ export default function Dashboard() {
       </AnimatePresence>
 
       {/* Fixed Sidebar */}
-      <navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100"> {/* Changed background color */}
+      <navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
         <div className="flex items-center gap-3 mb-8">
-          <div className="h-8 w-8 rounded-full bg-purple-600 " /> {/* Added neumorphic shadow */}
+          <div className="h-8 w-8 rounded-full bg-purple-600 " />
           <div>
             <h3 className="font-medium">Naman Verma</h3>
             <p className="text-sm text-gray-600">{user.role}</p> 
@@ -246,7 +171,7 @@ export default function Dashboard() {
                         Math.min(currentPage * itemsPerPage, indexOfLastItem)
                       )
                       .map((transaction) => (
-                        <tr key={transactions.name} className="border-t border-gray-200">
+                        <tr key={transactions.label} className="border-t border-gray-200">
                           {transaction.type === "Expense" ? <ArrowDownLeft className="h-4 w-4 text-red-600" /> : <ArrowUpRight className="h-4 w-4 text-green-600" />}
                           <td className="py-3 font-medium text-gray-700">{transaction.label}</td> 
                           <td className="py-3 text-gray-600">{transaction.amount}</td> 
