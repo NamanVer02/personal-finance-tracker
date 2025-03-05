@@ -45,7 +45,6 @@ export default function Dashboard() {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    console.log(page);
   }
 
   const handlePrevPage = () => {
@@ -102,8 +101,6 @@ export default function Dashboard() {
           transaction.id === id ? { ...transaction, ...updatedData } : transaction
         )
       );
-  
-      console.log('Transaction updated successfully');
     } catch (error) {
       console.error('Error updating transaction:', error);
     }
@@ -128,13 +125,12 @@ export default function Dashboard() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'transactions.csv';
+      a.download = 'Transactions.csv';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
   
-      console.log('CSV downloaded successfully');
     } catch (error) {
       console.error('Error downloading CSV:', error);
     }
