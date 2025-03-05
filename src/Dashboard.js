@@ -108,6 +108,37 @@ export default function Dashboard() {
       console.error('Error updating transaction:', error);
     }
   };
+
+  const handleDownloadCsv = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/download', {
+        method: 'GET',
+        headers: {
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to download CSV');
+      }
+  
+      // Convert the response to a blob
+      const blob = await response.blob();
+  
+      // Create a link element to trigger the download
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'transactions.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+  
+      console.log('CSV downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading CSV:', error);
+    }
+  };
   
 
   if(!user) {
@@ -202,7 +233,10 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-gray-700">{month} Report</h2>
                   <div className="flex gap-4">
-                    <button className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button">Download</button>
+                    <button className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button" onClick={handleDownloadCsv}
+                    >
+                      Download CSV File
+                    </button>
                     <button
                       className="px-3 py-1 text-sm rounded-lg bg-purple-500 text-white shadow-neumorphic-purple"
                       onClick={() => setShowAddPopup(true)}
