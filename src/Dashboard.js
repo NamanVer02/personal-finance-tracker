@@ -4,6 +4,7 @@ import { useAuth } from "./AuthContext";
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import AddTransaction from "./AddTransaction";
+import EditTransaction from "./EditTransaction";
 
 
 export default function Dashboard() {
@@ -14,8 +15,11 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
 
-  const [showAddPopup, setShowAddPopup] = useState(false);
   const [transactions, setTransactions] = useState([]);
+  const [showAddPopup, setShowAddPopup] = useState(false);
+  const [showEditPopup, setShowEditPopup] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+
   useEffect(() => {
     fetch("http://localhost:8080/api/get")
     .then((res) => res.json())
@@ -30,7 +34,7 @@ export default function Dashboard() {
 
 
   // Add this function to handle new transactions
-  const handleAddProduct = (newProduct) => {
+  const handleAddTransaction = (newProduct) => {
     setTransactions(prev => [...prev, newProduct]);
   };
 
@@ -73,6 +77,37 @@ export default function Dashboard() {
       console.error(error);
     }
   }
+
+  const handleEditClick = (transaction) => {
+    setSelectedTransaction(transaction);
+    setShowEditPopup(true);
+  };
+
+  const handleUpdateTransaction = async (id, updatedData) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/put/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to update transaction');
+      }
+  
+      setTransactions((prevTransactions) =>
+        prevTransactions.map((transaction) =>
+          transaction.id === id ? { ...transaction, ...updatedData } : transaction
+        )
+      );
+  
+      console.log('Transaction updated successfully');
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+    }
+  };
   
 
   if(!user) {
@@ -87,7 +122,17 @@ export default function Dashboard() {
         {showAddPopup && (
             <AddTransaction
               onClose={() => setShowAddPopup(false)}
-              onSubmit={handleAddProduct}
+              onSubmit={handleAddTransaction}
+            />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showEditPopup && (
+            <EditTransaction
+              onClose={() => setShowEditPopup(false)}
+              onSubmit={handleUpdateTransaction}
+              transaction={selectedTransaction}
             />
         )}
       </AnimatePresence>
@@ -195,13 +240,13 @@ export default function Dashboard() {
                           <td className="py-3 font-medium text-gray-700">{transaction.label}</td> 
                           <td className="py-3 text-gray-600">{transaction.amount}</td> 
                           <td className="py-3 text-gray-600">{transaction.category}</td> 
-                          <td className="py-3 text-gray-600">{transaction.date}</td> 
+                          <td className="py-3 text-gray-600">{new Date(transaction?.date).toISOString().split("T")[0]}</td> 
                           <td className="py-3 flex items-center gap-3">
                             <button className="text-gray-600 hover:text-red-600">
                               <Trash2 className="h-4 w-4" onClick={() => (handleDelete(transaction.id))} />
                             </button>
                             <button className="text-gray-600 hover:text-purple-600">
-                              <Edit className="h-4 w-4" />
+                              <Edit className="h-4 w-4" onClick={() => (handleEditClick(transaction))}/>
                             </button>
                           </td>
                         </tr>
