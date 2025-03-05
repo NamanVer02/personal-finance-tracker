@@ -1,11 +1,19 @@
-import { BarChart3, History, Settings, LogOut, Trash2, Edit, ArrowDownLeft, ArrowUpRight} from "lucide-react"
-import { useNavigate, useLocation } from "react-router-dom"
+import {
+  BarChart3,
+  History,
+  Settings,
+  LogOut,
+  Trash2,
+  Edit,
+  ArrowDownLeft,
+  ArrowUpRight,
+} from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import AddTransaction from "./AddTransaction";
 import EditTransaction from "./EditTransaction";
-
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -22,60 +30,63 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetch("http://localhost:8080/api/get")
-    .then((res) => res.json())
-    .then((data) => setTransactions(data))
-    .catch((err) => console.error(err));
+      .then((res) => res.json())
+      .then((data) => setTransactions(data))
+      .catch((err) => console.error(err));
   }, []);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const totalPages = Math.ceil((transactions?.length || 0) / itemsPerPage);
 
-
-
   // Add this function to handle new transactions
   const handleAddTransaction = (newProduct) => {
-    setTransactions(prev => [...prev, newProduct]);
+    setTransactions((prev) => [...prev, newProduct]);
   };
 
   const handleLogout = () => {
     logout();
     navigate("/login");
-  }
+  };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
-  }
+  };
 
   const handlePrevPage = () => {
-    setCurrentPage((prevPage) => Math.max(prevPage-1, 1));
-  }
+    setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
+  };
 
   const handleNextPage = () => {
-    setCurrentPage((prevPage) => Math.max(prevPage+1, totalPages));
-  }
+    setCurrentPage((prevPage) => Math.max(prevPage + 1, totalPages));
+  };
 
   const handleSettings = () => {
     navigate("/settings");
-  }
+  };
 
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this transaction?");
-    if (!confirmDelete) { return; }
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this transaction?"
+    );
+    if (!confirmDelete) {
+      return;
+    }
 
-    try{
+    try {
       const response = await fetch(`http://localhost:8080/api/delete/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) {
         throw new Error("Failed to delete transaction");
       }
-      setTransactions((prev) => prev.filter((transaction) => transaction.id !== id));
-    }
-    catch (error) {
+      setTransactions((prev) =>
+        prev.filter((transaction) => transaction.id !== id)
+      );
+    } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   const handleEditClick = (transaction) => {
     setSelectedTransaction(transaction);
@@ -85,59 +96,58 @@ export default function Dashboard() {
   const handleUpdateTransaction = async (id, updatedData) => {
     try {
       const response = await fetch(`http://localhost:8080/api/put/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(updatedData),
       });
-  
+
       if (!response.ok) {
-        throw new Error('Failed to update transaction');
+        throw new Error("Failed to update transaction");
       }
-  
+
       setTransactions((prevTransactions) =>
         prevTransactions.map((transaction) =>
-          transaction.id === id ? { ...transaction, ...updatedData } : transaction
+          transaction.id === id
+            ? { ...transaction, ...updatedData }
+            : transaction
         )
       );
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      console.error("Error updating transaction:", error);
     }
   };
 
   const handleDownloadCsv = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/download', {
-        method: 'GET',
-        headers: {
-        },
+      const response = await fetch("http://localhost:8080/api/download", {
+        method: "GET",
+        headers: {},
       });
-  
+
       if (!response.ok) {
-        throw new Error('Failed to download CSV');
+        throw new Error("Failed to download CSV");
       }
-  
+
       // Convert the response to a blob
       const blob = await response.blob();
-  
+
       // Create a link element to trigger the download
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = 'Transactions.csv';
+      a.download = "Transactions.csv";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-  
     } catch (error) {
-      console.error('Error downloading CSV:', error);
+      console.error("Error downloading CSV:", error);
     }
   };
-  
 
-  if(!user) {
+  if (!user) {
     navigate("/login");
     return null;
   }
@@ -147,20 +157,20 @@ export default function Dashboard() {
       {/* Add the popup component */}
       <AnimatePresence>
         {showAddPopup && (
-            <AddTransaction
-              onClose={() => setShowAddPopup(false)}
-              onSubmit={handleAddTransaction}
-            />
+          <AddTransaction
+            onClose={() => setShowAddPopup(false)}
+            onSubmit={handleAddTransaction}
+          />
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {showEditPopup && (
-            <EditTransaction
-              onClose={() => setShowEditPopup(false)}
-              onSubmit={handleUpdateTransaction}
-              transaction={selectedTransaction}
-            />
+          <EditTransaction
+            onClose={() => setShowEditPopup(false)}
+            onSubmit={handleUpdateTransaction}
+            transaction={selectedTransaction}
+          />
         )}
       </AnimatePresence>
 
@@ -170,37 +180,63 @@ export default function Dashboard() {
           <div className="h-8 w-8 rounded-full bg-purple-600 " />
           <div>
             <h3 className="font-medium">Naman Verma</h3>
-            <p className="text-sm text-gray-600">{user.role}</p> 
+            <p className="text-sm text-gray-600">
+              {user.role
+                .toLowerCase()
+                .split(" ")
+                .map(function (word) {
+                  return word.charAt(0).toUpperCase() + word.slice(1);
+                })
+                .join(" ")}
+            </p>
           </div>
         </div>
-  
+
         <div className="space-y-4">
           <div className="px-2 py-1">
-            <h4 className="mb-2 text-sm font-medium text-gray-600">MENU</h4> 
+            <h4 className="mb-2 text-sm font-medium text-gray-600">MENU</h4>
             <div className="space-y-1">
-              <button className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === '/dashboard' ? 'shadow-neumorphic-inset-button' : 'shadow-neumorphic-button'}`}>
-                <BarChart3 className="h-4 w-4 text-gray-600" /> 
+              <button
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                  location.pathname === "/dashboard"
+                    ? "shadow-neumorphic-inset-button"
+                    : "shadow-neumorphic-button"
+                }`}
+              >
+                <BarChart3 className="h-4 w-4 text-gray-600" />
                 Dashboard
               </button>
               {/* Conditionally render History tab */}
-              {user.role !== 'user' && (
-                <button className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === '/history' ? 'shadow-neumorphic-inset-button' : 'shadow-neumorphic-button'}`}  onClick={() => {navigate("/history")}}>
-                  <History className="h-4 w-4 text-gray-600" /> 
+              {user.role !== "user" && (
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/history"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => {
+                    navigate("/history");
+                  }}
+                >
+                  <History className="h-4 w-4 text-gray-600" />
                   History
                 </button>
               )}
             </div>
           </div>
-  
+
           <div className="px-2 py-1">
-            <h4 className="mb-2 text-sm font-medium text-gray-600">ACCOUNT</h4> 
+            <h4 className="mb-2 text-sm font-medium text-gray-600">ACCOUNT</h4>
             <div className="space-y-3">
-              <button onClick={handleSettings} className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic">
-                <Settings className="h-4 w-4 text-gray-600" /> 
+              <button
+                onClick={handleSettings}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+              >
+                <Settings className="h-4 w-4 text-gray-600" />
                 Settings
               </button>
               <button
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic text-red-600 hover:bg-red-50"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600 hover:bg-red-50"
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
@@ -210,26 +246,60 @@ export default function Dashboard() {
           </div>
         </div>
       </navbar>
-  
+
       {/* Main Content */}
       <div className="flex-1 p-8 lg:ml-64 bg-gray-100">
         <div className="mx-auto max-w-6xl space-y-8">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold text-gray-700">Dashboard</h1>
           </div>
-  
+
           <div className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card title={`Total Expense`} value="$287,000" change="+16.24%" changeType="positive" />
-              <Card title={`Total Income`} value="4.5k" change="-0.85%" changeType="negative" />
+            <div className="grid gap-6 md:grid-cols-4">
+              <div className="grid gap-6 md:grid-rows-2">
+                <StatCard
+                  title={`Total Expense`}
+                  value="$287,000"
+                  change="+16.24%"
+                  changeType="positive"
+                />
+                <StatCard
+                  title={`Total Expense`}
+                  value="$287,000"
+                  change="+16.24%"
+                  changeType="positive"
+                />
+              </div>
+              <GraphCard
+                title={`Total Expense`}
+                value="$287,000"
+                change="+16.24%"
+                changeType="positive"
+              />
+              <GraphCard
+                title={`Total Income`}
+                value="4.5k"
+                change="-0.85%"
+                changeType="negative"
+              />
+              <GraphCard
+                title={`Total Income`}
+                value="4.5k"
+                change="-0.85%"
+                changeType="negative"
+              />
             </div>
-  
+
             <div className="rounded-lg bg-gray-100 p-6">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-700">{month} Report</h2>
+                  <h2 className="text-xl font-semibold text-gray-700">
+                    {month} Report
+                  </h2>
                   <div className="flex gap-4">
-                    <button className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button" onClick={handleDownloadCsv}
+                    <button
+                      className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                      onClick={handleDownloadCsv}
                     >
                       Download CSV File
                     </button>
@@ -265,18 +335,43 @@ export default function Dashboard() {
                         Math.min(currentPage * itemsPerPage, indexOfLastItem)
                       )
                       .map((transaction) => (
-                        <tr key={transactions.label} className="border-t border-gray-200">
-                          {transaction.type === "Expense" ? <ArrowDownLeft className="h-4 w-4 text-red-600" /> : <ArrowUpRight className="h-4 w-4 text-green-600" />}
-                          <td className="py-3 font-medium text-gray-700">{transaction.label}</td> 
-                          <td className="py-3 text-gray-600">{transaction.amount}</td> 
-                          <td className="py-3 text-gray-600">{transaction.category}</td> 
-                          <td className="py-3 text-gray-600">{new Date(transaction?.date).toISOString().split("T")[0]}</td> 
+                        <tr
+                          key={transactions.label}
+                          className="border-t border-gray-200"
+                        >
+                          {transaction.type === "Expense" ? (
+                            <ArrowDownLeft className="h-4 w-4 text-red-600" />
+                          ) : (
+                            <ArrowUpRight className="h-4 w-4 text-green-600" />
+                          )}
+                          <td className="py-3 font-medium text-gray-700">
+                            {transaction.label}
+                          </td>
+                          <td className="py-3 text-gray-600">
+                            {transaction.amount}
+                          </td>
+                          <td className="py-3 text-gray-600">
+                            {transaction.category}
+                          </td>
+                          <td className="py-3 text-gray-600">
+                            {
+                              new Date(transaction?.date)
+                                .toISOString()
+                                .split("T")[0]
+                            }
+                          </td>
                           <td className="py-3 flex items-center gap-3">
                             <button className="text-gray-600 hover:text-red-600">
-                              <Trash2 className="h-4 w-4" onClick={() => (handleDelete(transaction.id))} />
+                              <Trash2
+                                className="h-4 w-4"
+                                onClick={() => handleDelete(transaction.id)}
+                              />
                             </button>
                             <button className="text-gray-600 hover:text-purple-600">
-                              <Edit className="h-4 w-4" onClick={() => (handleEditClick(transaction))}/>
+                              <Edit
+                                className="h-4 w-4"
+                                onClick={() => handleEditClick(transaction)}
+                              />
                             </button>
                           </td>
                         </tr>
@@ -285,7 +380,9 @@ export default function Dashboard() {
                 </table>
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-gray-600">
-                    Showing {indexOfFirstItem} to {Math.min(indexOfLastItem, transactions.length)} of {transactions.length} entries
+                    Showing {indexOfFirstItem} to{" "}
+                    {Math.min(indexOfLastItem, transactions.length)} of{" "}
+                    {transactions.length} entries
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -300,7 +397,9 @@ export default function Dashboard() {
                         key={index}
                         onClick={() => handlePageChange(index + 1)}
                         className={`px-3 py-1 text-sm rounded-lg ${
-                          currentPage === index + 1 ? "shadow-neumorphic-inset-button" : "bg-gray-100 shadow-neumorphic-button"
+                          currentPage === index + 1
+                            ? "shadow-neumorphic-inset-button"
+                            : "bg-gray-100 shadow-neumorphic-button"
                         }`}
                       >
                         {index + 1}
@@ -322,16 +421,16 @@ export default function Dashboard() {
       </div>
     </div>
   );
-  
-  // Updated Card Component with Neumorphism
-  function Card({ title, value, change, changeType }) {
+
+  // Updated GraphCard Component with Neumorphism
+  function GraphCard({ title, value, change, changeType }) {
     return (
       <div className="rounded-lg bg-gray-100 shadow-neumorphic p-6" id="test">
         <div className="flex items-center justify-between pb-2">
           <h3 className="text-sm font-medium text-gray-600">{title}</h3>
         </div>
         <div className="text-2xl font-bold text-gray-700">{value}</div>
-        <div className="mt-4 h-[80px] w-full rounded-lg" />
+        <div className="mt-4 w-full rounded-lg" />
         <div className="mt-2 flex items-center gap-2">
           <div
             className={`text-xs px-2 py-0.5 rounded ${
@@ -339,6 +438,31 @@ export default function Dashboard() {
             }`}
           >
             {change}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function StatCard({ title, value, change, changeType }) {
+    return (
+      <div
+        className="rounded-lg bg-gray-100 outline outline-1 outline-gray-200 p-5"
+        id="test"
+      >
+        <div className="flex items-center justify-between pb-2">
+          <h3 className="text-sm font-medium text-gray-600">{title}</h3>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="text-2xl font-bold text-gray-700">{value}</div>
+          <div className="flex items-center justify-between mt-2">
+            <div
+              className={`text-xs px-2 rounded ${
+                changeType === "positive" ? "text-purple-600" : "text-red-600"
+              }`}
+            >
+              {change}
+            </div>
           </div>
         </div>
       </div>
