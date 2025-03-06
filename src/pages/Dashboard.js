@@ -9,13 +9,23 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../AuthContext";
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import AddTransaction from "./AddTransaction";
-import EditTransaction from "./EditTransaction";
+import AddTransaction from "../components/AddTransaction";
+import EditTransaction from "../components/EditTransaction";
+import GraphCard from "../components/graphCard";
+import StatCard from "../components/statCard";
+import {
+  fetchTransactions,
+  handleDeleteTransaction,
+  handleUpdateTransaction,
+  handleDownloadCsv,
+} from "../utils/api";
 
 export default function Dashboard() {
+  
+  // Variables
   const navigate = useNavigate();
   const location = useLocation();
   const month = new Date().toLocaleString("default", { month: "long" });
@@ -28,130 +38,44 @@ export default function Dashboard() {
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
-  useEffect(() => {
-    fetch("http://localhost:8080/api/get")
-      .then((res) => res.json())
-      .then((data) => setTransactions(data))
-      .catch((err) => console.error(err));
-  }, []);
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const totalPages = Math.ceil((transactions?.length || 0) / itemsPerPage);
+  
 
-  // Add this function to handle new transactions
+  // Functions
   const handleAddTransaction = (newProduct) => {
     setTransactions((prev) => [...prev, newProduct]);
   };
-
+  
+  const handlePageChange = (page) => setCurrentPage(page);
+  const handlePrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const handleNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  const handleSettings = () => navigate("/settings");
+  
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handlePrevPage = () => {
-    setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
-  };
-
-  const handleNextPage = () => {
-    setCurrentPage((prevPage) => Math.max(prevPage + 1, totalPages));
-  };
-
-  const handleSettings = () => {
-    navigate("/settings");
-  };
-
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this transaction?"
-    );
-    if (!confirmDelete) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:8080/api/delete/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete transaction");
-      }
-      setTransactions((prev) =>
-        prev.filter((transaction) => transaction.id !== id)
-      );
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
+  
   const handleEditClick = (transaction) => {
     setSelectedTransaction(transaction);
     setShowEditPopup(true);
   };
+  
 
-  const handleUpdateTransaction = async (id, updatedData) => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/put/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update transaction");
-      }
-
-      setTransactions((prevTransactions) =>
-        prevTransactions.map((transaction) =>
-          transaction.id === id
-            ? { ...transaction, ...updatedData }
-            : transaction
-        )
-      );
-    } catch (error) {
-      console.error("Error updating transaction:", error);
-    }
-  };
-
-  const handleDownloadCsv = async () => {
-    try {
-      const response = await fetch("http://localhost:8080/api/download", {
-        method: "GET",
-        headers: {},
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to download CSV");
-      }
-
-      // Convert the response to a blob
-      const blob = await response.blob();
-
-      // Create a link element to trigger the download
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "Transactions.csv";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error downloading CSV:", error);
-    }
-  };
+  // Initial Setup
+  useEffect(() => {
+    fetchTransactions(setTransactions);
+  }, []);
 
   if (!user) {
     navigate("/login");
     return null;
   }
 
+
+  // Page
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Add the popup component */}
@@ -168,7 +92,7 @@ export default function Dashboard() {
         {showEditPopup && (
           <EditTransaction
             onClose={() => setShowEditPopup(false)}
-            onSubmit={handleUpdateTransaction}
+            onSubmit={(id, data) => handleUpdateTransaction(id, data)}
             transaction={selectedTransaction}
           />
         )}
@@ -299,9 +223,9 @@ export default function Dashboard() {
                   <div className="flex gap-4">
                     <button
                       className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                      onClick={handleDownloadCsv}
+                      onClick={() => handleDownloadCsv()}
                     >
-                      Download CSV File
+                      Download CSV
                     </button>
                     <button
                       className="px-3 py-1 text-sm rounded-lg bg-purple-500 text-white shadow-neumorphic-purple"
@@ -364,7 +288,7 @@ export default function Dashboard() {
                             <button className="text-gray-600 hover:text-red-600">
                               <Trash2
                                 className="h-4 w-4"
-                                onClick={() => handleDelete(transaction.id)}
+                                onClick={() => handleDeleteTransaction(transaction.id, setTransactions)}
                               />
                             </button>
                             <button className="text-gray-600 hover:text-purple-600">
@@ -421,51 +345,4 @@ export default function Dashboard() {
       </div>
     </div>
   );
-
-  // Updated GraphCard Component with Neumorphism
-  function GraphCard({ title, value, change, changeType }) {
-    return (
-      <div className="rounded-lg bg-gray-100 shadow-neumorphic p-6" id="test">
-        <div className="flex items-center justify-between pb-2">
-          <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-        </div>
-        <div className="text-2xl font-bold text-gray-700">{value}</div>
-        <div className="mt-4 w-full rounded-lg" />
-        <div className="mt-2 flex items-center gap-2">
-          <div
-            className={`text-xs px-2 py-0.5 rounded ${
-              changeType === "positive" ? "text-purple-600" : "text-red-600"
-            }`}
-          >
-            {change}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function StatCard({ title, value, change, changeType }) {
-    return (
-      <div
-        className="rounded-lg bg-gray-100 outline outline-1 outline-gray-200 p-5"
-        id="test"
-      >
-        <div className="flex items-center justify-between pb-2">
-          <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-gray-700">{value}</div>
-          <div className="flex items-center justify-between mt-2">
-            <div
-              className={`text-xs px-2 rounded ${
-                changeType === "positive" ? "text-purple-600" : "text-red-600"
-              }`}
-            >
-              {change}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 }

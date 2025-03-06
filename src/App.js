@@ -1,10 +1,10 @@
 import { Routes, Route } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { useEffect, React } from "react";
-import Dashboard from "./Dashboard";
-import Login from "./Login";
-import Settings from "./Settings";
-import HistoryDash from "./HistoryDash";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Settings from "./pages/Settings";
+import HistoryDash from "./pages/HistoryDash";
 
 const App = () => {
     const {user} = useAuth();

@@ -1,9 +1,9 @@
 import { BarChart3, History, Settings, LogOut, Trash2, Edit, ArrowDownLeft, ArrowUpRight} from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../AuthContext";
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import AddTransaction from "./AddTransaction"; // Add this import
+import AddTransaction from "../components/AddTransaction"; // Add this import
 
 
 export default function HistoryDash() {
