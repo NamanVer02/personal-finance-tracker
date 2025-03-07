@@ -14,8 +14,8 @@ import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import AddTransaction from "../components/AddTransaction";
 import EditTransaction from "../components/EditTransaction";
-import GraphCard from "../components/graphCard";
-import StatCard from "../components/statCard";
+import GraphCard from "../components/GraphCard";
+import StatCard from "../components/StatCard";
 import {
   fetchTransactions,
   handleDeleteTransaction,
@@ -179,8 +179,14 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-4">
-            <div className="grid gap-6 md:grid-cols-4">
+            <div className="grid gap-6 md:grid-cols-3">
               <div className="grid gap-6 md:grid-rows-2">
+                <StatCard
+                  title={`Total Expense`}
+                  value="$287,000"
+                  change="+16.24%"
+                  changeType="positive"
+                />
                 <StatCard
                   title={`Total Expense`}
                   value="$287,000"
@@ -199,12 +205,6 @@ export default function Dashboard() {
                 value="$287,000"
                 change="+16.24%"
                 changeType="positive"
-              />
-              <GraphCard
-                title={`Total Income`}
-                value="4.5k"
-                change="-0.85%"
-                changeType="negative"
               />
               <GraphCard
                 title={`Total Income`}
