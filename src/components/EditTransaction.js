@@ -24,14 +24,17 @@ const incomeCategories = [
   "Miscellaneous",
 ];
 
-export default function AddTransaction({ onClose, onSubmit }) {
+export default function EditTransaction({ onClose, onSubmit, transaction }) {
   const [formData, setFormData] = useState({
-    name: "",
-    amount: "",
-    type: "Expense", // Default to Expense
-    category: "Miscellaneous", // Default to first category
-    date: new Date().toISOString().split("T")[0], // Default to today's date
-  });
+    label: transaction?.label || "",
+    amount: transaction?.amount || "",
+    type: transaction?.type || "Expense",
+    category: transaction?.category || "Miscellaneous",
+    date: transaction?.date ? new Date(transaction?.date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+  }, []);
+
+  console.log(transaction);
+
   let categories = formData.type === "Expense" ? expenseCategories : incomeCategories;
 
   const handleChange = (e) => {
@@ -50,12 +53,10 @@ export default function AddTransaction({ onClose, onSubmit }) {
     categories = type === "Expense" ? expenseCategories : incomeCategories;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({
-      ...formData,
-      amount: formData.type === "Expense" ? `-${formData.amount}` : `+${formData.amount}`,
-    });
+
+    onSubmit(transaction.id, formData);
     onClose();
   };
 
@@ -74,8 +75,11 @@ export default function AddTransaction({ onClose, onSubmit }) {
         transition={{ type: "tween", duration: 0.3 }}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-700">Add New Transaction</h2>
-          <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
+          <h2 className="text-2xl font-bold text-gray-700">Edit Transaction</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-600 hover:text-gray-800"
+          >
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -113,14 +117,17 @@ export default function AddTransaction({ onClose, onSubmit }) {
 
           {/* Transaction Label */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-600">
+            <label
+              htmlFor="label"
+              className="block text-sm font-medium text-gray-600"
+            >
               Transaction Label
             </label>
             <input
               type="text"
-              id="name"
-              name="name"
-              value={formData.name}
+              id="label"
+              name="label"
+              value={formData.label}
               onChange={handleChange}
               className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
               required
@@ -129,7 +136,10 @@ export default function AddTransaction({ onClose, onSubmit }) {
 
           {/* Amount */}
           <div>
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-600">
+            <label
+              htmlFor="amount"
+              className="block text-sm font-medium text-gray-600"
+            >
               Amount
             </label>
             <input
@@ -146,7 +156,10 @@ export default function AddTransaction({ onClose, onSubmit }) {
 
           {/* Category */}
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-600">
+            <label
+              htmlFor="category"
+              className="block text-sm font-medium text-gray-600"
+            >
               Category
             </label>
             <select
@@ -167,7 +180,10 @@ export default function AddTransaction({ onClose, onSubmit }) {
 
           {/* Date */}
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-600">
+            <label
+              htmlFor="date"
+              className="block text-sm font-medium text-gray-600"
+            >
               Date
             </label>
             <input
@@ -186,7 +202,7 @@ export default function AddTransaction({ onClose, onSubmit }) {
             type="submit"
             className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg shadow-neumorphic-purple hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
           >
-            Add Transaction
+            Update Transaction
           </button>
         </form>
       </motion.div>
