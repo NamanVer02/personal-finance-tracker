@@ -161,7 +161,7 @@ export default function HistoryDash() {
         <div className="space-y-4">
           <div className="px-2 py-1">
             <h4 className="mb-2 text-sm font-medium text-gray-600">MENU</h4> 
-            <div className="space-y-1">
+            <div className="space-y-4">
               <button className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === '/dashboard' ? 'shadow-neumorphic-inset' : 'shadow-neumorphic'}`}  onClick={() => {navigate("/dashboard")}}>
                 <BarChart3 className="h-4 w-4 text-gray-600" /> 
                 Dashboard
