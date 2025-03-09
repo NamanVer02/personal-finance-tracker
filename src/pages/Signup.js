@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 
-export default function Login() {
+export default function Signup() {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -12,41 +14,46 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Form validation
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+    
     setLoading(true);
     setError("");
-
+    
     try {
-      const response = await fetch("http://localhost:8080/api/auth/signin", {
+      const response = await fetch("http://localhost:8080/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           username,
+          email,
           password,
+          roles: ["user"]
         }),
       });
-
+      
       const data = await response.json();
-
+      
       if (!response.ok) {
-        throw new Error(data.message || "Invalid username or password");
-      }
-
-      // Store the JWT token and user info
-      const token = data.accessToken || data.token;
-      
-      if (!token) {
-        throw new Error("Authentication failed: No token received");
+        throw new Error(data.message || "Failed to register");
       }
       
-      // Pass the token to your auth context
-      login(token, data.username, data.roles || ["user"]);
-      
-      // Redirect to dashboard
+      // If registration is successful, log the user in
+      login(data.accessToken || "user"); // Adjust based on your API response
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message || "Login failed. Please try again.");
+      setError(err.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -57,9 +64,9 @@ export default function Login() {
       <div className="bg-gray-100 p-8 rounded-lg shadow-neumorphic w-96">
         {/* Welcome Message */}
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-700">Welcome Back!</h1>
+          <h1 className="text-3xl font-bold text-gray-700">Create Account</h1>
           <p className="text-sm text-gray-500 mt-2">
-            Track your finances and achieve your goals.
+            Join us to start tracking your finances.
           </p>
         </div>
   
@@ -68,7 +75,7 @@ export default function Login() {
           <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
         )}
   
-        {/* Login Form */}
+        {/* Signup Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Username Field */}
           <div>
@@ -83,6 +90,24 @@ export default function Login() {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
+              required
+            />
+          </div>
+          
+          {/* Email Field */}
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-600"
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
               required
             />
@@ -105,22 +130,40 @@ export default function Login() {
               required
             />
           </div>
+          
+          {/* Confirm Password Field */}
+          <div>
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-600"
+            >
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
+              required
+            />
+          </div>
   
-          {/* Login Button */}
+          {/* Signup Button */}
           <button
             type="submit"
             className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg shadow-neumorphic-purple"
             disabled={loading}
           >
-            {loading ? "Logging in..." : "Log In"}
+            {loading ? "Signing up..." : "Sign Up"}
           </button>
           
-          {/* Signup Link */}
+          {/* Login Link */}
           <div className="text-center mt-4">
             <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-purple-600 hover:underline">
-                Sign Up
+              Already have an account?{" "}
+              <Link to="/login" className="text-purple-600 hover:underline">
+                Log In
               </Link>
             </p>
           </div>

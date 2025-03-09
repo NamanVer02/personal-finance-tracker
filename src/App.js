@@ -1,13 +1,13 @@
 import { Routes, Route } from "react-router-dom";
-import { useAuth } from "./AuthContext";
 import { useEffect, React } from "react";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Settings from "./pages/Settings";
 import HistoryDash from "./pages/HistoryDash";
+import Signup from "./pages/Signup";
 
 const App = () => {
-    const {user} = useAuth();
+
     useEffect(() => {
         // Check localStorage for dark mode preference
         const savedDarkMode = localStorage.getItem("darkMode");
@@ -21,9 +21,10 @@ const App = () => {
     return (
         <div>
         <Routes>
-            <Route path="/dashboard" element={user ? <Dashboard /> : <Login />} />
-            <Route path="/history" element={user ? <HistoryDash /> : <Login />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/history" element={<HistoryDash />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="/settings" element={<Settings />} />
         </Routes>
         </div>

@@ -28,8 +28,9 @@ export default function Dashboard() {
   // Variables
   const navigate = useNavigate();
   const location = useLocation();
+  const { token } = useAuth();
   const month = new Date().toLocaleString("default", { month: "long" });
-  const { user, logout } = useAuth();
+  const { currentUser, logout, isAuthenticated } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
 
@@ -64,17 +65,33 @@ export default function Dashboard() {
   };
   
 
+  // Check authentication and redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
+
   // Initial Setup
   useEffect(() => {
-    fetchTransactions(setTransactions);
-  }, []);
+    if (isAuthenticated) {
+      fetchTransactions(setTransactions, token);
+    }
+  }, [isAuthenticated, token]);
 
-  if (!user) {
-    navigate("/login");
-    return null;
+  
+  // If still checking authentication, show loading
+  if (!isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="h-8 w-8 rounded-full bg-purple-600 animate-pulse mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
-
-
+  
   // Page
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -92,7 +109,7 @@ export default function Dashboard() {
         {showEditPopup && (
           <EditTransaction
             onClose={() => setShowEditPopup(false)}
-            onSubmit={(id, data) => handleUpdateTransaction(id, data)}
+            onSubmit={(id, data) => handleUpdateTransaction(id, data, token)}
             transaction={selectedTransaction}
           />
         )}
@@ -103,15 +120,17 @@ export default function Dashboard() {
         <div className="flex items-center gap-3 mb-8">
           <div className="h-8 w-8 rounded-full bg-purple-600 " />
           <div>
-            <h3 className="font-medium">Naman Verma</h3>
+            <h3 className="font-medium">{currentUser?.username || "User"}</h3>
             <p className="text-sm text-gray-600">
-              {user.role
-                .toLowerCase()
-                .split(" ")
-                .map(function (word) {
-                  return word.charAt(0).toUpperCase() + word.slice(1);
-                })
-                .join(" ")}
+              {currentUser?.roles?.map(role => 
+                role
+                  .toLowerCase()
+                  .split(" ")
+                  .map(function (word) {
+                    return word.charAt(0).toUpperCase() + word.slice(1);
+                  })
+                  .join(" ")
+              ).join(", ") || "User"}
             </p>
           </div>
         </div>
@@ -131,7 +150,7 @@ export default function Dashboard() {
                 Dashboard
               </button>
               {/* Conditionally render History tab */}
-              {user.role !== "user" && (
+              {currentUser?.roles?.includes("admin") && (
                 <button
                   className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
                     location.pathname === "/history"
@@ -223,7 +242,7 @@ export default function Dashboard() {
                   <div className="flex gap-4">
                     <button
                       className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                      onClick={() => handleDownloadCsv()}
+                      onClick={() => handleDownloadCsv(token)}
                     >
                       Download CSV
                     </button>
@@ -260,14 +279,16 @@ export default function Dashboard() {
                       )
                       .map((transaction) => (
                         <tr
-                          key={transactions.label}
+                          key={transaction.id || transaction.label}
                           className="border-t border-gray-200"
                         >
-                          {transaction.type === "Expense" ? (
-                            <ArrowDownLeft className="h-4 w-4 text-red-600" />
-                          ) : (
-                            <ArrowUpRight className="h-4 w-4 text-green-600" />
-                          )}
+                          <td className="py-3">
+                            {transaction.type === "Expense" ? (
+                              <ArrowDownLeft className="h-4 w-4 text-red-600" />
+                            ) : (
+                              <ArrowUpRight className="h-4 w-4 text-green-600" />
+                            )}
+                          </td>
                           <td className="py-3 font-medium text-gray-700">
                             {transaction.label}
                           </td>
@@ -288,7 +309,7 @@ export default function Dashboard() {
                             <button className="text-gray-600 hover:text-red-600">
                               <Trash2
                                 className="h-4 w-4"
-                                onClick={() => handleDeleteTransaction(transaction.id, setTransactions)}
+                                onClick={() => handleDeleteTransaction(transaction.id, setTransactions, token)}
                               />
                             </button>
                             <button className="text-gray-600 hover:text-purple-600">
@@ -304,7 +325,7 @@ export default function Dashboard() {
                 </table>
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-gray-600">
-                    Showing {indexOfFirstItem} to{" "}
+                    Showing {indexOfFirstItem + 1} to{" "}
                     {Math.min(indexOfLastItem, transactions.length)} of{" "}
                     {transactions.length} entries
                   </div>
