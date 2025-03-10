@@ -1,4 +1,6 @@
 export const fetchTransactions = async (setTransactions, token) => {  
+  console.log("Fetch Token: ", token);
+
   try {
     const res = await fetch("http://localhost:8080/api/get", {
       headers: {

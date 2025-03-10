@@ -25,6 +25,8 @@ const incomeCategories = [
 ];
 
 export default function AddTransaction({ onClose, onSubmit }) {
+  const token = localStorage.getItem("token");
+
   const [formData, setFormData] = useState({
     label: "",
     amount: "",
@@ -57,7 +59,8 @@ export default function AddTransaction({ onClose, onSubmit }) {
       const response = await fetch("http://localhost:8080/api/post", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Include the token in the headers
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData), 
       });
