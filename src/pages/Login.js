@@ -35,13 +35,14 @@ export default function Login() {
 
       // Store the JWT token and user info
       const token = data.accessToken || data.token;
+      const userId = data.id;
       
       if (!token) {
         throw new Error("Authentication failed: No token received");
       }
       
       // Pass the token to your auth context
-      login(token, data.username, data.roles || ["user"]);
+      login(token, data.username, data.roles || ["user"], userId);
       
       // Redirect to dashboard
       navigate("/dashboard");

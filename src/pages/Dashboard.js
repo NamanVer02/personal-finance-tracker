@@ -1,12 +1,13 @@
 import {
   BarChart3,
   History,
-  Settings,
   LogOut,
   Trash2,
   Edit,
   ArrowDownLeft,
   ArrowUpRight,
+  Moon,
+  FolderSync,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -28,12 +29,15 @@ export default function Dashboard() {
   // Variables
   const navigate = useNavigate();
   const location = useLocation();
+  const userId = localStorage.getItem("userId");
   const { token } = useAuth();
   const month = new Date().toLocaleString("default", { month: "long" });
   const { currentUser, logout, isAuthenticated } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
 
+  const [incomeData, setIncomeData] = useState([]);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
@@ -45,14 +49,9 @@ export default function Dashboard() {
   
 
   // Functions
-  const handleAddTransaction = (newProduct) => {
-    setTransactions((prev) => [...prev, newProduct]);
-  };
-  
   const handlePageChange = (page) => setCurrentPage(page);
   const handlePrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
   const handleNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  const handleSettings = () => navigate("/settings");
   
   const handleLogout = () => {
     logout();
@@ -62,6 +61,18 @@ export default function Dashboard() {
   const handleEditClick = (transaction) => {
     setSelectedTransaction(transaction);
     setShowEditPopup(true);
+  };
+
+  const toggleDarkMode = () => {
+    const isDarkMode = document.documentElement.classList.toggle("dark");
+    setIsDarkMode(isDarkMode);
+    localStorage.setItem("darkMode", isDarkMode ? "enabled" : "disabled");
+  };
+
+  const clearAllData = () => {
+    // Implement the logic to clear all data
+    console.log('Clearing all data...');
+    // You might want to show a confirmation dialog before actually clearing the data
   };
   
 
@@ -74,10 +85,42 @@ export default function Dashboard() {
 
   // Initial Setup
   useEffect(() => {
+    console.log(userId);
     if (isAuthenticated) {
       fetchTransactions(setTransactions, token);
     }
   }, [isAuthenticated, token]);
+
+
+  useEffect(() => {
+    const fetchIncomeData = async () => {
+      try {
+        const res = await fetch(`http://localhost:8080/api/get/summary/income/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the headers
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
+        const data = await res.json();
+        console.log(data)
+        const formattedData = Object.keys(data).map((key) => ({
+          name: key,
+          value: data[key],
+        }));
+        setIncomeData(formattedData);
+      } catch (err) {
+        console.error("Error fetching income data:", err);
+        setIncomeData([]);
+      }
+    };
+
+    fetchIncomeData();
+  }, [userId, token]);
 
   
   // If still checking authentication, show loading
@@ -100,7 +143,7 @@ export default function Dashboard() {
         {showAddPopup && (
           <AddTransaction
             onClose={() => setShowAddPopup(false)}
-            onSubmit={handleAddTransaction}
+            onSubmit={() => fetchTransactions(setTransactions, token)}
           />
         )}
       </AnimatePresence>
@@ -109,7 +152,7 @@ export default function Dashboard() {
         {showEditPopup && (
           <EditTransaction
             onClose={() => setShowEditPopup(false)}
-            onSubmit={(id, data) => handleUpdateTransaction(id, data, token)}
+            onSubmit={(id, data) => handleUpdateTransaction(id, data, setTransactions,token)}
             transaction={selectedTransaction}
           />
         )}
@@ -170,13 +213,24 @@ export default function Dashboard() {
 
           <div className="px-2 py-1">
             <h4 className="mb-2 text-sm font-medium text-gray-600">ACCOUNT</h4>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <button
-                onClick={handleSettings}
+                onClick={() => {fetchTransactions(setTransactions, token)}}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
               >
-                <Settings className="h-4 w-4 text-gray-600" />
-                Settings
+                <FolderSync className="h-4 w-4 text-gray-600" />
+                Sync Data
+              </button>
+              <button
+                onClick={toggleDarkMode}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+                  isDarkMode
+                    ? 'bg-gray-100 text-white'
+                    : 'bg-gray-100 text-gray-700'
+                } shadow-neumorphic-button`}
+              >
+                <Moon className="h-4 w-4 text-gray-600" />
+                {isDarkMode ? 'Disable Dark Mode' : 'Enable Dark Mode'}
               </button>
               <button
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600 hover:bg-red-50"
@@ -184,6 +238,13 @@ export default function Dashboard() {
               >
                 <LogOut className="h-4 w-4" />
                 Logout
+              </button>
+              <button
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg shadow-neumorphic-button text-white bg-red-500 hover:bg-red-800"
+                onClick={clearAllData}
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete All Data
               </button>
             </div>
           </div>
@@ -220,16 +281,9 @@ export default function Dashboard() {
                 />
               </div>
               <GraphCard
-                title={`Total Expense`}
-                value="$287,000"
-                change="+16.24%"
-                changeType="positive"
-              />
-              <GraphCard
-                title={`Total Income`}
-                value="4.5k"
-                change="-0.85%"
-                changeType="negative"
+                title={`Expense per Category`}
+                value={`Total Income`}
+                data={incomeData}
               />
             </div>
 
@@ -254,10 +308,6 @@ export default function Dashboard() {
                     </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button className="text-sm text-gray-600">Active</button>
-                  <button className="text-sm text-gray-600">Draft</button>
-                </div>
               </div>
               <div className="mt-6">
                 <table className="w-full">
@@ -279,7 +329,7 @@ export default function Dashboard() {
                       )
                       .map((transaction) => (
                         <tr
-                          key={transaction.id || transaction.label}
+                          key={transaction.id}
                           className="border-t border-gray-200"
                         >
                           <td className="py-3">

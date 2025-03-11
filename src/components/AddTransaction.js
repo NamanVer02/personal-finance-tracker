@@ -56,7 +56,7 @@ export default function AddTransaction({ onClose, onSubmit }) {
     e.preventDefault();
     
     try{
-      const response = await fetch("http://localhost:8080/api/post", {
+      const res = await fetch("http://localhost:8080/api/post", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`, // Include the token in the headers
@@ -65,11 +65,11 @@ export default function AddTransaction({ onClose, onSubmit }) {
         body: JSON.stringify(formData), 
       });
 
-      if (!response.ok) {
+      if (!res.ok) {
         throw new Error("Failed to add transaction");
       }
 
-      onSubmit(formData);
+      onSubmit();
       onClose();
     }
     catch (error) {

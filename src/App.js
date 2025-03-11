@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import { useEffect, React } from "react";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
-import Settings from "./pages/Settings";
 import HistoryDash from "./pages/HistoryDash";
 import Signup from "./pages/Signup";
 
@@ -25,7 +24,6 @@ const App = () => {
             <Route path="/history" element={<HistoryDash />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/settings" element={<Settings />} />
         </Routes>
         </div>
     );
