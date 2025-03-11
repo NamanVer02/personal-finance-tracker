@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
+import "react-toastify/dist/ReactToastify.css"; // Import the default styles for the toast notifications
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -13,7 +14,6 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
       const response = await fetch("http://localhost:8080/api/auth/signin", {
@@ -36,18 +36,22 @@ export default function Login() {
       // Store the JWT token and user info
       const token = data.accessToken || data.token;
       const userId = data.id;
-      
+
       if (!token) {
         throw new Error("Authentication failed: No token received");
       }
-      
+
       // Pass the token to your auth context
       login(token, data.username, data.roles || ["user"], userId);
-      
+
+      // Show success toast
+      toast.success("Login successful! Redirecting to dashboard...");
+
       // Redirect to dashboard
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message || "Login failed. Please try again.");
+      // Show error toast
+      toast.error(err.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -63,12 +67,7 @@ export default function Login() {
             Track your finances and achieve your goals.
           </p>
         </div>
-  
-        {/* Error Message */}
-        {error && (
-          <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
-        )}
-  
+
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Username Field */}
@@ -88,7 +87,7 @@ export default function Login() {
               required
             />
           </div>
-  
+
           {/* Password Field */}
           <div>
             <label
@@ -106,7 +105,7 @@ export default function Login() {
               required
             />
           </div>
-  
+
           {/* Login Button */}
           <button
             type="submit"
@@ -115,7 +114,7 @@ export default function Login() {
           >
             {loading ? "Logging in..." : "Log In"}
           </button>
-          
+
           {/* Signup Link */}
           <div className="text-center mt-4">
             <p className="text-sm text-gray-600">
@@ -127,6 +126,9 @@ export default function Login() {
           </div>
         </form>
       </div>
+
+      {/* ToastContainer component to render toasts */}
+      <ToastContainer draggable stacked/>
     </div>
   );
 }

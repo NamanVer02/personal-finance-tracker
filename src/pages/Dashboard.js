@@ -99,7 +99,7 @@ export default function Dashboard() {
       fetchExpenseData(setExpenseData, userId, token)
       .then(setTotalExpense(expenseData.reduce((accumulator, current) => accumulator + current.value, 0)));
     }
-  }, [isAuthenticated, token, userId]);
+  }, [isAuthenticated, token, userId, incomeData, expenseData]);
 
   
   // If still checking authentication, show loading
