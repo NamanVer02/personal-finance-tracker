@@ -39,6 +39,8 @@ export default function Dashboard() {
   const [itemsPerPage] = useState(5);
 
   const [incomeData, setIncomeData] = useState([]);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpense, setTotalExpense] = useState(0);
   const [expenseData, setExpenseData] = useState([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [transactions, setTransactions] = useState([]);
@@ -90,13 +92,15 @@ export default function Dashboard() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchTransactions(setTransactions, token);
-      fetchIncomeData(setIncomeData, userId, token);
-      fetchExpenseData(setExpenseData, userId, token);
+
+      fetchIncomeData(setIncomeData, userId, token)
+      .then(setTotalIncome(incomeData.reduce((accumulator, current) => accumulator + current.value, 0)));
+
+      fetchExpenseData(setExpenseData, userId, token)
+      .then(setTotalExpense(expenseData.reduce((accumulator, current) => accumulator + current.value, 0)));
     }
   }, [isAuthenticated, token, userId]);
 
-
-   console.log(incomeData);
   
   // If still checking authentication, show loading
   if (!isAuthenticated) {
@@ -237,10 +241,8 @@ export default function Dashboard() {
             <div className="grid gap-6 md:grid-cols-3">
               <div className="grid gap-6 md:grid-rows-2">
                 <StatCard
-                  title={`Total Expense`}
-                  value="$287,000"
-                  change="+16.24%"
-                  changeType="positive"
+                  title={`Net Income`}
+                  value={`$${totalIncome-totalExpense}`}
                 />
                 <StatCard
                   title={`Total Expense`}
@@ -262,7 +264,7 @@ export default function Dashboard() {
               />
               <GraphCard
                 title={`Income per Category`}
-                value={`$${incomeData.reduce((accumulator, current) => accumulator + current.value, 0)}`}
+                value={`$${totalIncome}`}
                 data={incomeData}
               />
             </div>
