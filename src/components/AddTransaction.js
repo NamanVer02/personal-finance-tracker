@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
+import { handleAddTransaction } from "../utils/api";
 
 const expenseCategories = [
   "Housing",
@@ -55,26 +56,7 @@ export default function AddTransaction({ onClose, onSubmit }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    try{
-      const res = await fetch("http://localhost:8080/api/post", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`, // Include the token in the headers
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData), 
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to add transaction");
-      }
-
-      onSubmit();
-      onClose();
-    }
-    catch (error) {
-      console.error(error);
-    }
+    handleAddTransaction(formData, onSubmit, onClose, token);
   };
 
   return (

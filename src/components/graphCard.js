@@ -1,23 +1,23 @@
 import React from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
-const incomeCategories = [
-  "Salary",
-  "Business",
-  "Investments",
-  "Gifts",
-  "Miscellaneous",
+
+// const COLORS = ["#8B5CF6", "#A78BFA", "#C4B5FD", "#DDD6FE", "#EDE9FE"];
+const COLORS = [
+  "#8B5CF6",  // Purple-500
+  "#6B46C1",  // Darker Purple
+  "#9B4DCA",  // Slightly redder Purple
+  "#4C51BF",  // Dark Blue
+  "#2C5282",  // Navy Blue
+  "#319795",  // Teal
+  "#38B2AC",  // Light Teal
+  "#F6AD55",  // Amber
+  "#ED8936",  // Orange
+  "#F56565",  // Red
+  "#ED64A6",  // Pink
 ];
 
-const data = incomeCategories.map((category, index) => ({
-  name: category,
-  value: Math.floor(Math.random() * 5000) + 1000, // Sample data
-}));
-
-// Color palette with purple-500 as primary
-const COLORS = ["#8B5CF6", "#A78BFA", "#C4B5FD", "#DDD6FE", "#EDE9FE"];
-
-function GraphCard({ title, value, change, changeType }) {
+function GraphCard({ title, value, change, changeType, data }) {
   const customTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
@@ -48,7 +48,7 @@ function GraphCard({ title, value, change, changeType }) {
                 outerRadius={70}
                 paddingAngle={2}
                 dataKey="value"
-                strokeWidth={0}
+                strokeWidth={2}
               >
                 {data.map((entry, index) => (
                   <Cell 
@@ -58,13 +58,24 @@ function GraphCard({ title, value, change, changeType }) {
                 ))}
               </Pie>
               <Tooltip content={customTooltip} />
+              {/* <text
+                x="50%"
+                y="50%"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize="18"
+                fontWeight="bold"
+                fill="#000"
+              >
+                {`$${data.reduce((accumulator, current) => accumulator + current.value, 0)}`}
+              </text> */}
             </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
-     
+      
       <div className="mt-4 grid grid-cols-3 gap-x-2 gap-y-2 text-xs text-gray-600 dark:text-gray-300">
-        {incomeCategories.map((category, index) => (
+        {data.map((category, index) => (
           <div key={index} className="flex items-center">
             <div 
               className="w-2 h-2 rounded-full mr-1.5 flex-shrink-0" 
@@ -72,7 +83,7 @@ function GraphCard({ title, value, change, changeType }) {
                 backgroundColor: COLORS[index % COLORS.length]
               }}
             />
-            <span className="truncate">{category}</span>
+            <span className="truncate">{category.name}</span>
           </div>
         ))}
       </div>

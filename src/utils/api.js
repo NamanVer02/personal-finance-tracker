@@ -19,6 +19,29 @@ export const fetchTransactions = async (setTransactions, token) => {
   }
 };
 
+export const handleAddTransaction = async (formData, onSubmit, onClose, token) => {
+  try{
+    const res = await fetch("http://localhost:8080/api/post", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`, // Include the token in the headers
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData), 
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to add transaction");
+    }
+
+    onSubmit();
+    onClose();
+  }
+  catch (error) {
+    console.error(error);
+  }
+}
+
 export const handleDeleteTransaction = async (id, setTransactions, token) => {
   const confirmDelete = window.confirm(
     "Are you sure you want to delete this transaction?"
@@ -97,3 +120,53 @@ export const handleDownloadCsv = async (token) => {
   }
 };
 
+export const fetchIncomeData = async (setIncomeData, userId, token) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/get/summary/income/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Include the token in the headers
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const data = await res.json();
+    const formattedData = Object.keys(data).map((key) => ({
+      name: key,
+      value: data[key],
+    }));
+    setIncomeData(formattedData);
+  } catch (err) {
+    console.error("Error fetching income data:", err);
+    setIncomeData([]);
+  }
+};
+
+
+export const fetchExpenseData = async (setExpenseData, userId, token) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/get/summary/expense/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Include the token in the headers
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const data = await res.json();
+    const formattedData = Object.keys(data).map((key) => ({
+      name: key,
+      value: data[key],
+    }));
+    setExpenseData(formattedData);
+  } catch (err) {
+    console.error("Error fetching income data:", err);
+    setExpenseData([]);
+  }
+};

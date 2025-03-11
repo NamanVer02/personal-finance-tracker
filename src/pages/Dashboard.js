@@ -22,6 +22,8 @@ import {
   handleDeleteTransaction,
   handleUpdateTransaction,
   handleDownloadCsv,
+  fetchIncomeData,
+  fetchExpenseData,
 } from "../utils/api";
 
 export default function Dashboard() {
@@ -37,6 +39,7 @@ export default function Dashboard() {
   const [itemsPerPage] = useState(5);
 
   const [incomeData, setIncomeData] = useState([]);
+  const [expenseData, setExpenseData] = useState([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [showAddPopup, setShowAddPopup] = useState(false);
@@ -85,43 +88,15 @@ export default function Dashboard() {
 
   // Initial Setup
   useEffect(() => {
-    console.log(userId);
     if (isAuthenticated) {
       fetchTransactions(setTransactions, token);
+      fetchIncomeData(setIncomeData, userId, token);
+      fetchExpenseData(setExpenseData, userId, token);
     }
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated, token, userId]);
 
 
-  useEffect(() => {
-    const fetchIncomeData = async () => {
-      try {
-        const res = await fetch(`http://localhost:8080/api/get/summary/income/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`, // Include the token in the headers
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        
-        const data = await res.json();
-        console.log(data)
-        const formattedData = Object.keys(data).map((key) => ({
-          name: key,
-          value: data[key],
-        }));
-        setIncomeData(formattedData);
-      } catch (err) {
-        console.error("Error fetching income data:", err);
-        setIncomeData([]);
-      }
-    };
-
-    fetchIncomeData();
-  }, [userId, token]);
-
+   console.log(incomeData);
   
   // If still checking authentication, show loading
   if (!isAuthenticated) {
@@ -282,7 +257,12 @@ export default function Dashboard() {
               </div>
               <GraphCard
                 title={`Expense per Category`}
-                value={`Total Income`}
+                value={`$${expenseData.reduce((accumulator, current) => accumulator + current.value, 0)}`}
+                data={expenseData}
+              />
+              <GraphCard
+                title={`Income per Category`}
+                value={`$${incomeData.reduce((accumulator, current) => accumulator + current.value, 0)}`}
                 data={incomeData}
               />
             </div>
