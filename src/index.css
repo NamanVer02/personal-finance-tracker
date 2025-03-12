@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.body {
+    
+}
+
 .shadow-neumorphic {
     box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.05), -8px -8px 16px rgba(255, 255, 255, 1);
 }
@@ -33,6 +37,18 @@
 
 .dark .text-gray-700 {
     color: #e2e8f0;
+}
+
+.dark .text-gray-600 {
+    color: #6b7383;
+}
+
+.dark .outline-gray-200 {
+    outline-color: #1e232c;
+}
+
+.dark .border-gray-200 {
+    border-color: #1e232c;
 }
 
 /* Dark Mode Shadows */

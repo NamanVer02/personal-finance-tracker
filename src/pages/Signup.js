@@ -15,21 +15,21 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Form validation
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match.")
+      toast.error("Passwords do not match.");
       return;
     }
-    
+
     if (password.length < 6) {
-      toast.error("Password must be at least 6 characters long")
+      toast.error("Password must be at least 6 characters long");
       return;
     }
-    
+
     setLoading(true);
     setError("");
-    
+
     try {
       const response = await fetch("http://localhost:8080/api/auth/signup", {
         method: "POST",
@@ -40,20 +40,60 @@ export default function Signup() {
           username,
           email,
           password,
-          roles: ["user"]
+          roles: ["user"],
         }),
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         toast.error("Failed to register");
         throw new Error(data.message || "Failed to register");
       }
-      
+
       // If registration is successful, log the user in
-      login(data.accessToken || "user"); // Adjust based on your API response
-      navigate("/dashboard");
+      toast.success("Registration successful");
+
+      try {
+        const response = await fetch("http://localhost:8080/api/auth/signin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Invalid username or password");
+        }
+
+        // Store the JWT token and user info
+        const token = data.accessToken || data.token;
+        const userId = data.id;
+
+        if (!token) {
+          throw new Error("Authentication failed: No token received");
+        }
+
+        // Pass the token to your auth context
+        login(token, data.username, data.roles || ["user"], userId);
+
+        // Show success toast
+        toast.success("Login successful! Redirecting to dashboard...");
+
+        // Redirect to dashboard
+        navigate("/dashboard");
+      } catch (err) {
+        // Show error toast
+        toast.error(err.message || "Login failed. Please try again.");
+      } finally {
+        setLoading(false);
+      }
     } catch (err) {
       toast.error("Registration failed. Please try again.");
     } finally {
@@ -71,12 +111,12 @@ export default function Signup() {
             Join us to start tracking your finances.
           </p>
         </div>
-  
+
         {/* Error Message */}
         {error && (
           <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
         )}
-  
+
         {/* Signup Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Username Field */}
@@ -96,7 +136,7 @@ export default function Signup() {
               required
             />
           </div>
-          
+
           {/* Email Field */}
           <div>
             <label
@@ -114,7 +154,7 @@ export default function Signup() {
               required
             />
           </div>
-  
+
           {/* Password Field */}
           <div>
             <label
@@ -132,7 +172,7 @@ export default function Signup() {
               required
             />
           </div>
-          
+
           {/* Confirm Password Field */}
           <div>
             <label
@@ -150,7 +190,7 @@ export default function Signup() {
               required
             />
           </div>
-  
+
           {/* Signup Button */}
           <button
             type="submit"
@@ -159,7 +199,7 @@ export default function Signup() {
           >
             {loading ? "Signing up..." : "Sign Up"}
           </button>
-          
+
           {/* Login Link */}
           <div className="text-center mt-4">
             <p className="text-sm text-gray-600">
@@ -173,7 +213,7 @@ export default function Signup() {
       </div>
 
       {/* ToastContainer component to render toasts */}
-      <ToastContainer draggable stacked/>
+      <ToastContainer draggable stacked />
     </div>
   );
 }

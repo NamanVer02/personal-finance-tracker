@@ -1,7 +1,9 @@
+import { ArrowDown, ArrowUp } from "lucide-react";
+
 function StatCard({ title, value, change, changeType }) {
   return (
     <div
-      className="rounded-lg bg-gray-100 outline outline-1 outline-gray-200 p-5"
+      className="rounded-lg outline outline-1 outline-gray-200 p-5"
       id="test"
     >
       <div className="flex items-center justify-between pb-2">
@@ -10,13 +12,8 @@ function StatCard({ title, value, change, changeType }) {
       <div className="flex items-center justify-between">
         <div className="text-2xl font-bold text-gray-700">{value}</div>
         <div className="flex items-center justify-between mt-2">
-          <div
-            className={`text-xs px-2 rounded ${
-              changeType === "positive" ? "text-purple-600" : "text-red-600"
-            }`}
-          >
-            {change}
-          </div>
+          {changeType === 'positive' && <ArrowUp className="text-green-500"/>}
+          {changeType === 'negative' && <ArrowDown className="text-red-500"/>}
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ import {
   ArrowUpRight,
   Moon,
   FolderSync,
+  Sun,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -27,9 +28,10 @@ import {
 } from "../utils/api";
 import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
 import "react-toastify/dist/ReactToastify.css"; // Import the default styles for the toast notifications
+import { Filter } from "lucide-react";
+import FilterAndSort from "../components/FilterAndSort";
 
 export default function Dashboard() {
-  
   // Variables
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,7 +46,9 @@ export default function Dashboard() {
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
   const [expenseData, setExpenseData] = useState([]);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(
+    localStorage.getItem("darkMode") === "enabled" ? true : false
+  );
   const [transactions, setTransactions] = useState([]);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
@@ -53,19 +57,37 @@ export default function Dashboard() {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const totalPages = Math.ceil((transactions?.length || 0) / itemsPerPage);
-  
+
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [filterOptions, setFilterOptions] = useState({
+    filter: {
+      type: "all",
+      dateFrom: "",
+      dateTo: "",
+      categories: [],
+      amountMin: "",
+      amountMax: "",
+      label: "",
+    },
+    sort: {
+      field: "date",
+      direction: "desc",
+    },
+  });
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
 
   // Functions
   const handlePageChange = (page) => setCurrentPage(page);
   const handlePrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  
+  const handleNextPage = () =>
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+
   const handleLogout = () => {
     logout();
     navigate("/login");
     toast.success("Logged out successfully!");
   };
-  
+
   const handleEditClick = (transaction) => {
     setSelectedTransaction(transaction);
     setShowEditPopup(true);
@@ -80,18 +102,21 @@ export default function Dashboard() {
 
   const clearAllData = () => {
     // Implement the logic to clear all data
-    console.log('Clearing all data...');
+    console.log("Clearing all data...");
     toast.warn("All data cleared!");
     // You might want to show a confirmation dialog before actually clearing the data
   };
-  
+
+  const handleFilterApply = (options) => {
+    setFilterOptions(options);
+    toast.info("Filters applied");
+  };
 
   // Check authentication and redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
     }
-    toast.success("Logged In successfully!");
   }, [isAuthenticated, navigate]);
 
   // Initial Setup
@@ -103,12 +128,101 @@ export default function Dashboard() {
     }
   }, [isAuthenticated, token, userId]);
 
-
   useEffect(() => {
-    setTotalIncome(incomeData.reduce((accumulator, current) => accumulator + current.value, 0));
-    setTotalExpense(expenseData.reduce((accumulator, current) => accumulator + current.value, 0));
+    setTotalIncome(
+      incomeData.reduce(
+        (accumulator, current) => accumulator + current.value,
+        0
+      )
+    );
+    setTotalExpense(
+      expenseData.reduce(
+        (accumulator, current) => accumulator + current.value,
+        0
+      )
+    );
   }, [incomeData, expenseData]);
 
+  useEffect(() => {
+    if (transactions.length > 0) {
+      let result = [...transactions];
+
+      // Apply filters
+      const { filter, sort } = filterOptions;
+
+      // Filter by type
+      if (filter.type !== "all") {
+        result = result.filter((t) => t.type === filter.type);
+      }
+
+      // Filter by date range
+      if (filter.dateFrom) {
+        const fromDate = new Date(filter.dateFrom);
+        result = result.filter((t) => new Date(t.date) >= fromDate);
+      }
+
+      if (filter.dateTo) {
+        const toDate = new Date(filter.dateTo);
+        toDate.setHours(23, 59, 59, 999); // End of the day
+        result = result.filter((t) => new Date(t.date) <= toDate);
+      }
+
+      // Filter by amount range
+      if (filter.amountMin) {
+        result = result.filter(
+          (t) => parseFloat(t.amount) >= parseFloat(filter.amountMin)
+        );
+      }
+
+      if (filter.amountMax) {
+        result = result.filter(
+          (t) => parseFloat(t.amount) <= parseFloat(filter.amountMax)
+        );
+      }
+
+      // Filter by label (search)
+      if (filter.label) {
+        const searchTerm = filter.label.toLowerCase();
+        result = result.filter((t) =>
+          t.label.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      // Filter by categories
+      if (filter.categories.length > 0) {
+        result = result.filter((t) => filter.categories.includes(t.category));
+      }
+
+      // Apply sorting
+      result.sort((a, b) => {
+        if (sort.field === "date") {
+          return sort.direction === "asc"
+            ? new Date(a.date) - new Date(b.date)
+            : new Date(b.date) - new Date(a.date);
+        } else if (sort.field === "amount") {
+          return sort.direction === "asc"
+            ? parseFloat(a.amount) - parseFloat(b.amount)
+            : parseFloat(b.amount) - parseFloat(a.amount);
+        } else {
+          // For label and category (string fields)
+          const valueA = a[sort.field].toLowerCase();
+          const valueB = b[sort.field].toLowerCase();
+
+          if (sort.direction === "asc") {
+            return valueA.localeCompare(valueB);
+          } else {
+            return valueB.localeCompare(valueA);
+          }
+        }
+      });
+
+      setFilteredTransactions(result);
+      // Update pagination when filters change
+      setCurrentPage(1);
+    } else {
+      setFilteredTransactions([]);
+    }
+  }, [transactions, filterOptions]);
 
   // If still checking authentication, show loading
   if (!isAuthenticated) {
@@ -121,7 +235,7 @@ export default function Dashboard() {
       </div>
     );
   }
-  
+
   // Page
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -132,6 +246,8 @@ export default function Dashboard() {
             onClose={() => setShowAddPopup(false)}
             onSubmit={() => {
               fetchTransactions(setTransactions, token);
+              fetchIncomeData(setIncomeData, userId, token);
+              fetchExpenseData(setExpenseData, userId, token);
               toast.success("Transaction added successfully!");
             }}
           />
@@ -151,22 +267,33 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {showFilterPopup && (
+          <FilterAndSort
+            onClose={() => setShowFilterPopup(false)}
+            onApply={handleFilterApply}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Fixed Sidebar */}
       <navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
         <div className="flex items-center gap-3 mb-8">
-          <div className="h-8 w-8 rounded-full bg-purple-600 " />
+          <div className="h-10 w-10 rounded-full bg-purple-600 " />
           <div>
             <h3 className="font-medium">{currentUser?.username || "User"}</h3>
             <p className="text-sm text-gray-600">
-              {currentUser?.roles?.map(role => 
-                role
-                  .toLowerCase()
-                  .split(" ")
-                  .map(function (word) {
-                    return word.charAt(0).toUpperCase() + word.slice(1);
-                  })
-                  .join(" ")
-              ).join(", ") || "User"}
+              {currentUser?.roles
+                ?.map((role) =>
+                  role
+                    .toLowerCase()
+                    .split(" ")
+                    .map(function (word) {
+                      return word.charAt(5).toUpperCase() + word.slice(6);
+                    })
+                    .join(" ")
+                )
+                .join(", ") || "User"}
             </p>
           </div>
         </div>
@@ -208,7 +335,9 @@ export default function Dashboard() {
             <h4 className="mb-2 text-sm font-medium text-gray-600">ACCOUNT</h4>
             <div className="space-y-4">
               <button
-                onClick={() => {fetchTransactions(setTransactions, token)}}
+                onClick={() => {
+                  fetchTransactions(setTransactions, token);
+                }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
               >
                 <FolderSync className="h-4 w-4 text-gray-600" />
@@ -218,12 +347,16 @@ export default function Dashboard() {
                 onClick={toggleDarkMode}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
                   isDarkMode
-                    ? 'bg-gray-100 text-white'
-                    : 'bg-gray-100 text-gray-700'
+                    ? "bg-gray-100 text-white"
+                    : "bg-gray-100 text-gray-700"
                 } shadow-neumorphic-button`}
               >
-                <Moon className="h-4 w-4 text-gray-600" />
-                {isDarkMode ? 'Disable Dark Mode' : 'Enable Dark Mode'}
+                {isDarkMode ? (
+                  <Sun className="h-4 w-4 text-gray-600" />
+                ) : (
+                  <Moon className="h-4 w-4 text-gray-600" />
+                )}
+                {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
               </button>
               <button
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600 hover:bg-red-50"
@@ -256,24 +389,34 @@ export default function Dashboard() {
               <div className="grid gap-6 md:grid-rows-2">
                 <StatCard
                   title={`Net Income`}
-                  value={`$${totalIncome-totalExpense}`}
+                  value={`$${(totalIncome - totalExpense).toFixed(2)}`}
+                  changeType={
+                    totalIncome - totalExpense >= 0 ? `positive` : `negative`
+                  }
                 />
                 <StatCard
-                  title={`Total Expense`}
-                  value="$287,000"
-                  change="+16.24%"
-                  changeType="positive"
+                  title={`Savings Rate`}
+                  value={`${(
+                    ((totalIncome - totalExpense) / totalIncome) *
+                    100
+                  ).toFixed(2)}%`}
+                  changeType={
+                    ((totalIncome - totalExpense) / totalIncome) * 100 >= 0
+                      ? `positive`
+                      : `negative`
+                  }
                 />
                 <StatCard
-                  title={`Total Expense`}
-                  value="$287,000"
-                  change="+16.24%"
-                  changeType="positive"
+                  title={`Expense to Income Ratio`}
+                  value={`${(totalExpense / totalIncome).toFixed(2)}`}
+                  changeType={
+                    totalExpense / totalIncome <= 1 ? `positive` : `negative`
+                  }
                 />
               </div>
               <GraphCard
                 title={`Expense per Category`}
-                value={`$${expenseData.reduce((accumulator, current) => accumulator + current.value, 0)}`}
+                value={`$${totalExpense}`}
                 data={expenseData}
               />
               <GraphCard
@@ -291,8 +434,18 @@ export default function Dashboard() {
                   </h2>
                   <div className="flex gap-4">
                     <button
+                      className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button flex items-center gap-1"
+                      onClick={() => setShowFilterPopup(true)}
+                    >
+                      <Filter className="h-4 w-4" />
+                      Filter & Sort
+                    </button>
+                    <button
                       className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                      onClick={() => {handleDownloadCsv(token); toast.success("Downloaded Successfully!");}}
+                      onClick={() => {
+                        handleDownloadCsv(token);
+                        toast.success("Downloaded Successfully!");
+                      }}
                     >
                       Download CSV
                     </button>
@@ -318,10 +471,10 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions
+                    {filteredTransactions
                       .slice(
                         (currentPage - 1) * itemsPerPage,
-                        Math.min(currentPage * itemsPerPage, indexOfLastItem)
+                        currentPage * itemsPerPage
                       )
                       .map((transaction) => (
                         <tr
@@ -356,8 +509,14 @@ export default function Dashboard() {
                               <Trash2
                                 className="h-4 w-4"
                                 onClick={() => {
-                                  handleDeleteTransaction(transaction.id, setTransactions, token);
-                                  toast.success("Transaction deleted successfully!");
+                                  handleDeleteTransaction(
+                                    transaction.id,
+                                    setTransactions,
+                                    token
+                                  );
+                                  toast.success(
+                                    "Transaction deleted successfully!"
+                                  );
                                 }}
                               />
                             </button>
@@ -374,9 +533,16 @@ export default function Dashboard() {
                 </table>
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-gray-600">
-                    Showing {indexOfFirstItem + 1} to{" "}
-                    {Math.min(indexOfLastItem, transactions.length)} of{" "}
-                    {transactions.length} entries
+                    Showing{" "}
+                    {filteredTransactions.length > 0
+                      ? (currentPage - 1) * itemsPerPage + 1
+                      : 0}{" "}
+                    to{" "}
+                    {Math.min(
+                      currentPage * itemsPerPage,
+                      filteredTransactions.length
+                    )}{" "}
+                    of {filteredTransactions.length} entries
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -414,7 +580,7 @@ export default function Dashboard() {
         </div>
       </div>
       {/* ToastContainer component to render toasts */}
-      <ToastContainer draggable stacked/>
+      <ToastContainer draggable stacked />
     </div>
   );
 }

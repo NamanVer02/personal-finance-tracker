@@ -18,6 +18,8 @@ const COLORS = [
 ];
 
 function GraphCard({ title, value, change, changeType, data }) {
+  const darkMode = localStorage.getItem("darkMode");
+
   const customTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
@@ -48,7 +50,7 @@ function GraphCard({ title, value, change, changeType, data }) {
                 outerRadius={70}
                 paddingAngle={2}
                 dataKey="value"
-                strokeWidth={2}
+                strokeWidth={darkMode === "enabled" ? 0 : 2}
               >
                 {data.map((entry, index) => (
                   <Cell 
