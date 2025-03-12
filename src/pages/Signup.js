@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
 
 export default function Signup() {
   const [username, setUsername] = useState("");
@@ -17,12 +18,12 @@ export default function Signup() {
     
     // Form validation
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      toast.error("Passwords do not match.")
       return;
     }
     
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      toast.error("Password must be at least 6 characters long")
       return;
     }
     
@@ -46,6 +47,7 @@ export default function Signup() {
       const data = await response.json();
       
       if (!response.ok) {
+        toast.error("Failed to register");
         throw new Error(data.message || "Failed to register");
       }
       
@@ -53,7 +55,7 @@ export default function Signup() {
       login(data.accessToken || "user"); // Adjust based on your API response
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message || "Registration failed. Please try again.");
+      toast.error("Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -169,6 +171,9 @@ export default function Signup() {
           </div>
         </form>
       </div>
+
+      {/* ToastContainer component to render toasts */}
+      <ToastContainer draggable stacked/>
     </div>
   );
 }

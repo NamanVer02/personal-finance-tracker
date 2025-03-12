@@ -25,6 +25,8 @@ import {
   fetchIncomeData,
   fetchExpenseData,
 } from "../utils/api";
+import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
+import "react-toastify/dist/ReactToastify.css"; // Import the default styles for the toast notifications
 
 export default function Dashboard() {
   
@@ -61,6 +63,7 @@ export default function Dashboard() {
   const handleLogout = () => {
     logout();
     navigate("/login");
+    toast.success("Logged out successfully!");
   };
   
   const handleEditClick = (transaction) => {
@@ -72,11 +75,13 @@ export default function Dashboard() {
     const isDarkMode = document.documentElement.classList.toggle("dark");
     setIsDarkMode(isDarkMode);
     localStorage.setItem("darkMode", isDarkMode ? "enabled" : "disabled");
+    toast.info(`Dark mode ${isDarkMode ? "enabled" : "disabled"}`);
   };
 
   const clearAllData = () => {
     // Implement the logic to clear all data
     console.log('Clearing all data...');
+    toast.warn("All data cleared!");
     // You might want to show a confirmation dialog before actually clearing the data
   };
   
@@ -86,22 +91,25 @@ export default function Dashboard() {
     if (!isAuthenticated) {
       navigate("/login");
     }
+    toast.success("Logged In successfully!");
   }, [isAuthenticated, navigate]);
 
   // Initial Setup
   useEffect(() => {
     if (isAuthenticated) {
       fetchTransactions(setTransactions, token);
-
-      fetchIncomeData(setIncomeData, userId, token)
-      .then(setTotalIncome(incomeData.reduce((accumulator, current) => accumulator + current.value, 0)));
-
-      fetchExpenseData(setExpenseData, userId, token)
-      .then(setTotalExpense(expenseData.reduce((accumulator, current) => accumulator + current.value, 0)));
+      fetchIncomeData(setIncomeData, userId, token);
+      fetchExpenseData(setExpenseData, userId, token);
     }
-  }, [isAuthenticated, token, userId, incomeData, expenseData]);
+  }, [isAuthenticated, token, userId]);
 
-  
+
+  useEffect(() => {
+    setTotalIncome(incomeData.reduce((accumulator, current) => accumulator + current.value, 0));
+    setTotalExpense(expenseData.reduce((accumulator, current) => accumulator + current.value, 0));
+  }, [incomeData, expenseData]);
+
+
   // If still checking authentication, show loading
   if (!isAuthenticated) {
     return (
@@ -122,7 +130,10 @@ export default function Dashboard() {
         {showAddPopup && (
           <AddTransaction
             onClose={() => setShowAddPopup(false)}
-            onSubmit={() => fetchTransactions(setTransactions, token)}
+            onSubmit={() => {
+              fetchTransactions(setTransactions, token);
+              toast.success("Transaction added successfully!");
+            }}
           />
         )}
       </AnimatePresence>
@@ -131,7 +142,10 @@ export default function Dashboard() {
         {showEditPopup && (
           <EditTransaction
             onClose={() => setShowEditPopup(false)}
-            onSubmit={(id, data) => handleUpdateTransaction(id, data, setTransactions,token)}
+            onSubmit={(id, data) => {
+              handleUpdateTransaction(id, data, setTransactions, token);
+              toast.success("Transaction updated successfully!");
+            }}
             transaction={selectedTransaction}
           />
         )}
@@ -278,7 +292,7 @@ export default function Dashboard() {
                   <div className="flex gap-4">
                     <button
                       className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                      onClick={() => handleDownloadCsv(token)}
+                      onClick={() => {handleDownloadCsv(token); toast.success("Downloaded Successfully!");}}
                     >
                       Download CSV
                     </button>
@@ -341,7 +355,10 @@ export default function Dashboard() {
                             <button className="text-gray-600 hover:text-red-600">
                               <Trash2
                                 className="h-4 w-4"
-                                onClick={() => handleDeleteTransaction(transaction.id, setTransactions, token)}
+                                onClick={() => {
+                                  handleDeleteTransaction(transaction.id, setTransactions, token);
+                                  toast.success("Transaction deleted successfully!");
+                                }}
                               />
                             </button>
                             <button className="text-gray-600 hover:text-purple-600">
@@ -396,6 +413,8 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+      {/* ToastContainer component to render toasts */}
+      <ToastContainer draggable stacked/>
     </div>
   );
 }
