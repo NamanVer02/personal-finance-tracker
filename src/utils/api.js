@@ -93,9 +93,9 @@ export const handleUpdateTransaction = async (
   }
 };
 
-export const handleDownloadCsv = async (token) => {
+export const handleDownloadCsv = async (token, userId) => {
   try {
-    const response = await fetch("http://localhost:8080/api/download", {
+    const response = await fetch(`http://localhost:8080/api/download/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`, // Include the token in the headers
         'Content-Type': 'application/json',

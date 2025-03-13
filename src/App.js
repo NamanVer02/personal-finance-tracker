@@ -2,8 +2,8 @@ import { Routes, Route } from "react-router-dom";
 import { useEffect, React } from "react";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
-import HistoryDash from "./pages/HistoryDash";
 import Signup from "./pages/Signup";
+import UserTransactions from "./pages/UserTransactions";
 
 const App = () => {
 
@@ -21,7 +21,7 @@ const App = () => {
         <div>
         <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/history" element={<HistoryDash />} />
+            <Route path="/user-transactions" element={<UserTransactions />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
         </Routes>

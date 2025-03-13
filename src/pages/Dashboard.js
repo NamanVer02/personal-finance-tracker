@@ -1,6 +1,6 @@
 import {
   BarChart3,
-  History,
+  Users,
   LogOut,
   Trash2,
   Edit,
@@ -309,16 +309,16 @@ export default function Dashboard() {
               {currentUser?.roles?.includes("ROLE_ADMIN") && (
                 <button
                   className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/history"
+                    location.pathname === "/user-transactions"
                       ? "shadow-neumorphic-inset-button"
                       : "shadow-neumorphic-button"
                   }`}
                   onClick={() => {
-                    navigate("/history");
+                    navigate("/user-transactions");
                   }}
                 >
-                  <History className="h-4 w-4 text-gray-600" />
-                  History
+                  <Users className="h-4 w-4 text-gray-600" />
+                  User Transactions
                 </button>
               )}
             </div>
@@ -369,6 +369,9 @@ export default function Dashboard() {
         <div className="mx-auto max-w-6xl space-y-8">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold text-gray-700">Dashboard</h1>
+            <p className="text-gray-600">
+              Get a quick overview of your monthly finances.
+            </p>
           </div>
 
           <div className="space-y-4">
@@ -383,21 +386,35 @@ export default function Dashboard() {
                 />
                 <StatCard
                   title={`Savings Rate`}
-                  value={`${(
-                    ((totalIncome - totalExpense) / totalIncome) *
-                    100
-                  ).toFixed(2)}%`}
+                  value={
+                    totalIncome === 0
+                      ? "N/A" // or you can use another placeholder like "Cannot calculate"
+                      : `${(
+                          ((totalIncome - totalExpense) / totalIncome) *
+                          100
+                        ).toFixed(2)}%`
+                  }
                   changeType={
-                    ((totalIncome - totalExpense) / totalIncome) * 100 >= 0
-                      ? `positive`
-                      : `negative`
+                    totalIncome === 0
+                      ? "neutral" // or another appropriate value to indicate that the calculation is not applicable
+                      : (totalIncome - totalExpense) / totalIncome >= 0
+                      ? "positive"
+                      : "negative"
                   }
                 />
                 <StatCard
                   title={`Expense to Income Ratio`}
-                  value={`${(totalExpense / totalIncome).toFixed(2)}`}
+                  value={
+                    totalIncome === 0
+                      ? "N/A" // or you can use another placeholder like "Cannot calculate"
+                      : `${(totalExpense / totalIncome).toFixed(2)}`
+                  }
                   changeType={
-                    totalExpense / totalIncome <= 1 ? `positive` : `negative`
+                    totalIncome === 0
+                      ? "neutral" // or another value that indicates this metric is not applicable
+                      : totalExpense / totalIncome <= 1
+                      ? "positive"
+                      : "negative"
                   }
                 />
               </div>
@@ -430,7 +447,7 @@ export default function Dashboard() {
                     <button
                       className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
                       onClick={() => {
-                        handleDownloadCsv(token);
+                        handleDownloadCsv(token, userId);
                         toast.success("Downloaded Successfully!");
                       }}
                     >

@@ -1,9 +1,6 @@
 import {
   BarChart3,
-  History,
   LogOut,
-  Trash2,
-  Edit,
   ArrowDownLeft,
   ArrowUpRight,
   Moon,
@@ -162,7 +159,7 @@ export default function UserTransactions() {
 
   const handleDownloadUserTransactionsCsv = async () => {
     try {
-      let url = `http://localhost:8080/api/admin/transactions/export`;
+      let url = `http://localhost:8080/api/download/admin`;
 
       if (selectedUser) {
         url += `?userId=${selectedUser}`;
@@ -180,7 +177,7 @@ export default function UserTransactions() {
         const downloadUrl = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = downloadUrl;
-        link.download = "user-transactions.csv";
+        link.download = "All-transactions.csv";
         document.body.appendChild(link);
         link.click();
         link.remove();
