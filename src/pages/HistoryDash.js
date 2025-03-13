@@ -1,190 +1,424 @@
-import { BarChart3, History, Settings, LogOut, Trash2, Edit, ArrowDownLeft, ArrowUpRight} from "lucide-react"
-import { useNavigate, useLocation } from "react-router-dom"
+import {
+  BarChart3,
+  History,
+  LogOut,
+  Trash2,
+  Edit,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Moon,
+  FolderSync,
+  Sun,
+  Users,
+  Search,
+  Download,
+} from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import AddTransaction from "../components/AddTransaction"; // Add this import
+import { Filter } from "lucide-react";
+import FilterAndSort from "../components/FilterAndSort";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-
-export default function HistoryDash() {
+export default function UserTransactions() {
+  // Variables
   const navigate = useNavigate();
   const location = useLocation();
-  const month = new Date().toLocaleString("default", { month: "long" });
-  const { user, logout } = useAuth();
+  const { token, currentUser, logout, isAuthenticated } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(10);
+  const [isDarkMode, setIsDarkMode] = useState(
+    localStorage.getItem("darkMode") === "enabled" ? true : false
+  );
 
-  const [showAddPopup, setShowAddPopup] = useState(false); // Add popup state
-  const [transactions, setTransactions] = useState([
-    {
-      id: 1,
-      label: "Groceries",
-      type: "Expense",
-      amount: "-$150",
-      category: "Food",
-      date: "Oct 10, 2023",
+  const [userTransactions, setUserTransactions] = useState([]);
+  const [usersList, setUsersList] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [filterOptions, setFilterOptions] = useState({
+    filter: {
+      type: "all",
+      dateFrom: "",
+      dateTo: "",
+      categories: [],
+      amountMin: "",
+      amountMax: "",
+      label: "",
+      userId: "",
     },
-    {
-      id: 2,
-      label: "Salary",
-      type: "Income",
-      amount: "+$3,000",
-      category: "Salary",
-      date: "Oct 15, 2023",
+    sort: {
+      field: "date",
+      direction: "desc",
     },
-    {
-      id: 3,
-      label: "Rent",
-      type: "Expense",
-      amount: "-$1,200",
-      category: "Housing",
-      date: "Oct 1, 2023",
-    },
-    {
-      id: 4,
-      label: "Freelance Work",
-      type: "Income",
-      amount: "+$800",
-      category: "Freelance",
-      date: "Oct 20, 2023",
-    },
-    {
-      id: 5,
-      label: "Netflix Subscription",
-      type: "Expense",
-      amount: "-$15",
-      category: "Entertainment",
-      date: "Oct 5, 2023",
-    },
-    {
-      id: 6,
-      label: "Electricity Bill",
-      type: "Expense",
-      amount: "-$120",
-      category: "Utilities",
-      date: "Oct 12, 2023",
-    },
-    {
-      id: 7,
-      label: "Car Maintenance",
-      type: "Expense",
-      amount: "-$300",
-      category: "Transportation",
-      date: "Oct 18, 2023",
-    },
-    {
-      id: 8,
-      label: "Bonus",
-      type: "Income",
-      amount: "+$500",
-      category: "Bonus",
-      date: "Oct 25, 2023",
-    },
-    {
-      id: 9,
-      label: "Dinner Out",
-      type: "Expense",
-      amount: "-$75",
-      category: "Food",
-      date: "Oct 22, 2023",
-    },
-    {
-      id: 10,
-      label: "Gym Membership",
-      type: "Expense",
-      amount: "-$50",
-      category: "Health",
-      date: "Oct 3, 2023",
-    },
-  ]);
+  });
+
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const totalPages = Math.ceil((transactions?.length || 0) / itemsPerPage);
+  const totalPages = Math.ceil(
+    (filteredTransactions?.length || 0) / itemsPerPage
+  );
 
-
-
-  // Add this function to handle new transactions
-  const handleAddProduct = (newProduct) => {
-    setTransactions(prev => [...prev, newProduct]);
-  };
+  // Functions
+  const handlePageChange = (page) => setCurrentPage(page);
+  const handlePrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const handleNextPage = () =>
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 
   const handleLogout = () => {
     logout();
     navigate("/login");
+    toast.success("Logged out successfully!");
+  };
+
+  const toggleDarkMode = () => {
+    const isDarkMode = document.documentElement.classList.toggle("dark");
+    setIsDarkMode(isDarkMode);
+    localStorage.setItem("darkMode", isDarkMode ? "enabled" : "disabled");
+    toast.info(`Dark mode ${isDarkMode ? "enabled" : "disabled"}`);
+  };
+
+  const handleFilterApply = (options) => {
+    setFilterOptions(options);
+    toast.info("Filters applied");
+  };
+
+  const fetchAllUserTransactions = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/get/admin/transactions`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        // Filter out the current admin's transactions
+        const filteredData = data.filter(
+          (transaction) => transaction.userId !== currentUser.id
+        );
+        setUserTransactions(filteredData);
+        setIsLoading(false);
+      } else {
+        toast.error("Failed to fetch user transactions");
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error fetching user transactions:", error);
+      toast.error("Error fetching data. Please try again.");
+      setIsLoading(false);
+    }
+  };
+
+  const fetchAllUsers = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/get/admin/users`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        // Filter out the current admin from the users list
+        const filteredUsers = data.filter((user) => user.id !== currentUser.id);
+        setUsersList(filteredUsers);
+      } else {
+        toast.error("Failed to fetch users list");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Error fetching users data. Please try again.");
+    }
+  };
+
+  const handleUserSelect = (userId) => {
+    setSelectedUser(userId);
+    setFilterOptions({
+      ...filterOptions,
+      filter: {
+        ...filterOptions.filter,
+        userId: userId,
+      },
+    });
+  };
+
+  const handleDownloadUserTransactionsCsv = async () => {
+    try {
+      let url = `http://localhost:8080/api/admin/transactions/export`;
+
+      if (selectedUser) {
+        url += `?userId=${selectedUser}`;
+      }
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = "user-transactions.csv";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        toast.success("Transactions downloaded successfully!");
+      } else {
+        toast.error("Failed to download transactions");
+      }
+    } catch (error) {
+      console.error("Error downloading transactions:", error);
+      toast.error("Error downloading data. Please try again.");
+    }
+  };
+
+  // Check authentication and redirect if not authenticated or not admin
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    } else if (!currentUser?.roles?.includes("ROLE_ADMIN")) {
+      navigate("/dashboard");
+      toast.error("You don't have permission to access admin pages");
+    }
+  }, [isAuthenticated, navigate, currentUser]);
+
+  // Initial Setup
+  useEffect(() => {
+    if (isAuthenticated && currentUser?.roles?.includes("ROLE_ADMIN")) {
+      fetchAllUserTransactions();
+      fetchAllUsers();
+    }
+  }, [isAuthenticated, token, currentUser]);
+
+  // Apply filters to transactions
+  useEffect(() => {
+    if (userTransactions.length > 0) {
+      let result = [...userTransactions];
+
+      // Apply filters
+      const { filter, sort } = filterOptions;
+
+      // Filter by userId
+      if (filter.userId) {
+        result = result.filter(
+          (t) => String(t.userId) === String(filter.userId)
+        );
+      }
+
+      // Filter by type
+      if (filter.type !== "all") {
+        result = result.filter((t) => t.type === filter.type);
+      }
+
+      // Filter by date range
+      if (filter.dateFrom) {
+        const fromDate = new Date(filter.dateFrom);
+        result = result.filter((t) => new Date(t.date) >= fromDate);
+      }
+
+      if (filter.dateTo) {
+        const toDate = new Date(filter.dateTo);
+        toDate.setHours(23, 59, 59, 999); // End of the day
+        result = result.filter((t) => new Date(t.date) <= toDate);
+      }
+
+      // Filter by amount range
+      if (filter.amountMin) {
+        result = result.filter(
+          (t) => parseFloat(t.amount) >= parseFloat(filter.amountMin)
+        );
+      }
+
+      if (filter.amountMax) {
+        result = result.filter(
+          (t) => parseFloat(t.amount) <= parseFloat(filter.amountMax)
+        );
+      }
+
+      // Filter by label (search)
+      if (filter.label) {
+        const searchTerm = filter.label.toLowerCase();
+        result = result.filter((t) =>
+          t.label.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      // Filter by categories
+      if (filter.categories.length > 0) {
+        result = result.filter((t) => filter.categories.includes(t.category));
+      }
+
+      // Apply search term
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        result = result.filter(
+          (t) =>
+            (t.label?.toLowerCase() || '').includes(term) ||
+            (t.category?.toLowerCase() || '').includes(term) ||
+            (t.username?.toLowerCase() || '').includes(term)
+        );
+      }
+
+      // Apply sorting
+      result.sort((a, b) => {
+        if (sort.field === "date") {
+          return sort.direction === "asc"
+            ? new Date(a.date) - new Date(b.date)
+            : new Date(b.date) - new Date(a.date);
+        } else if (sort.field === "amount") {
+          return sort.direction === "asc"
+            ? parseFloat(a.amount) - parseFloat(b.amount)
+            : parseFloat(b.amount) - parseFloat(a.amount);
+        } else {
+          // For label, category, and username (string fields)
+          const valueA = (a[sort.field] || '')?.toLowerCase() || '';
+          const valueB = (b[sort.field] || '')?.toLowerCase() || '';
+        
+          if (sort.direction === "asc") {
+            return valueA.localeCompare(valueB);
+          } else {
+            return valueB.localeCompare(valueA);
+          }
+        }
+      });
+
+      setFilteredTransactions(result);
+      // Update pagination when filters change
+      setCurrentPage(1);
+    } else {
+      setFilteredTransactions([]);
+    }
+  }, [userTransactions, filterOptions, searchTerm]);
+
+  // If still checking authentication, show loading
+  if (!isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="h-8 w-8 rounded-full bg-purple-600 animate-pulse mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    console.log(page);
-  }
-
-  const handlePrevPage = () => {
-    setCurrentPage((prevPage) => Math.max(prevPage-1, 1));
-  }
-
-  const handleNextPage = () => {
-    setCurrentPage((prevPage) => Math.max(prevPage+1, totalPages));
-  }
-
-  const handleSettings = () => {
-    navigate("/settings");
-  }
-
-  if(!user) {
-    navigate("/login");
-    return null;
-  }
-
+  // Page
   return (
-    <div className="flex min-h-screen bg-gray-100"> {/* Changed background color */}
-      {/* Add the popup component */}
+    <div className="flex min-h-screen bg-gray-100">
       <AnimatePresence>
-        {showAddPopup && (
-            <AddTransaction
-              onClose={() => setShowAddPopup(false)}
-              onSubmit={handleAddProduct}
-            />
+        {showFilterPopup && (
+          <FilterAndSort
+            onClose={() => setShowFilterPopup(false)}
+            onApply={handleFilterApply}
+            showUserFilter={true}
+            usersList={usersList}
+          />
         )}
       </AnimatePresence>
 
       {/* Fixed Sidebar */}
-      <navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100"> {/* Changed background color */}
+      <navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
         <div className="flex items-center gap-3 mb-8">
-          <div className="h-8 w-8 rounded-full bg-purple-600 " /> {/* Added neumorphic shadow */}
+          <div className="h-10 w-10 rounded-full bg-purple-600" />
           <div>
-            <h3 className="font-medium">Naman Verma</h3>
-            <p className="text-sm text-gray-600">{user.role}</p> 
+            <h3 className="font-medium">{currentUser?.username || "Admin"}</h3>
+            <p className="text-sm text-gray-600">
+              {currentUser?.roles
+                ?.map((role) =>
+                  role
+                    .toLowerCase()
+                    .split(" ")
+                    .map(function (word) {
+                      return word.charAt(5).toUpperCase() + word.slice(6);
+                    })
+                    .join(" ")
+                )
+                .join(", ") || "Admin"}
+            </p>
           </div>
         </div>
-  
+
         <div className="space-y-4">
           <div className="px-2 py-1">
-            <h4 className="mb-2 text-sm font-medium text-gray-600">MENU</h4> 
+            <h4 className="mb-2 text-sm font-medium text-gray-600">MENU</h4>
             <div className="space-y-4">
-              <button className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === '/dashboard' ? 'shadow-neumorphic-inset' : 'shadow-neumorphic'}`}  onClick={() => {navigate("/dashboard")}}>
-                <BarChart3 className="h-4 w-4 text-gray-600" /> 
+              <button
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                  location.pathname === "/dashboard"
+                    ? "shadow-neumorphic-inset-button"
+                    : "shadow-neumorphic-button"
+                }`}
+                onClick={() => navigate("/dashboard")}
+              >
+                <BarChart3 className="h-4 w-4 text-gray-600" />
                 Dashboard
               </button>
-              {/* Conditionally render History tab */}
-              {user.role !== 'user' && (
-                <button className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === '/history' ? 'shadow-neumorphic-inset' : 'shadow-neumorphic'}`}>
-                  <History className="h-4 w-4 text-gray-600" /> 
-                  History
-                </button>
-              )}
+              <button
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                  location.pathname === "/user-transactions"
+                    ? "shadow-neumorphic-inset-button"
+                    : "shadow-neumorphic-button"
+                }`}
+              >
+                <Users className="h-4 w-4 text-gray-600" />
+                User Transactions
+              </button>
             </div>
           </div>
-  
+
           <div className="px-2 py-1">
-            <h4 className="mb-2 text-sm font-medium text-gray-600">ACCOUNT</h4> 
-            <div className="space-y-3">
-              <button onClick={handleSettings} className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic">
-                <Settings className="h-4 w-4 text-gray-600" /> 
-                Settings
+            <h4 className="mb-2 text-sm font-medium text-gray-600">ACCOUNT</h4>
+            <div className="space-y-4">
+              <button
+                onClick={() => {
+                  fetchAllUserTransactions();
+                  fetchAllUsers();
+                  toast.info("Data refreshed");
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+              >
+                <FolderSync className="h-4 w-4 text-gray-600" />
+                Sync Data
               </button>
               <button
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic text-red-600 hover:bg-red-50"
+                onClick={toggleDarkMode}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+                  isDarkMode
+                    ? "bg-gray-100 text-white"
+                    : "bg-gray-100 text-gray-700"
+                } shadow-neumorphic-button`}
+              >
+                {isDarkMode ? (
+                  <Sun className="h-4 w-4 text-gray-600" />
+                ) : (
+                  <Moon className="h-4 w-4 text-gray-600" />
+                )}
+                {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
+              </button>
+              <button
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
@@ -194,135 +428,242 @@ export default function HistoryDash() {
           </div>
         </div>
       </navbar>
-  
+
       {/* Main Content */}
       <div className="flex-1 p-8 lg:ml-64 bg-gray-100">
         <div className="mx-auto max-w-6xl space-y-8">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-gray-700">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-700">
+              User Transactions
+            </h1>
+            <p className="text-gray-600">
+              View and manage transactions from all users
+            </p>
           </div>
-  
-          <div className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card title={`Total Expense`} value="$287,000" change="+16.24%" changeType="positive" />
-              <Card title={`Total Income`} value="4.5k" change="-0.85%" changeType="negative" />
-            </div>
-  
-            <div className="rounded-lg bg-gray-100 shadow-neumorphic p-6">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-700">{month} Report</h2>
-                  <div className="flex gap-2">
-                    <button className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic">Download</button>
-                    <button
-                      className="px-3 py-1 text-sm rounded-lg bg-purple-600 text-white shadow-neumorphic-purple"
-                      onClick={() => setShowAddPopup(true)}
-                    >
-                      Add Transaction
-                    </button>
+
+          <div className="rounded-lg bg-gray-100 p-6">
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                    <input
+                      type="text"
+                      placeholder="Search transactions..."
+                      className="pl-10 pr-4 py-2 rounded-lg bg-gray-100 shadow-neumorphic-inset-button w-64"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                   </div>
+
+                  <select
+                    className="px-4 py-2 rounded-lg bg-gray-100 shadow-neumorphic-button"
+                    value={selectedUser || ""}
+                    onChange={(e) => handleUserSelect(e.target.value)}
+                  >
+                    <option value="">All Users</option>
+                    {usersList.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.username}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button className="text-sm text-gray-600">Active</button>
-                  <button className="text-sm text-gray-600">Draft</button>
+
+                <div className="flex gap-4">
+                  <button
+                    className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button flex items-center gap-1"
+                    onClick={() => setShowFilterPopup(true)}
+                  >
+                    <Filter className="h-4 w-4" />
+                    Filter & Sort
+                  </button>
+                  <button
+                    className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button flex items-center gap-1"
+                    onClick={handleDownloadUserTransactionsCsv}
+                  >
+                    <Download className="h-4 w-4" />
+                    Download CSV
+                  </button>
                 </div>
               </div>
-              <div className="mt-6">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left text-sm text-gray-600">
-                      <th className="pb-2"></th>
-                      <th className="pb-2">LABEL</th>
-                      <th className="pb-2">AMOUNT</th>
-                      <th className="pb-2">CATEGORY</th>
-                      <th className="pb-2">DATE ADDED</th>
-                      <th className="pb-2">ACTIONS</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions
-                      .slice(
-                        (currentPage - 1) * itemsPerPage,
-                        Math.min(currentPage * itemsPerPage, indexOfLastItem)
-                      )
-                      .map((transaction) => (
-                        <tr key={transactions.name} className="border-t border-gray-200">
-                          {transaction.type === "Expense" ? <ArrowDownLeft className="h-4 w-4 text-red-600" /> : <ArrowUpRight className="h-4 w-4 text-green-600" />}
-                          <td className="py-3 font-medium text-gray-700">{transaction.label}</td> 
-                          <td className="py-3 text-gray-600">{transaction.amount}</td> 
-                          <td className="py-3 text-gray-600">{transaction.category}</td> 
-                          <td className="py-3 text-gray-600">{transaction.date}</td> 
-                          <td className="py-3 flex items-center gap-3">
-                            <button className="text-gray-600 hover:text-red-600">
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                            <button className="text-gray-600 hover:text-purple-600">
-                              <Edit className="h-4 w-4" />
-                            </button>
+
+              {isLoading ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="h-8 w-8 rounded-full bg-purple-600 animate-pulse mx-auto" />
+                </div>
+              ) : (
+                <div className="mt-6 overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-left text-sm text-gray-600">
+                        <th className="pb-2"></th>
+                        <th className="pb-2">USER</th>
+                        <th className="pb-2">LABEL</th>
+                        <th className="pb-2">AMOUNT</th>
+                        <th className="pb-2">CATEGORY</th>
+                        <th className="pb-2">DATE</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTransactions.length > 0 ? (
+                        filteredTransactions
+                          .slice(
+                            (currentPage - 1) * itemsPerPage,
+                            currentPage * itemsPerPage
+                          )
+                          .map((transaction) => (
+                            <tr
+                              key={transaction.id}
+                              className="border-t border-gray-200"
+                            >
+                              <td className="py-3">
+                                {transaction.type === "Expense" ? (
+                                  <ArrowDownLeft className="h-4 w-4 text-red-600" />
+                                ) : (
+                                  <ArrowUpRight className="h-4 w-4 text-green-600" />
+                                )}
+                              </td>
+                              <td className="py-3 font-medium text-gray-600">
+                                {usersList.find(
+                                  (user) =>
+                                    String(user.id) ===
+                                    String(transaction.userId)
+                                )?.username || "Unknown User"}
+                              </td>
+                              <td className="py-3 text-gray-700">
+                                {transaction.label}
+                              </td>
+                              <td className="py-3 text-gray-600">
+                                {transaction.amount}
+                              </td>
+                              <td className="py-3 text-gray-600">
+                                {transaction.category}
+                              </td>
+                              <td className="py-3 text-gray-600">
+                                {
+                                  new Date(transaction?.date)
+                                    .toISOString()
+                                    .split("T")[0]
+                                }
+                              </td>
+                            </tr>
+                          ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="6"
+                            className="py-6 text-center text-gray-600"
+                          >
+                            No transactions found
                           </td>
                         </tr>
-                      ))}
-                  </tbody>
-                </table>
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-gray-600">
-                    Showing {indexOfFirstItem} to {Math.min(indexOfLastItem, transactions.length)} of {transactions.length} entries
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handlePrevPage}
-                      className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic"
-                      disabled={currentPage === 1}
-                    >
-                      Prev
-                    </button>
-                    {[...Array(totalPages)].map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handlePageChange(index + 1)}
-                        className={`px-3 py-1 text-sm rounded-lg ${
-                          currentPage === index + 1 ? "bg-purple-600 text-white shadow-neumorphic-purple" : "bg-gray-100 shadow-neumorphic"
-                        }`}
-                      >
-                        {index + 1}
-                      </button>
-                    ))}
-                    <button
-                      onClick={handleNextPage}
-                      className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic"
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </button>
-                  </div>
+                      )}
+                    </tbody>
+                  </table>
+
+                  {filteredTransactions.length > 0 && (
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="text-sm text-gray-600">
+                        Showing{" "}
+                        {filteredTransactions.length > 0
+                          ? (currentPage - 1) * itemsPerPage + 1
+                          : 0}{" "}
+                        to{" "}
+                        {Math.min(
+                          currentPage * itemsPerPage,
+                          filteredTransactions.length
+                        )}{" "}
+                        of {filteredTransactions.length} entries
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={handlePrevPage}
+                          className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                          disabled={currentPage === 1}
+                        >
+                          Prev
+                        </button>
+                        {totalPages <= 5 ? (
+                          [...Array(totalPages)].map((_, index) => (
+                            <button
+                              key={index}
+                              onClick={() => handlePageChange(index + 1)}
+                              className={`px-3 py-1 text-sm rounded-lg ${
+                                currentPage === index + 1
+                                  ? "shadow-neumorphic-inset-button"
+                                  : "bg-gray-100 shadow-neumorphic-button"
+                              }`}
+                            >
+                              {index + 1}
+                            </button>
+                          ))
+                        ) : (
+                          <>
+                            {currentPage > 1 && (
+                              <button
+                                onClick={() => handlePageChange(1)}
+                                className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                              >
+                                1
+                              </button>
+                            )}
+                            {currentPage > 2 && <span>...</span>}
+
+                            {currentPage > 1 && (
+                              <button
+                                onClick={() =>
+                                  handlePageChange(currentPage - 1)
+                                }
+                                className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                              >
+                                {currentPage - 1}
+                              </button>
+                            )}
+
+                            <button className="px-3 py-1 text-sm rounded-lg shadow-neumorphic-inset-button">
+                              {currentPage}
+                            </button>
+
+                            {currentPage < totalPages && (
+                              <button
+                                onClick={() =>
+                                  handlePageChange(currentPage + 1)
+                                }
+                                className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                              >
+                                {currentPage + 1}
+                              </button>
+                            )}
+
+                            {currentPage < totalPages - 1 && <span>...</span>}
+                            {currentPage < totalPages && (
+                              <button
+                                onClick={() => handlePageChange(totalPages)}
+                                className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                              >
+                                {totalPages}
+                              </button>
+                            )}
+                          </>
+                        )}
+                        <button
+                          onClick={handleNextPage}
+                          className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                          disabled={currentPage === totalPages}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
       </div>
+      <ToastContainer draggable stacked />
     </div>
   );
-  
-  // Updated Card Component with Neumorphism
-  function Card({ title, value, change, changeType }) {
-    return (
-      <div className="rounded-lg bg-gray-100 shadow-neumorphic p-6"> 
-        <div className="flex items-center justify-between pb-2">
-          <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-        </div>
-        <div className="text-2xl font-bold text-gray-700">{value}</div>
-        <div className="mt-4 h-[80px] w-full rounded-lg" />
-        <div className="mt-2 flex items-center gap-2">
-          <div
-            className={`text-xs px-2 py-0.5 rounded ${
-              changeType === "positive" ? "text-purple-600" : "text-red-600"
-            }`}
-          >
-            {change}
-          </div>
-        </div>
-      </div>
-    );
-  }
 }

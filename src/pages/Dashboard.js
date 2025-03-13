@@ -100,13 +100,6 @@ export default function Dashboard() {
     toast.info(`Dark mode ${isDarkMode ? "enabled" : "disabled"}`);
   };
 
-  const clearAllData = () => {
-    // Implement the logic to clear all data
-    console.log("Clearing all data...");
-    toast.warn("All data cleared!");
-    // You might want to show a confirmation dialog before actually clearing the data
-  };
-
   const handleFilterApply = (options) => {
     setFilterOptions(options);
     toast.info("Filters applied");
@@ -301,7 +294,7 @@ export default function Dashboard() {
         <div className="space-y-4">
           <div className="px-2 py-1">
             <h4 className="mb-2 text-sm font-medium text-gray-600">MENU</h4>
-            <div className="space-y-1">
+            <div className="space-y-4">
               <button
                 className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
                   location.pathname === "/dashboard"
@@ -313,7 +306,7 @@ export default function Dashboard() {
                 Dashboard
               </button>
               {/* Conditionally render History tab */}
-              {currentUser?.roles?.includes("admin") && (
+              {currentUser?.roles?.includes("ROLE_ADMIN") && (
                 <button
                   className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
                     location.pathname === "/history"
@@ -337,6 +330,7 @@ export default function Dashboard() {
               <button
                 onClick={() => {
                   fetchTransactions(setTransactions, token);
+                  console.log(transactions);
                 }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
               >
@@ -359,18 +353,11 @@ export default function Dashboard() {
                 {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
               </button>
               <button
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600 hover:bg-red-50"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
                 Logout
-              </button>
-              <button
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg shadow-neumorphic-button text-white bg-red-500 hover:bg-red-800"
-                onClick={clearAllData}
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete All Data
               </button>
             </div>
           </div>
