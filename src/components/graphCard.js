@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { motion, useAnimation, AnimatePresence } from "framer-motion";
 
-
-// const COLORS = ["#8B5CF6", "#A78BFA", "#C4B5FD", "#DDD6FE", "#EDE9FE"];
 const COLORS = [
   "#8B5CF6",  // Purple-500
   "#6B46C1",  // Darker Purple
@@ -17,8 +16,21 @@ const COLORS = [
   "#ED64A6",  // Pink
 ];
 
-function GraphCard({ title, value, change, changeType, data }) {
+function GraphCard({ title, value, data }) {
   const darkMode = localStorage.getItem("darkMode");
+  const [chartVisible, setChartVisible] = useState(false);
+  const chartControls = useAnimation();
+
+  // Control when the pie chart should become visible
+  useEffect(() => {
+    const animateSequence = async () => {
+      // Wait for the container to animate in
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for container animation
+      setChartVisible(true);
+    };
+    
+    animateSequence();
+  }, []);
 
   const customTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -31,54 +43,98 @@ function GraphCard({ title, value, change, changeType, data }) {
     return null;
   };
 
+  const legendVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0 }
+  };
+
   return (
-    <div className="rounded-xl bg-gray-100 shadow-neumorphic p-6 w-full flex flex-col h-full">
-      <div className="flex items-center justify-between">
+    <motion.div
+      className="rounded-xl bg-gray-100 shadow-neumorphic p-6 w-full flex flex-col h-full"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <motion.div 
+        className="flex items-center justify-between"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.3 }}
+      >
         <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">{title}</h3>
-      </div>
-      <div className="text-xl font-bold text-gray-700 mb-4">{value}</div>
+      </motion.div>
+      <motion.div 
+        className="text-xl font-bold text-gray-700 mb-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+      >
+        {value}
+      </motion.div>
       
       <div className="flex-grow flex justify-center items-center">
-        <div className="aspect-square w-52 h-52 rounded-full shadow-neumorphic-inset flex items-center justify-center">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={40}
-                outerRadius={70}
-                paddingAngle={2}
-                dataKey="value"
-                strokeWidth={darkMode === "enabled" ? 0 : 2}
-              >
-                {data.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={COLORS[index % COLORS.length]} 
-                  />
-                ))}
-              </Pie>
-              <Tooltip content={customTooltip} />
-              {/* <text
-                x="50%"
-                y="50%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontSize="18"
-                fontWeight="bold"
-                fill="#000"
-              >
-                {`$${data.reduce((accumulator, current) => accumulator + current.value, 0)}`}
-              </text> */}
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        <AnimatePresence>
+          {chartVisible && (
+            <motion.div
+              className="aspect-square w-52 h-52 rounded-full shadow-neumorphic-inset flex items-center justify-center"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={70}
+                    paddingAngle={2}
+                    dataKey="value"
+                    strokeWidth={darkMode === "enabled" ? 0 : 2}
+                    animationDuration={1500}
+                    animationEasing="ease-in-out"
+                    startAngle={90}
+                    endAngle={-270}
+                  >
+                    {data.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={COLORS[index % COLORS.length]} 
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip content={customTooltip} />
+                </PieChart>
+              </ResponsiveContainer>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       
-      <div className="mt-4 grid grid-cols-3 gap-x-2 gap-y-2 text-xs text-gray-600 dark:text-gray-300">
+      <motion.div 
+        className="mt-4 grid grid-cols-3 gap-x-2 gap-y-2 text-xs text-gray-600 dark:text-gray-300"
+        variants={legendVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ delay: 0.8, duration: 0.5 }}
+      >
         {data.map((category, index) => (
-          <div key={index} className="flex items-center">
+          <motion.div 
+            key={index} 
+            className="flex items-center"
+            variants={itemVariants}
+          >
             <div 
               className="w-2 h-2 rounded-full mr-1.5 flex-shrink-0" 
               style={{ 
@@ -86,10 +142,10 @@ function GraphCard({ title, value, change, changeType, data }) {
               }}
             />
             <span className="truncate">{category.name}</span>
-          </div>
+          </motion.div>
         ))}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

@@ -30,6 +30,7 @@ import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
 import "react-toastify/dist/ReactToastify.css"; // Import the default styles for the toast notifications
 import { Filter } from "lucide-react";
 import FilterAndSort from "../components/FilterAndSort";
+import { motion } from "framer-motion";
 
 export default function Dashboard() {
   // Variables
@@ -41,23 +42,16 @@ export default function Dashboard() {
   const { currentUser, logout, isAuthenticated } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
-
   const [incomeData, setIncomeData] = useState([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
   const [expenseData, setExpenseData] = useState([]);
-  const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem("darkMode") === "enabled" ? true : false
-  );
+  const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem("darkMode") === "enabled" ? true : false);
   const [transactions, setTransactions] = useState([]);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const totalPages = Math.ceil((transactions?.length || 0) / itemsPerPage);
-
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filterOptions, setFilterOptions] = useState({
     filter: {
@@ -74,7 +68,27 @@ export default function Dashboard() {
       direction: "desc",
     },
   });
-  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.2
+      }
+    }
+  };
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.3 }
+    }
+  };
+
+
+  const totalPages = Math.ceil((transactions?.length || 0) / itemsPerPage);
 
   // Functions
   const handlePageChange = (page) => setCurrentPage(page);
@@ -231,7 +245,7 @@ export default function Dashboard() {
 
   // Page
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <motion.div className="flex min-h-screen bg-gray-100">
       {/* Add the popup component */}
       <AnimatePresence>
         {showAddPopup && (
@@ -270,7 +284,7 @@ export default function Dashboard() {
       </AnimatePresence>
 
       {/* Fixed Sidebar */}
-      <navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
+      <motion.navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
         <div className="flex items-center gap-3 mb-8">
           <div className="h-10 w-10 rounded-full bg-purple-600 " />
           <div>
@@ -362,21 +376,31 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </navbar>
+      </motion.navbar>
 
       {/* Main Content */}
       <div className="flex-1 p-8 lg:ml-64 bg-gray-100">
         <div className="mx-auto max-w-6xl space-y-8">
-          <div className="space-y-2">
+          <motion.div
+            className="space-y-2"
+            initial={{ x: -100, opacity: 0.4 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
             <h1 className="text-3xl font-bold text-gray-700">Dashboard</h1>
             <p className="text-gray-600">
               Get a quick overview of your monthly finances.
             </p>
-          </div>
+          </motion.div>
 
           <div className="space-y-4">
-            <div className="grid gap-6 md:grid-cols-3">
-              <div className="grid gap-6 md:grid-rows-2">
+            <motion.div
+              className="grid gap-6 md:grid-cols-3"
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+            >
+              <motion.div className="grid gap-6 md:grid-rows-2" variants={cardVariants}>
                 <StatCard
                   title={`Net Income`}
                   value={`$${(totalIncome - totalExpense).toFixed(2)}`}
@@ -417,34 +441,47 @@ export default function Dashboard() {
                       : "negative"
                   }
                 />
-              </div>
-              <GraphCard
-                title={`Expense per Category`}
-                value={`$${totalExpense}`}
-                data={expenseData}
-              />
-              <GraphCard
-                title={`Income per Category`}
-                value={`$${totalIncome}`}
-                data={incomeData}
-              />
-            </div>
+              </motion.div>
+              <motion.div variants={cardVariants}>
+                <GraphCard
+                  title={`Expense per Category`}
+                  value={`$${totalExpense}`}
+                  data={expenseData}
+                />
+              </motion.div>
+              <motion.div variants={cardVariants}>
+                <GraphCard
+                  title={`Income per Category`}
+                  value={`$${totalIncome}`}
+                  data={incomeData}
+                  />
+              </motion.div>
+            </motion.div>
 
-            <div className="rounded-lg bg-gray-100 p-6">
+            <motion.div
+              className="rounded-lg bg-gray-100 p-6"
+              initial={{ x: -100, opacity: 0.4 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-gray-700">
                     {month} Report
                   </h2>
                   <div className="flex gap-4">
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button flex items-center gap-1"
                       onClick={() => setShowFilterPopup(true)}
                     >
                       <Filter className="h-4 w-4" />
                       Filter & Sort
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
                       onClick={() => {
                         handleDownloadCsv(token, userId);
@@ -452,13 +489,15 @@ export default function Dashboard() {
                       }}
                     >
                       Download CSV
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       className="px-3 py-1 text-sm rounded-lg bg-purple-500 text-white shadow-neumorphic-purple"
                       onClick={() => setShowAddPopup(true)}
                     >
                       Add Transaction
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
               </div>
@@ -474,15 +513,18 @@ export default function Dashboard() {
                       <th className="pb-2">ACTIONS</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <motion.tbody>
                     {filteredTransactions
                       .slice(
                         (currentPage - 1) * itemsPerPage,
                         currentPage * itemsPerPage
                       )
-                      .map((transaction) => (
-                        <tr
+                      .map((transaction, index) => (
+                        <motion.tr
                           key={transaction.id}
+                          initial={{ opacity: 1, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1, duration: 0.3 }} // Staggered delay
                           className="border-t border-gray-200"
                         >
                           <td className="py-3">
@@ -531,9 +573,9 @@ export default function Dashboard() {
                               />
                             </button>
                           </td>
-                        </tr>
+                        </motion.tr>
                       ))}
-                  </tbody>
+                  </motion.tbody>
                 </table>
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-gray-600">
@@ -579,12 +621,12 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
       {/* ToastContainer component to render toasts */}
       <ToastContainer draggable stacked />
-    </div>
+    </motion.div>
   );
 }

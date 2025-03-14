@@ -18,6 +18,7 @@ import { Filter } from "lucide-react";
 import FilterAndSort from "../components/FilterAndSort";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { motion } from "framer-motion";
 
 export default function UserTransactions() {
   // Variables
@@ -56,8 +57,6 @@ export default function UserTransactions() {
 
   const [filteredTransactions, setFilteredTransactions] = useState([]);
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const totalPages = Math.ceil(
     (filteredTransactions?.length || 0) / itemsPerPage
   );
@@ -272,9 +271,9 @@ export default function UserTransactions() {
         const term = searchTerm.toLowerCase();
         result = result.filter(
           (t) =>
-            (t.label?.toLowerCase() || '').includes(term) ||
-            (t.category?.toLowerCase() || '').includes(term) ||
-            (t.username?.toLowerCase() || '').includes(term)
+            (t.label?.toLowerCase() || "").includes(term) ||
+            (t.category?.toLowerCase() || "").includes(term) ||
+            (t.username?.toLowerCase() || "").includes(term)
         );
       }
 
@@ -290,9 +289,9 @@ export default function UserTransactions() {
             : parseFloat(b.amount) - parseFloat(a.amount);
         } else {
           // For label, category, and username (string fields)
-          const valueA = (a[sort.field] || '')?.toLowerCase() || '';
-          const valueB = (b[sort.field] || '')?.toLowerCase() || '';
-        
+          const valueA = (a[sort.field] || "")?.toLowerCase() || "";
+          const valueB = (b[sort.field] || "")?.toLowerCase() || "";
+
           if (sort.direction === "asc") {
             return valueA.localeCompare(valueB);
           } else {
@@ -323,7 +322,7 @@ export default function UserTransactions() {
 
   // Page
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <motion.div className="flex min-h-screen bg-gray-100">
       <AnimatePresence>
         {showFilterPopup && (
           <FilterAndSort
@@ -428,7 +427,12 @@ export default function UserTransactions() {
 
       {/* Main Content */}
       <div className="flex-1 p-8 lg:ml-64 bg-gray-100">
-        <div className="mx-auto max-w-6xl space-y-8">
+        <motion.div
+          className="mx-auto max-w-6xl space-y-8"
+          initial={{ x: -100, opacity: 0.4 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
           <div className="space-y-2">
             <h1 className="text-3xl font-bold text-gray-700">
               User Transactions
@@ -502,17 +506,20 @@ export default function UserTransactions() {
                         <th className="pb-2">DATE</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <motion.tbody>
                       {filteredTransactions.length > 0 ? (
                         filteredTransactions
                           .slice(
                             (currentPage - 1) * itemsPerPage,
                             currentPage * itemsPerPage
                           )
-                          .map((transaction) => (
-                            <tr
+                          .map((transaction, index) => (
+                            <motion.tr
                               key={transaction.id}
                               className="border-t border-gray-200"
+                              initial={{ opacity: 1, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1, duration: 0.3 }}
                             >
                               <td className="py-3">
                                 {transaction.type === "Expense" ? (
@@ -544,7 +551,7 @@ export default function UserTransactions() {
                                     .split("T")[0]
                                 }
                               </td>
-                            </tr>
+                            </motion.tr>
                           ))
                       ) : (
                         <tr>
@@ -556,7 +563,7 @@ export default function UserTransactions() {
                           </td>
                         </tr>
                       )}
-                    </tbody>
+                    </motion.tbody>
                   </table>
 
                   {filteredTransactions.length > 0 && (
@@ -658,9 +665,9 @@ export default function UserTransactions() {
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
       <ToastContainer draggable stacked />
-    </div>
+    </motion.div>
   );
 }

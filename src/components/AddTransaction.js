@@ -62,9 +62,6 @@ export default function AddTransaction({ onClose, onSubmit }) {
   return (
     <motion.div
       className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-50"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
     >
       <motion.div
         className="absolute right-0 top-0 w-96 bg-gray-100 h-full p-6 overflow-y-auto"

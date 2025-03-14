@@ -2,28 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
-.body {
-    
-}
-
 .shadow-neumorphic {
     box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.05), -8px -8px 16px rgba(255, 255, 255, 1);
+    transition: box-shadow 0.3s ease;
+}
+
+.shadow-neumorphic:hover {
+    box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.1), -10px -10px 20px rgba(255, 255, 255, 1), 0 0 0 2px rgba(168, 85, 247, 0.05);
 }
 
 .shadow-neumorphic-button {
     box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.1), -8px -8px 10px rgba(255, 255, 255, 1);
+    transition: box-shadow 0.3s ease;
+}
+
+.shadow-neumorphic-button:hover {
+    box-shadow: 6px 6px 10px rgba(0, 0, 0, 0.15), -10px -10px 14px rgba(255, 255, 255, 1), 0 0 0 2px rgba(168, 85, 247, 0.1);
 }
 
 .shadow-neumorphic-inset {
     box-shadow: inset 4px 4px 4px rgba(0, 0, 0, 0.05), inset -4px -4px 4px rgba(255, 255, 255, 0.6);
+    transition: box-shadow 0.3s ease;
+}
+
+.shadow-neumorphic-inset:hover {
+    box-shadow: inset 6px 6px 6px rgba(0, 0, 0, 0.1), inset -6px -6px 6px rgba(255, 255, 255, 0.8), inset 0 0 0 2px rgba(168, 85, 247, 0.05);
 }
 
 .shadow-neumorphic-inset-button {
     box-shadow: inset 4px 4px 4px rgba(0, 0, 0, 0.1), inset -4px -4px 4px rgba(255, 255, 255, 1);
+    transition: box-shadow 0.3s ease;
+}
+
+.shadow-neumorphic-inset-button:hover {
+    box-shadow: inset 6px 6px 6px rgba(0, 0, 0, 0.15), inset -6px -6px 6px rgba(255, 255, 255, 1.2), inset 0 0 0 2px rgba(168, 85, 247, 0.1);
 }
 
 .shadow-neumorphic-purple {
     box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1), -4px -4px 10px rgba(255, 255, 255, 1);
+    transition: box-shadow 0.3s ease;
+}
+
+.shadow-neumorphic-purple:hover {
+    box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.15), -6px -6px 14px rgba(255, 255, 255, 1.2), 0 0 0 2px rgba(168, 85, 247, 0.1);
 }
 
 .dark {
@@ -54,20 +75,45 @@
 /* Dark Mode Shadows */
 .dark .shadow-neumorphic {
     box-shadow: 8px 8px 10px rgba(0, 0, 0, 0.2), -4px -4px 12px rgba(255, 255, 255, 0.01);
+    transition: box-shadow 0.3s ease;
+}
+
+.dark .shadow-neumorphic:hover {
+    box-shadow: 10px 10px 14px rgba(0, 0, 0, 0.25), -6px -6px 16px rgba(255, 255, 255, 0.03), 0 0 0 2px rgba(168, 85, 247, 0.2);
 }
 
 .dark .shadow-neumorphic-button {
     box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.2), -4px -4px 6px rgba(255, 255, 255, 0.02);
+    transition: box-shadow 0.3s ease;
+}
+
+.dark .shadow-neumorphic-button:hover {
+    box-shadow: 6px 6px 10px rgba(0, 0, 0, 0.25), -6px -6px 10px rgba(255, 255, 255, 0.04), 0 0 0 2px rgba(168, 85, 247, 0.3);
 }
 
 .dark .shadow-neumorphic-inset {
     box-shadow: inset 4px 4px 4px rgba(0, 0, 0, 0.2), inset -4px -4px 4px rgba(255, 255, 255, 0.02);
+    transition: box-shadow 0.3s ease;
+}
+
+.dark .shadow-neumorphic-inset:hover {
+    box-shadow: inset 6px 6px 6px rgba(0, 0, 0, 0.25), inset -6px -6px 6px rgba(255, 255, 255, 0.04), inset 0 0 0 2px rgba(168, 85, 247, 0.2);
 }
 
 .dark .shadow-neumorphic-inset-button {
     box-shadow: inset 4px 4px 4px rgba(0, 0, 0, 0.2), inset -4px -4px 4px rgba(255, 255, 255, 0.02);
+    transition: box-shadow 0.3s ease;
+}
+
+.dark .shadow-neumorphic-inset-button:hover {
+    box-shadow: inset 6px 6px 6px rgba(0, 0, 0, 0.25), inset -6px -6px 6px rgba(255, 255, 255, 0.04), inset 0 0 0 2px rgba(168, 85, 247, 0.3);
 }
 
 .dark .shadow-neumorphic-purple {
     box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 10px rgba(255, 255, 255, 0.02), 0 0 0 2px rgba(147, 51, 234, 0.2);
+    transition: box-shadow 0.3s ease;
+}
+
+.dark .shadow-neumorphic-purple:hover {
+    box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.25), -6px -6px 14px rgba(255, 255, 255, 0.04), 0 0 0 2px rgba(168, 85, 247, 0.4);
 }
