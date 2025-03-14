@@ -18,7 +18,7 @@ const App = () => {
       }, []);
 
     return (
-        <div>
+        <div clasname="no-scrollbar">
         <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/user-transactions" element={<UserTransactions />} />

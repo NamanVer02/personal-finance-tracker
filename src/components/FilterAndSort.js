@@ -260,7 +260,7 @@ export default function FilterAndSort({ onClose, onApply }) {
                 <label className="block text-sm font-medium text-gray-600 mb-2">
                   Categories
                 </label>
-                <div className="max-h-40 overflow-y-auto bg-gray-100 shadow-neumorphic-inset rounded-lg p-3">
+                <div className="max-h-40 overflow-y-auto bg-gray-100 shadow-neumorphic-inset rounded-lg p-3 no-scrollbar">
                   {allCategories.map((category) => (
                     <div key={category} className="flex items-center mb-2 last:mb-0">
                       <input
