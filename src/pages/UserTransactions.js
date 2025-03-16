@@ -9,6 +9,7 @@ import {
   Users,
   Search,
   Download,
+  MessageCircle
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -19,6 +20,7 @@ import FilterAndSort from "../components/FilterAndSort";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
+import { fetchTransactions } from "../utils/api";
 
 export default function UserTransactions() {
   // Variables
@@ -334,12 +336,12 @@ export default function UserTransactions() {
         )}
       </AnimatePresence>
 
-      {/* Fixed Sidebar */}
-      <navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
+        {/* Fixed Sidebar */}
+        <motion.navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
         <div className="flex items-center gap-3 mb-8">
-          <div className="h-10 w-10 rounded-full bg-purple-600" />
+          <div className="h-10 w-10 rounded-full bg-purple-600 " />
           <div>
-            <h3 className="font-medium">{currentUser?.username || "Admin"}</h3>
+            <h3 className="font-medium">{currentUser?.username || "User"}</h3>
             <p className="text-sm text-gray-600">
               {currentUser?.roles
                 ?.map((role) =>
@@ -351,7 +353,7 @@ export default function UserTransactions() {
                     })
                     .join(" ")
                 )
-                .join(", ") || "Admin"}
+                .join(", ") || "User"}
             </p>
           </div>
         </div>
@@ -366,21 +368,38 @@ export default function UserTransactions() {
                     ? "shadow-neumorphic-inset-button"
                     : "shadow-neumorphic-button"
                 }`}
-                onClick={() => navigate("/dashboard")}
+                onClick={() => {navigate("/dashboard")}}
               >
                 <BarChart3 className="h-4 w-4 text-gray-600" />
                 Dashboard
               </button>
-              <button
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                  location.pathname === "/user-transactions"
-                    ? "shadow-neumorphic-inset-button"
-                    : "shadow-neumorphic-button"
-                }`}
-              >
-                <Users className="h-4 w-4 text-gray-600" />
-                User Transactions
-              </button>
+              {/* Conditionally render History tab */}
+              {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/user-transactions"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => {
+                    navigate("/user-transactions");
+                  }}
+                >
+                  <Users className="h-4 w-4 text-gray-600" />
+                  User Transactions
+                </button>
+              )}
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/ai-assistant"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => {navigate("/ai-assistant")}}
+                >
+                  <MessageCircle className="h-4 w-4 text-gray-600"/>
+                  AI Assistant
+                </button>
             </div>
           </div>
 
@@ -389,9 +408,7 @@ export default function UserTransactions() {
             <div className="space-y-4">
               <button
                 onClick={() => {
-                  fetchAllUserTransactions();
-                  fetchAllUsers();
-                  toast.info("Data refreshed");
+                  toast.success("Data Synced Successfuly");
                 }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
               >
@@ -423,7 +440,7 @@ export default function UserTransactions() {
             </div>
           </div>
         </div>
-      </navbar>
+      </motion.navbar>
 
       {/* Main Content */}
       <div className="flex-1 p-8 lg:ml-64 bg-gray-100">

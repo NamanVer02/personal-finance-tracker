@@ -9,6 +9,7 @@ import {
   Moon,
   FolderSync,
   Sun,
+  MessageCircle
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -335,6 +336,17 @@ export default function Dashboard() {
                   User Transactions
                 </button>
               )}
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/ai-assistant"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => {navigate("/ai-assistant")}}
+                >
+                  <MessageCircle className="h-4 w-4 text-gray-600"/>
+                  AI Assistant
+                </button>
             </div>
           </div>
 
@@ -344,7 +356,7 @@ export default function Dashboard() {
               <button
                 onClick={() => {
                   fetchTransactions(setTransactions, token);
-                  console.log(transactions);
+                  toast.success("Data Synced Successfuly");
                 }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
               >

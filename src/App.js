@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import UserTransactions from "./pages/UserTransactions";
+import AiAssistant from "./pages/AiAssistant";
 
 const App = () => {
 
@@ -24,6 +25,7 @@ const App = () => {
             <Route path="/user-transactions" element={<UserTransactions />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/ai-assistant" element={<AiAssistant />} />
         </Routes>
         </div>
     );
