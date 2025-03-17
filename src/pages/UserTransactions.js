@@ -9,7 +9,9 @@ import {
   Users,
   Search,
   Download,
-  MessageCircle
+  MessageCircle,
+  Menu,
+  X
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -20,7 +22,6 @@ import FilterAndSort from "../components/FilterAndSort";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
-import { fetchTransactions } from "../utils/api";
 
 export default function UserTransactions() {
   // Variables
@@ -39,6 +40,7 @@ export default function UserTransactions() {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [filterOptions, setFilterOptions] = useState({
     filter: {
@@ -336,8 +338,126 @@ export default function UserTransactions() {
         )}
       </AnimatePresence>
 
-        {/* Fixed Sidebar */}
-        <motion.navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
+      {/* Mobile Top Navbar - only visible on small screens */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gray-100 shadow-md lg:hidden">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-purple-600" />
+            <h3 className="font-medium">{currentUser?.username || "User"}</h3>
+          </div>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-lg bg-gray-100 shadow-neumorphic-button"
+          >
+            {mobileMenuOpen ? (
+              <X className="h-5 w-5 text-gray-600" />
+            ) : (
+              <Menu className="h-5 w-5 text-gray-600" />
+            )}
+          </button>
+        </div>
+
+        {/* Mobile menu overlay */}
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-gray-100 shadow-md"
+          >
+            <div className="p-4 space-y-4">
+              <div className="space-y-3">
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/dashboard"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigate("/dashboard");
+                  }}
+                >
+                  <BarChart3 className="h-4 w-4 text-gray-600" />
+                  Dashboard
+                </button>
+
+                {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/user-transactions"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/user-transactions");
+                    }}
+                  >
+                    <Users className="h-4 w-4 text-gray-600" />
+                    User Transactions
+                  </button>
+                )}
+
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/ai-assistant"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigate("/ai-assistant");
+                  }}
+                >
+                  <MessageCircle className="h-4 w-4 text-gray-600" />
+                  AI Assistant
+                </button>
+
+                <button
+                  onClick={() => {
+                    toast.success("Data Synced Successfully");
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                >
+                  <FolderSync className="h-4 w-4 text-gray-600" />
+                  Sync Data
+                </button>
+
+                <button
+                  onClick={() => {
+                    toggleDarkMode();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                >
+                  {isDarkMode ? (
+                    <Sun className="h-4 w-4 text-gray-600" />
+                  ) : (
+                    <Moon className="h-4 w-4 text-gray-600" />
+                  )}
+                  {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
+                </button>
+
+                <button
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
+                  onClick={() => {
+                    handleLogout();
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Fixed Sidebar */}
+      <motion.navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
         <div className="flex items-center gap-3 mb-8">
           <div className="h-10 w-10 rounded-full bg-purple-600 " />
           <div>
@@ -368,7 +488,9 @@ export default function UserTransactions() {
                     ? "shadow-neumorphic-inset-button"
                     : "shadow-neumorphic-button"
                 }`}
-                onClick={() => {navigate("/dashboard")}}
+                onClick={() => {
+                  navigate("/dashboard");
+                }}
               >
                 <BarChart3 className="h-4 w-4 text-gray-600" />
                 Dashboard
@@ -389,17 +511,19 @@ export default function UserTransactions() {
                   User Transactions
                 </button>
               )}
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/ai-assistant"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {navigate("/ai-assistant")}}
-                >
-                  <MessageCircle className="h-4 w-4 text-gray-600"/>
-                  AI Assistant
-                </button>
+              <button
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                  location.pathname === "/ai-assistant"
+                    ? "shadow-neumorphic-inset-button"
+                    : "shadow-neumorphic-button"
+                }`}
+                onClick={() => {
+                  navigate("/ai-assistant");
+                }}
+              >
+                <MessageCircle className="h-4 w-4 text-gray-600" />
+                AI Assistant
+              </button>
             </div>
           </div>
 

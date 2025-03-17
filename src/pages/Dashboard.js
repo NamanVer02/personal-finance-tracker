@@ -9,7 +9,10 @@ import {
   Moon,
   FolderSync,
   Sun,
-  MessageCircle
+  MessageCircle,
+  Menu,
+  X,
+  Upload,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -32,6 +35,7 @@ import "react-toastify/dist/ReactToastify.css"; // Import the default styles for
 import { Filter } from "lucide-react";
 import FilterAndSort from "../components/FilterAndSort";
 import { motion } from "framer-motion";
+import CsvUploadModal from "../components/CsvUploadModal";
 
 export default function Dashboard() {
   // Variables
@@ -47,13 +51,17 @@ export default function Dashboard() {
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
   const [expenseData, setExpenseData] = useState([]);
-  const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem("darkMode") === "enabled" ? true : false);
+  const [isDarkMode, setIsDarkMode] = useState(
+    localStorage.getItem("darkMode") === "enabled" ? true : false
+  );
   const [transactions, setTransactions] = useState([]);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showCsvUploadModal, setShowCsvUploadModal] = useState(false);
   const [filterOptions, setFilterOptions] = useState({
     filter: {
       type: "all",
@@ -75,19 +83,18 @@ export default function Dashboard() {
       opacity: 1,
       transition: {
         staggerChildren: 0.2,
-        delayChildren: 0.2
-      }
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { 
-      opacity: 1, 
+    show: {
+      opacity: 1,
       y: 0,
-      transition: { duration: 0.3 }
-    }
+      transition: { duration: 0.3 },
+    },
   };
-
 
   const totalPages = Math.ceil((transactions?.length || 0) / itemsPerPage);
 
@@ -284,6 +291,150 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {showCsvUploadModal && (
+          <CsvUploadModal
+            onClose={() => setShowCsvUploadModal(false)}
+            onUploadSuccess={() => {
+              fetchTransactions(setTransactions, token);
+              fetchIncomeData(setIncomeData, userId, token);
+              fetchExpenseData(setExpenseData, userId, token);
+              toast.success("Transactions imported successfully!");
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Top Navbar - only visible on small screens */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gray-100 shadow-md lg:hidden">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-purple-600" />
+            <h3 className="font-medium">{currentUser?.username || "User"}</h3>
+          </div>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-lg bg-gray-100 shadow-neumorphic-button"
+          >
+            {mobileMenuOpen ? (
+              <X className="h-5 w-5 text-gray-600" />
+            ) : (
+              <Menu className="h-5 w-5 text-gray-600" />
+            )}
+          </button>
+        </div>
+
+        {/* Mobile menu overlay */}
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-gray-100 shadow-md"
+          >
+            <div className="p-4 space-y-4">
+              <div className="space-y-3">
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/dashboard"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigate("/dashboard");
+                  }}
+                >
+                  <BarChart3 className="h-4 w-4 text-gray-600" />
+                  Dashboard
+                </button>
+
+                {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/user-transactions"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/user-transactions");
+                    }}
+                  >
+                    <Users className="h-4 w-4 text-gray-600" />
+                    User Transactions
+                  </button>
+                )}
+
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/ai-assistant"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigate("/ai-assistant");
+                  }}
+                >
+                  <MessageCircle className="h-4 w-4 text-gray-600" />
+                  AI Assistant
+                </button>
+
+                <button
+                  onClick={() => {
+                    fetchTransactions(setTransactions, token);
+                    toast.success("Data Synced Successfully");
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                >
+                  <FolderSync className="h-4 w-4 text-gray-600" />
+                  Sync Data
+                </button>
+
+                <button
+                  onClick={() => {
+                    toggleDarkMode();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                >
+                  {isDarkMode ? (
+                    <Sun className="h-4 w-4 text-gray-600" />
+                  ) : (
+                    <Moon className="h-4 w-4 text-gray-600" />
+                  )}
+                  {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowCsvUploadModal(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                >
+                  <Upload className="h-4 w-4 text-gray-600" />
+                  Import CSV
+                </button>
+
+                <button
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
+                  onClick={() => {
+                    handleLogout();
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
       {/* Fixed Sidebar */}
       <motion.navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
         <div className="flex items-center gap-3 mb-8">
@@ -336,17 +487,19 @@ export default function Dashboard() {
                   User Transactions
                 </button>
               )}
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/ai-assistant"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {navigate("/ai-assistant")}}
-                >
-                  <MessageCircle className="h-4 w-4 text-gray-600"/>
-                  AI Assistant
-                </button>
+              <button
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                  location.pathname === "/ai-assistant"
+                    ? "shadow-neumorphic-inset-button"
+                    : "shadow-neumorphic-button"
+                }`}
+                onClick={() => {
+                  navigate("/ai-assistant");
+                }}
+              >
+                <MessageCircle className="h-4 w-4 text-gray-600" />
+                AI Assistant
+              </button>
             </div>
           </div>
 
@@ -378,6 +531,16 @@ export default function Dashboard() {
                 )}
                 {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
               </button>
+
+              <button
+                onClick={() => setShowCsvUploadModal(true)}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+              >
+                <Upload className="h-4 w-4 text-gray-600" />
+                Import CSV
+              </button>
+
+
               <button
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
                 onClick={handleLogout}
@@ -412,7 +575,10 @@ export default function Dashboard() {
               initial="hidden"
               animate="show"
             >
-              <motion.div className="grid gap-6 md:grid-rows-2" variants={cardVariants}>
+              <motion.div
+                className="grid gap-6 md:grid-rows-2"
+                variants={cardVariants}
+              >
                 <StatCard
                   title={`Net Income`}
                   value={`$${(totalIncome - totalExpense).toFixed(2)}`}
@@ -466,7 +632,7 @@ export default function Dashboard() {
                   title={`Income per Category`}
                   value={`$${totalIncome}`}
                   data={incomeData}
-                  />
+                />
               </motion.div>
             </motion.div>
 
