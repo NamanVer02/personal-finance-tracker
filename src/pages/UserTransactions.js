@@ -11,7 +11,8 @@ import {
   Download,
   MessageCircle,
   Menu,
-  X
+  X,
+  Upload
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -22,12 +23,15 @@ import FilterAndSort from "../components/FilterAndSort";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
+import CsvUploadModal from "../components/CsvUploadModal";
+import { fetchExpenseData, fetchIncomeData, fetchTransactions } from "../utils/api";
 
-export default function UserTransactions() {
+export default function UserTransactions(setIncomeData, setExpenseData, setTransactions) {
   // Variables
   const navigate = useNavigate();
   const location = useLocation();
   const { token, currentUser, logout, isAuthenticated } = useAuth();
+  const userId = localStorage.getItem("userId");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [isDarkMode, setIsDarkMode] = useState(
@@ -41,6 +45,7 @@ export default function UserTransactions() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showCsvUploadModal, setShowCsvUploadModal] = useState(false);
 
   const [filterOptions, setFilterOptions] = useState({
     filter: {
@@ -338,6 +343,21 @@ export default function UserTransactions() {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {showCsvUploadModal && (
+          <CsvUploadModal
+            onClose={() => setShowCsvUploadModal(false)}
+            onUploadSuccess={() => {
+              fetchTransactions(setTransactions, token);
+              fetchIncomeData(setIncomeData, userId, token);
+              fetchExpenseData(setExpenseData, userId, token);
+              toast.success("Transactions imported successfully!");
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+
       {/* Mobile Top Navbar - only visible on small screens */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-gray-100 shadow-md lg:hidden">
         <div className="flex items-center justify-between p-4">
@@ -438,6 +458,17 @@ export default function UserTransactions() {
                     <Moon className="h-4 w-4 text-gray-600" />
                   )}
                   {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowCsvUploadModal(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                >
+                  <Upload className="h-4 w-4 text-gray-600" />
+                  Import CSV
                 </button>
 
                 <button
@@ -554,6 +585,15 @@ export default function UserTransactions() {
                 )}
                 {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
               </button>
+
+              <button
+                onClick={() => setShowCsvUploadModal(true)}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+              >
+                <Upload className="h-4 w-4 text-gray-600" />
+                Import CSV
+              </button>
+
               <button
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
                 onClick={handleLogout}

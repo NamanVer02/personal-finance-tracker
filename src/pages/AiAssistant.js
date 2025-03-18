@@ -10,7 +10,8 @@ import {
   MessageCircle,
   FolderSync,
   Menu,
-  X
+  X,
+  Upload
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -18,12 +19,16 @@ import { useEffect, useState, useRef } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
+import { fetchExpenseData, fetchTransactions, fetchIncomeData } from "../utils/api";
+import { AnimatePresence } from "framer-motion";
+import CsvUploadModal from "../components/CsvUploadModal";
 
-export default function AiAssistant() {
+export default function AiAssistant({setTransactions, setIncomeData, setExpenseData}) {
   // Navigation and authentication
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, logout, isAuthenticated } = useAuth();
+  const { currentUser, logout, token, isAuthenticated } = useAuth();
+  const userId = localStorage.getItem("userId");
 
   // State variables
   const [isDarkMode, setIsDarkMode] = useState(
@@ -33,6 +38,7 @@ export default function AiAssistant() {
   const [isLoading, setIsLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showCsvUploadModal, setShowCsvUploadModal] = useState(false);
 
   // Refs
   const chatContainerRef = useRef(null);
@@ -148,6 +154,21 @@ export default function AiAssistant() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
+      <AnimatePresence>
+        {showCsvUploadModal && (
+          <CsvUploadModal
+            onClose={() => setShowCsvUploadModal(false)}
+            onUploadSuccess={() => {
+              fetchTransactions(setTransactions, token);
+              fetchIncomeData(setIncomeData, userId, token);
+              fetchExpenseData(setExpenseData, userId, token);
+              toast.success("Transactions imported successfully!");
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+
       {/* Mobile Top Navbar - only visible on small screens */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-gray-100 shadow-md lg:hidden">
         <div className="flex items-center justify-between p-4">
@@ -248,6 +269,17 @@ export default function AiAssistant() {
                     <Moon className="h-4 w-4 text-gray-600" />
                   )}
                   {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowCsvUploadModal(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                >
+                  <Upload className="h-4 w-4 text-gray-600" />
+                  Import CSV
                 </button>
 
                 <button
@@ -363,6 +395,15 @@ export default function AiAssistant() {
                 )}
                 {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
               </button>
+
+              <button
+                onClick={() => setShowCsvUploadModal(true)}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+              >
+                <Upload className="h-4 w-4 text-gray-600" />
+                Import CSV
+              </button>
+
               <button
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
                 onClick={handleLogout}
