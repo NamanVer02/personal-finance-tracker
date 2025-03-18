@@ -125,6 +125,7 @@ export default function AiAssistant({setTransactions, setIncomeData, setExpenseD
     toast.info("Chat history cleared");
   };
 
+
   // Auto-scroll to bottom when chat updates
   useEffect(() => {
     if (chatContainerRef.current) {
