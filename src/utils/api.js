@@ -95,7 +95,7 @@ export const handleUpdateTransaction = async (
 
 export const handleDownloadCsv = async (token, userId) => {
   try {
-    const response = await fetch(`http://localhost:8080/api/download/${userId}`, {
+    const response = await fetch(`http://localhost:8080/api/download/${userId}/csv`, {
       headers: {
         Authorization: `Bearer ${token}`, // Include the token in the headers
         'Content-Type': 'application/json',
@@ -115,6 +115,32 @@ export const handleDownloadCsv = async (token, userId) => {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
     
+  } catch (error) {
+    console.error("Error downloading CSV:", error);
+  }
+};
+
+export const handleDownloadPdf = async (token, userId) => {
+  try {
+    const response = await fetch(`http://localhost:8080/api/download/${userId}/pdf`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Include the token in the headers
+        'Content-Type': 'application/json',
+      },
+      method: "GET",
+    });
+    
+    if (!response.ok) throw new Error("Failed to download PDF");
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Transactions.pdf";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error("Error downloading CSV:", error);
   }

@@ -167,7 +167,7 @@ export default function UserTransactions(setIncomeData, setExpenseData, setTrans
 
   const handleDownloadUserTransactionsCsv = async () => {
     try {
-      let url = `http://localhost:8080/api/download/admin`;
+      let url = `http://localhost:8080/api/download/admin/csv`;
 
       if (selectedUser) {
         url += `?userId=${selectedUser}`;
@@ -186,6 +186,41 @@ export default function UserTransactions(setIncomeData, setExpenseData, setTrans
         const link = document.createElement("a");
         link.href = downloadUrl;
         link.download = "All-transactions.csv";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        toast.success("Transactions downloaded successfully!");
+      } else {
+        toast.error("Failed to download transactions");
+      }
+    } catch (error) {
+      console.error("Error downloading transactions:", error);
+      toast.error("Error downloading data. Please try again.");
+    }
+  };
+
+
+  const handleDownloadUserTransactionsPdf = async () => {
+    try {
+      let url = `http://localhost:8080/api/download/admin/pdf`;
+
+      if (selectedUser) {
+        url += `?userId=${selectedUser}`;
+      }
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = "All-transactions.pdf";
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -666,6 +701,13 @@ export default function UserTransactions(setIncomeData, setExpenseData, setTrans
                   >
                     <Download className="h-4 w-4" />
                     Download CSV
+                  </button>
+                  <button
+                    className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button flex items-center gap-1"
+                    onClick={handleDownloadUserTransactionsPdf}
+                  >
+                    <Download className="h-4 w-4" />
+                    Download PDF
                   </button>
                 </div>
               </div>

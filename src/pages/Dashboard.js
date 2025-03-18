@@ -29,6 +29,7 @@ import {
   handleDownloadCsv,
   fetchIncomeData,
   fetchExpenseData,
+  handleDownloadPdf,
 } from "../utils/api";
 import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
 import "react-toastify/dist/ReactToastify.css"; // Import the default styles for the toast notifications
@@ -667,6 +668,17 @@ export default function Dashboard() {
                       }}
                     >
                       Download CSV
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                      onClick={() => {
+                        handleDownloadPdf(token, userId);
+                        toast.success("Downloaded Successfully!");
+                      }}
+                    >
+                      Download PDF
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.05 }}
