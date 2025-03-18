@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import UserTransactions from "./pages/UserTransactions";
 import AiAssistant from "./pages/AiAssistant";
+import GoogleAuthSetup from "./pages/GoogleAuthSetup";
 
 const App = () => {
 
@@ -26,6 +27,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/ai-assistant" element={<AiAssistant />} />
+            <Route path="/setup-2fa" element={<GoogleAuthSetup />} />
         </Routes>
         </div>
     );
