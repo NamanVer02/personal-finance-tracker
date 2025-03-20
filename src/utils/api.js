@@ -7,6 +7,18 @@ export const fetchTransactions = async (setTransactions, token) => {
       },
     });
 
+    // if (res.status === 401) {
+    //   const newToken = await refreshAccessToken();
+    //   if (newToken) {
+    //     res = await fetch("http://localhost:8080/api/get", {
+    //       headers: {
+    //         Authorization: `Bearer ${newToken}`, // Include the token in the headers
+    //         'Content-Type': 'application/json',
+    //       },
+    //     });
+    //   }
+    // }
+
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
