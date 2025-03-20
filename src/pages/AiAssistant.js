@@ -11,7 +11,7 @@ import {
   FolderSync,
   Menu,
   X,
-  Upload
+  Upload,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -19,11 +19,20 @@ import { useEffect, useState, useRef } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
-import { fetchExpenseData, fetchTransactions, fetchIncomeData } from "../utils/api";
+import {
+  fetchExpenseData,
+  fetchTransactions,
+  fetchIncomeData,
+} from "../utils/api";
 import { AnimatePresence } from "framer-motion";
 import CsvUploadModal from "../components/CsvUploadModal";
 
-export default function AiAssistant({setTransactions, setIncomeData, setExpenseData}) {
+export default function AiAssistant({
+  setTransactions,
+  setIncomeData,
+  setExpenseData,
+  transactions
+}) {
   // Navigation and authentication
   const navigate = useNavigate();
   const location = useLocation();
@@ -64,9 +73,9 @@ export default function AiAssistant({setTransactions, setIncomeData, setExpenseD
     if (!question.trim()) return;
 
     const userMessage = {
-      type: "user",
-      content: question,
-      timestamp: new Date().toISOString(),
+        type: "user",
+        content: question,
+        timestamp: new Date().toISOString(),
     };
 
     // Update chat with user message and clear input
@@ -75,56 +84,61 @@ export default function AiAssistant({setTransactions, setIncomeData, setExpenseD
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/chatbot", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ question: userMessage.content }),
-      });
+        // Assuming you have the transactions data available in your component state or props
+        const transactionsData = transactions; // Replace with your actual transactions data
 
-      if (response.ok) {
-        const data = await response.json();
+        const response = await fetch("http://localhost:5000/chatbot", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                question: userMessage.content,
+                transactions: transactionsData, // Include transactions data in the request body
+            }),
+        });
 
-        // Add bot response to chat history
-        setChatHistory((prev) => [
-          ...prev,
-          {
-            type: "bot",
-            content:
-              data.answer ||
-              data.response ||
-              "I'm not sure how to answer that.",
-            timestamp: new Date().toISOString(),
-          },
-        ]);
-      } else {
-        throw new Error("Failed to get response from chatbot");
-      }
+        if (response.ok) {
+            const data = await response.json();
+
+            // Add bot response to chat history
+            setChatHistory((prev) => [
+                ...prev,
+                {
+                    type: "bot",
+                    content:
+                        data.answer ||
+                        data.response ||
+                        "I'm not sure how to answer that.",
+                    timestamp: new Date().toISOString(),
+                },
+            ]);
+        } else {
+            throw new Error("Failed to get response from chatbot");
+        }
     } catch (error) {
-      console.error("Error querying chatbot:", error);
-      toast.error("Failed to get response. Please try again.");
+        console.error("Error querying chatbot:", error);
+        toast.error("Failed to get response. Please try again.");
 
-      // Add error message to chat
-      setChatHistory((prev) => [
-        ...prev,
-        {
-          type: "bot",
-          content: "Sorry, I encountered an error. Please try again.",
-          timestamp: new Date().toISOString(),
-          isError: true,
-        },
-      ]);
+        // Add error message to chat
+        setChatHistory((prev) => [
+            ...prev,
+            {
+                type: "bot",
+                content: "Sorry, I encountered an error. Please try again.",
+                timestamp: new Date().toISOString(),
+                isError: true,
+            },
+        ]);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+};
 
   const clearChat = () => {
     setChatHistory([]);
     toast.info("Chat history cleared");
   };
-
 
   // Auto-scroll to bottom when chat updates
   useEffect(() => {
@@ -168,7 +182,6 @@ export default function AiAssistant({setTransactions, setIncomeData, setExpenseD
           />
         )}
       </AnimatePresence>
-
 
       {/* Mobile Top Navbar - only visible on small screens */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-gray-100 shadow-md lg:hidden">
