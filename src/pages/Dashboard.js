@@ -38,7 +38,7 @@ import FilterAndSort from "../components/FilterAndSort";
 import { motion } from "framer-motion";
 import CsvUploadModal from "../components/CsvUploadModal";
 
-export default function Dashboard(transactions, setTransactions) {
+export default function Dashboard() {
   // Variables
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,6 +52,7 @@ export default function Dashboard(transactions, setTransactions) {
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
   const [expenseData, setExpenseData] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem("darkMode") === "enabled" ? true : false
   );

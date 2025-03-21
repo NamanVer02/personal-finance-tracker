@@ -37,6 +37,7 @@ export default function Login() {
 
       // Store the JWT token and user info
       const token = data.accessToken || data.token;
+      const refreshToken = data.refreshToken;
       const userId = data.id;
 
       if (!token) {
@@ -44,7 +45,7 @@ export default function Login() {
       }
 
       // Pass the token to your auth context
-      login(token, data.username, data.roles || ["user"], userId);
+      login(token, refreshToken, data.username, data.roles || ["user"], userId);
 
       // Show success toast
       toast.success("Login successful! Redirecting to dashboard...");

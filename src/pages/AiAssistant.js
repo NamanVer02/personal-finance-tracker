@@ -31,7 +31,6 @@ export default function AiAssistant({
   setTransactions,
   setIncomeData,
   setExpenseData,
-  transactions
 }) {
   // Navigation and authentication
   const navigate = useNavigate();
@@ -85,7 +84,26 @@ export default function AiAssistant({
 
     try {
         // Assuming you have the transactions data available in your component state or props
-        const transactionsData = transactions; // Replace with your actual transactions data
+        var transactionsData = []; // Replace with your actual transactions data
+
+        try {
+          const res = await fetch("http://localhost:8080/api/get", {
+            headers: {
+              Authorization: `Bearer ${token}`, 
+              'Content-Type': 'application/json',
+            },
+          });
+      
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+      
+          transactionsData = await res.json();
+        } catch (err) {
+          console.error("Error fetching transactions:", err);
+        }
+
+
 
         const response = await fetch("http://localhost:5000/chatbot", {
             method: "POST",
