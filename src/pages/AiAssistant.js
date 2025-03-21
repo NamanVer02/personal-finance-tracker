@@ -83,8 +83,7 @@ export default function AiAssistant({
     setIsLoading(true);
 
     try {
-        // Assuming you have the transactions data available in your component state or props
-        var transactionsData = []; // Replace with your actual transactions data
+        var transactionsData = [];
 
         try {
           const res = await fetch("http://localhost:8080/api/get", {
