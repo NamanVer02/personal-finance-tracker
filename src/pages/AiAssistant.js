@@ -26,6 +26,7 @@ import {
 } from "../utils/api";
 import { AnimatePresence } from "framer-motion";
 import CsvUploadModal from "../components/CsvUploadModal";
+import ReactMarkdown from "react-markdown"
 
 export default function AiAssistant({
   setTransactions,
@@ -503,7 +504,7 @@ export default function AiAssistant({
                         : "bg-gray-100 text-gray-700 shadow-neumorphic-inset-button"
                     }`}
                   >
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
                     <p className="text-xs mt-1 opacity-70 text-right">
                       {new Date(message.timestamp).toLocaleTimeString([], {
                         hour: "2-digit",
