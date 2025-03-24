@@ -3,12 +3,15 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PasswordResetModal from "../components/PasswordResetModal"; 
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [loading, setLoading] = useState(false);
+  // New state for password reset modal
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -60,8 +63,18 @@ export default function Login() {
     }
   };
 
+  // Handle opening the password reset modal
+  const openResetModal = () => {
+    setIsResetModalOpen(true);
+  };
+
+  // Handle closing the password reset modal
+  const closeResetModal = () => {
+    setIsResetModalOpen(false);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <div className={`min-h-screen flex items-center justify-center bg-gray-100 p-4 transition-all duration-300`}>
       <div className="bg-gray-100 p-8 rounded-lg shadow-neumorphic w-96">
         {/* Welcome Message */}
         <div className="text-center mb-6">
@@ -136,8 +149,19 @@ export default function Login() {
             {loading ? "Logging in..." : "Log In"}
           </button>
 
+          {/* Forgot Password Link */}
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={openResetModal}
+              className="text-sm text-purple-600 hover:underline"
+            >
+              Forgot Password?
+            </button>
+          </div>
+
           {/* Signup Link */}
-          <div className="text-center mt-4">
+          <div className="text-center mt-2">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
               <Link to="/signup" className="text-purple-600 hover:underline">
@@ -150,6 +174,13 @@ export default function Login() {
 
       {/* ToastContainer component to render toasts */}
       <ToastContainer draggable stacked/>
+      
+      {/* Password Reset Modal */}
+      <PasswordResetModal
+        isOpen={isResetModalOpen}
+        onClose={closeResetModal}
+        username={username}
+      />
     </div>
   );
 }

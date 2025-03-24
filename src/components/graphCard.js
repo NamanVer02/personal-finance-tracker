@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { motion, useAnimation, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const COLORS = [
   "#8B5CF6",  // Purple-500
@@ -19,7 +19,6 @@ const COLORS = [
 function GraphCard({ title, value, data }) {
   const darkMode = localStorage.getItem("darkMode");
   const [chartVisible, setChartVisible] = useState(false);
-  const chartControls = useAnimation();
 
   // Control when the pie chart should become visible
   useEffect(() => {
