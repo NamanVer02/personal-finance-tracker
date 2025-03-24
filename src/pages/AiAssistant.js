@@ -88,6 +88,7 @@ export default function AiAssistant({
 
         try {
           const res = await fetch("http://localhost:8080/api/get", {
+            method: "POST",
             headers: {
               Authorization: `Bearer ${token}`, 
               'Content-Type': 'application/json',
