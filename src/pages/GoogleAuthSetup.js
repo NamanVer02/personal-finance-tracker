@@ -10,7 +10,7 @@ export default function GoogleAuthSetup() {
   const { secret, qrCodeBase64 } = twoFactorSetup;
 
   const handleContinue = () => {
-    navigate("/dashboard");
+    navigate("/login");
   };
 
   return (

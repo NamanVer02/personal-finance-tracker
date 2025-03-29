@@ -37,6 +37,7 @@ import { Filter } from "lucide-react";
 import FilterAndSort from "../components/FilterAndSort";
 import { motion } from "framer-motion";
 import CsvUploadModal from "../components/CsvUploadModal";
+import Pagination from "../components/Pagination";
 
 export default function Dashboard() {
   // Variables
@@ -277,6 +278,8 @@ export default function Dashboard() {
             onSubmit={(id, data) => {
               handleUpdateTransaction(id, data, setTransactions, token);
               toast.success("Transaction updated successfully!");
+              fetchExpenseData(setExpenseData, userId, token);
+              fetchIncomeData(setIncomeData, userId, token);
             }}
             transaction={selectedTransaction}
           />
@@ -541,7 +544,6 @@ export default function Dashboard() {
                 Import CSV
               </button>
 
-
               <button
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
                 onClick={handleLogout}
@@ -753,13 +755,27 @@ export default function Dashboard() {
                                   toast.success(
                                     "Transaction deleted successfully!"
                                   );
+                                  fetchExpenseData(
+                                    setExpenseData,
+                                    userId,
+                                    token
+                                  );
+                                  fetchIncomeData(setIncomeData, userId, token);
                                 }}
                               />
                             </button>
                             <button className="text-gray-600 hover:text-purple-600">
                               <Edit
                                 className="h-4 w-4"
-                                onClick={() => handleEditClick(transaction)}
+                                onClick={() => {
+                                  handleEditClick(transaction);
+                                  fetchExpenseData(
+                                    setExpenseData,
+                                    userId,
+                                    token
+                                  );
+                                  fetchIncomeData(setIncomeData, userId, token);
+                                }}
                               />
                             </button>
                           </td>
@@ -767,7 +783,7 @@ export default function Dashboard() {
                       ))}
                   </motion.tbody>
                 </table>
-                <div className="flex items-center justify-between mt-4">
+                {/* <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-gray-600">
                     Showing{" "}
                     {filteredTransactions.length > 0
@@ -809,7 +825,14 @@ export default function Dashboard() {
                       Next
                     </button>
                   </div>
-                </div>
+                </div> */}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={filteredTransactions.length}
+                />
               </div>
             </motion.div>
           </div>
