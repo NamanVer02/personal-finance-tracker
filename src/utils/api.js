@@ -1,11 +1,24 @@
 export const fetchTransactions = async (setTransactions, token) => {  
   try {
     const res = await fetch("http://localhost:8080/api/get", {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`, // Include the token in the headers
         'Content-Type': 'application/json',
       },
     });
+
+    // if (res.status === 401) {
+    //   const newToken = await refreshAccessToken();
+    //   if (newToken) {
+    //     res = await fetch("http://localhost:8080/api/get", {
+    //       headers: {
+    //         Authorization: `Bearer ${newToken}`, // Include the token in the headers
+    //         'Content-Type': 'application/json',
+    //       },
+    //     });
+    //   }
+    // }
 
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
@@ -100,7 +113,7 @@ export const handleDownloadCsv = async (token, userId) => {
         Authorization: `Bearer ${token}`, // Include the token in the headers
         'Content-Type': 'application/json',
       },
-      method: "GET",
+      method: "POST",
     });
 
     if (!response.ok) throw new Error("Failed to download CSV");
@@ -127,7 +140,7 @@ export const handleDownloadPdf = async (token, userId) => {
         Authorization: `Bearer ${token}`, // Include the token in the headers
         'Content-Type': 'application/json',
       },
-      method: "GET",
+      method: "POST",
     });
     
     if (!response.ok) throw new Error("Failed to download PDF");
@@ -149,6 +162,7 @@ export const handleDownloadPdf = async (token, userId) => {
 export const fetchIncomeData = async (setIncomeData, userId, token) => {
   try {
     const res = await fetch(`http://localhost:8080/api/get/summary/income/${userId}`, {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`, // Include the token in the headers
         "Content-Type": "application/json",
@@ -175,6 +189,7 @@ export const fetchIncomeData = async (setIncomeData, userId, token) => {
 export const fetchExpenseData = async (setExpenseData, userId, token) => {
   try {
     const res = await fetch(`http://localhost:8080/api/get/summary/expense/${userId}`, {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`, // Include the token in the headers
         "Content-Type": "application/json",

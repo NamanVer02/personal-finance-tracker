@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
-import "react-toastify/dist/ReactToastify.css"; // Import the default styles for the toast notifications
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import PasswordResetModal from "../components/PasswordResetModal"; 
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [twoFactorCode, setTwoFactorCode] = useState("");
   const [loading, setLoading] = useState(false);
+  // New state for password reset modal
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -24,17 +28,19 @@ export default function Login() {
         body: JSON.stringify({
           username,
           password,
+          twoFactorCode: parseInt(twoFactorCode, 10) || null, // Convert to integer as per your API requirement
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Invalid username or password");
+        throw new Error(data.message || "Invalid credentials or 2FA code");
       }
 
       // Store the JWT token and user info
       const token = data.accessToken || data.token;
+      const refreshToken = data.refreshToken;
       const userId = data.id;
 
       if (!token) {
@@ -42,7 +48,7 @@ export default function Login() {
       }
 
       // Pass the token to your auth context
-      login(token, data.username, data.roles || ["user"], userId);
+      login(token, refreshToken, data.username, data.roles || ["user"], userId);
 
       // Show success toast
       toast.success("Login successful! Redirecting to dashboard...");
@@ -57,8 +63,18 @@ export default function Login() {
     }
   };
 
+  // Handle opening the password reset modal
+  const openResetModal = () => {
+    setIsResetModalOpen(true);
+  };
+
+  // Handle closing the password reset modal
+  const closeResetModal = () => {
+    setIsResetModalOpen(false);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <div className={`min-h-screen flex items-center justify-center bg-gray-100 p-4 transition-all duration-300`}>
       <div className="bg-gray-100 p-8 rounded-lg shadow-neumorphic w-96">
         {/* Welcome Message */}
         <div className="text-center mb-6">
@@ -106,6 +122,24 @@ export default function Login() {
             />
           </div>
 
+          {/* 2FA Code Field */}
+          <div>
+            <label
+              htmlFor="twoFactorCode"
+              className="block text-sm font-medium text-gray-600"
+            >
+              2FA Code
+            </label>
+            <input
+              type="text"
+              id="twoFactorCode"
+              value={twoFactorCode}
+              onChange={(e) => setTwoFactorCode(e.target.value)}
+              className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
+              required
+            />
+          </div>
+
           {/* Login Button */}
           <button
             type="submit"
@@ -115,8 +149,19 @@ export default function Login() {
             {loading ? "Logging in..." : "Log In"}
           </button>
 
+          {/* Forgot Password Link */}
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={openResetModal}
+              className="text-sm text-purple-600 hover:underline"
+            >
+              Forgot Password?
+            </button>
+          </div>
+
           {/* Signup Link */}
-          <div className="text-center mt-4">
+          <div className="text-center mt-2">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
               <Link to="/signup" className="text-purple-600 hover:underline">
@@ -129,6 +174,13 @@ export default function Login() {
 
       {/* ToastContainer component to render toasts */}
       <ToastContainer draggable stacked/>
+      
+      {/* Password Reset Modal */}
+      <PasswordResetModal
+        isOpen={isResetModalOpen}
+        onClose={closeResetModal}
+        username={username}
+      />
     </div>
   );
 }

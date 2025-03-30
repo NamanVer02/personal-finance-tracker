@@ -100,7 +100,7 @@ export default function UserTransactions(setIncomeData, setExpenseData, setTrans
       const response = await fetch(
         `http://localhost:8080/api/get/admin/transactions`,
         {
-          method: "GET",
+          method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -132,7 +132,7 @@ export default function UserTransactions(setIncomeData, setExpenseData, setTrans
       const response = await fetch(
         `http://localhost:8080/api/get/admin/users`,
         {
-          method: "GET",
+          method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -174,7 +174,7 @@ export default function UserTransactions(setIncomeData, setExpenseData, setTrans
       }
 
       const response = await fetch(url, {
-        method: "GET",
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -209,7 +209,7 @@ export default function UserTransactions(setIncomeData, setExpenseData, setTrans
       }
 
       const response = await fetch(url, {
-        method: "GET",
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },

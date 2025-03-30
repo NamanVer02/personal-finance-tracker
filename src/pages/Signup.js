@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../AuthContext";
 import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
 
 export default function Signup() {
@@ -10,7 +9,6 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -54,46 +52,14 @@ export default function Signup() {
       // If registration is successful, log the user in
       toast.success("Registration successful");
 
-      try {
-        const response = await fetch("http://localhost:8080/api/auth/signin", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username,
-            password,
-          }),
-        });
+      const qrCodeBase64 = data.qrCodeBase64;
+      console.log(qrCodeBase64);
+      navigate("/setup-2fa", { 
+        state: { 
+          twoFactorSetup: data.twoFactorSetup 
+        } 
+      });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Invalid username or password");
-        }
-
-        // Store the JWT token and user info
-        const token = data.accessToken || data.token;
-        const userId = data.id;
-
-        if (!token) {
-          throw new Error("Authentication failed: No token received");
-        }
-
-        // Pass the token to your auth context
-        login(token, data.username, data.roles || ["user"], userId);
-
-        // Show success toast
-        toast.success("Login successful! Redirecting to dashboard...");
-
-        // Redirect to dashboard
-        navigate("/dashboard");
-      } catch (err) {
-        // Show error toast
-        toast.error(err.message || "Login failed. Please try again.");
-      } finally {
-        setLoading(false);
-      }
     } catch (err) {
       toast.error("Registration failed. Please try again.");
     } finally {
