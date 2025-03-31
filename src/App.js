@@ -6,6 +6,7 @@ import Signup from "./pages/Signup";
 import UserTransactions from "./pages/UserTransactions";
 import AiAssistant from "./pages/AiAssistant";
 import GoogleAuthSetup from "./pages/GoogleAuthSetup";
+import AccountantDashboard from "./pages/AccountantDashboard";
 
 const App = () => {
     useEffect(() => {
@@ -27,6 +28,7 @@ const App = () => {
             <Route path="/signup" element={<Signup />} />
             <Route path="/ai-assistant" element={<AiAssistant/>} />
             <Route path="/setup-2fa" element={<GoogleAuthSetup />} />
+            <Route path="/accountant-dashboard" element={<AccountantDashboard />} />
         </Routes>
         </div>
     );

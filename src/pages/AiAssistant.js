@@ -263,6 +263,23 @@ export default function AiAssistant({
                   </button>
                 )}
 
+                {currentUser?.roles?.includes("ROLE_ACCOUNTANT") && (
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/accountant-dashboard"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/accountant-dashboard");
+                    }}
+                  >
+                    <BarChart3 className="h-4 w-4 text-gray-600" />
+                    Accountant Dashboard
+                  </button>
+                )}
+
                 <button
                   className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
                     location.pathname === "/ai-assistant"
@@ -383,6 +400,21 @@ export default function AiAssistant({
                 >
                   <Users className="h-4 w-4 text-gray-600" />
                   User Transactions
+                </button>
+              )}
+              {currentUser?.roles?.includes("ROLE_ACCOUNTANT") && (
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/accountant-dashboard"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => {
+                    navigate("/accountant-dashboard");
+                  }}
+                >
+                  <BarChart3 className="h-4 w-4 text-gray-600" />
+                  Accountant Dashboard
                 </button>
               )}
               <button

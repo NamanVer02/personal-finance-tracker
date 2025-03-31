@@ -102,9 +102,6 @@ export default function Dashboard() {
 
   // Functions
   const handlePageChange = (page) => setCurrentPage(page);
-  const handlePrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNextPage = () =>
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 
   const handleLogout = () => {
     logout();
@@ -370,6 +367,23 @@ export default function Dashboard() {
                   </button>
                 )}
 
+                {currentUser?.roles?.includes("ROLE_ACCOUNTANT") && (
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/accountant-dashboard"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/accountant-dashboard");
+                    }}
+                  >
+                    <BarChart3 className="h-4 w-4 text-gray-600" />
+                    Accountant Dashboard
+                  </button>
+                )}
+
                 <button
                   className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
                     location.pathname === "/ai-assistant"
@@ -489,6 +503,21 @@ export default function Dashboard() {
                 >
                   <Users className="h-4 w-4 text-gray-600" />
                   User Transactions
+                </button>
+              )}
+              {currentUser?.roles?.includes("ROLE_ACCOUNTANT") && (
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/accountant-dashboard"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => {
+                    navigate("/accountant-dashboard");
+                  }}
+                >
+                  <BarChart3 className="h-4 w-4 text-gray-600" />
+                  Accountant Dashboard
                 </button>
               )}
               <button
@@ -783,49 +812,6 @@ export default function Dashboard() {
                       ))}
                   </motion.tbody>
                 </table>
-                {/* <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-gray-600">
-                    Showing{" "}
-                    {filteredTransactions.length > 0
-                      ? (currentPage - 1) * itemsPerPage + 1
-                      : 0}{" "}
-                    to{" "}
-                    {Math.min(
-                      currentPage * itemsPerPage,
-                      filteredTransactions.length
-                    )}{" "}
-                    of {filteredTransactions.length} entries
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handlePrevPage}
-                      className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                      disabled={currentPage === 1}
-                    >
-                      Prev
-                    </button>
-                    {[...Array(totalPages)].map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handlePageChange(index + 1)}
-                        className={`px-3 py-1 text-sm rounded-lg ${
-                          currentPage === index + 1
-                            ? "shadow-neumorphic-inset-button"
-                            : "bg-gray-100 shadow-neumorphic-button"
-                        }`}
-                      >
-                        {index + 1}
-                      </button>
-                    ))}
-                    <button
-                      onClick={handleNextPage}
-                      className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div> */}
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}

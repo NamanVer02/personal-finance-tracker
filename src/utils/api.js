@@ -211,3 +211,91 @@ export const fetchExpenseData = async (setExpenseData, userId, token) => {
     setExpenseData([]);
   }
 };
+
+export const fetchOverallSummary = async (setOverallSummary, token) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/accountant/summary/overall`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const data = await res.json();
+    setOverallSummary(data);
+  } catch (err) {
+    console.error("Error fetching overall summary:", err);
+    setOverallSummary({});
+  }
+};
+
+export const fetchUsersList = async (setUsers, token) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/accountant/users`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const data = await res.json();
+    setUsers(data);
+  } catch (err) {
+    console.error("Error fetching users list:", err);
+    setUsers([]);
+  }
+};
+
+export const fetchUserSummary = async (setUserSummary, userId, token) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/accountant/summary/user/${userId}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const data = await res.json();
+    setUserSummary(data);
+  } catch (err) {
+    console.error("Error fetching user summary:", err);
+    setUserSummary({});
+  }
+};
+
+export const fetchMonthlySummary = async (setMonthlySummary, token) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/accountant/summary/monthly`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const data = await res.json();
+    setMonthlySummary(data);
+  } catch (err) {
+    console.error("Error fetching monthly summary:", err);
+    setMonthlySummary({});
+  }
+};
