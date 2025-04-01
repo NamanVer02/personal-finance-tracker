@@ -19,6 +19,10 @@ const COLORS = [
 function GraphCard({ title, value, data }) {
   const darkMode = localStorage.getItem("darkMode");
   const [chartVisible, setChartVisible] = useState(false);
+  const formattedData = Object.keys(data).map((key) => ({
+    name: key,
+    value: data[key],
+  }));
 
   // Control when the pie chart should become visible
   useEffect(() => {
@@ -93,7 +97,7 @@ function GraphCard({ title, value, data }) {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={data}
+                    data={formattedData}
                     cx="50%"
                     cy="50%"
                     innerRadius={40}
@@ -106,7 +110,7 @@ function GraphCard({ title, value, data }) {
                     startAngle={90}
                     endAngle={-270}
                   >
-                    {data.map((entry, index) => (
+                    {formattedData.map((_, index) => (
                       <Cell 
                         key={`cell-${index}`} 
                         fill={COLORS[index % COLORS.length]} 
@@ -128,7 +132,7 @@ function GraphCard({ title, value, data }) {
         animate="visible"
         transition={{ delay: 0.8, duration: 0.5 }}
       >
-        {data.map((category, index) => (
+        {formattedData.map((category, index) => (
           <motion.div 
             key={index} 
             className="flex items-center"
