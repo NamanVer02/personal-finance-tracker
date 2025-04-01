@@ -69,6 +69,12 @@ export const handleDeleteTransaction = async (id, setTransactions, token) => {
       },
       method: "DELETE",
     });
+
+    if (response.status === 409) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "This record was modified by another user. Please refresh and try again.");
+    }
+
     if (!response.ok) throw new Error("Failed to delete transaction");
     setTransactions((prev) =>
       prev.filter((transaction) => transaction.id !== id)
@@ -78,31 +84,42 @@ export const handleDeleteTransaction = async (id, setTransactions, token) => {
   }
 };
 
-export const handleUpdateTransaction = async (
-  id,
-  updatedData,
-  setTransactions,
-  token
-) => {
+export const handleUpdateTransaction = async (transactionId, formData, token) => {
   try {
-    const response = await fetch(`http://localhost:8080/api/put/${id}`, {
+
+    const res = await fetch(`http://localhost:8080/api/put/${transactionId}`, {
       method: "PUT",
       headers: {
-        Authorization: `Bearer ${token}`, // Include the token in the headers
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(updatedData),
+      body: JSON.stringify(formData),
     });
 
-    if (!response.ok) throw new Error("Failed to update transaction");
-    setTransactions((prev) =>
-      prev.map((transaction) =>
-        transaction.id === id ? { ...transaction, ...updatedData } : transaction
-      )
-    );
+    console.log(transactionId);
+    console.log(formData);
 
-  } catch (error) {
-    console.error("Error updating transaction:", error);
+    if (res.status === 409) {
+      // Handle version conflict
+      return {
+        success: false,
+        error: "This transaction was updated by someone else. Please refresh and try again.",
+        isConflict: true
+      };
+    }
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return { success: true, data };
+  } catch (err) {
+    console.error("Error updating transaction:", err);
+    return { 
+      success: false, 
+      error: err.message || "Failed to update transaction"
+    };
   }
 };
 

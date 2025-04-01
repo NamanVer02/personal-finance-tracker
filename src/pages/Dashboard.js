@@ -272,11 +272,28 @@ export default function Dashboard() {
         {showEditPopup && (
           <EditTransaction
             onClose={() => setShowEditPopup(false)}
-            onSubmit={(id, data) => {
-              handleUpdateTransaction(id, data, setTransactions, token);
-              toast.success("Transaction updated successfully!");
-              fetchExpenseData(setExpenseData, userId, token);
-              fetchIncomeData(setIncomeData, userId, token);
+            onSubmit={async (id, data) => {
+              try {
+                // Attempt to update the transaction
+                await handleUpdateTransaction(id, data, token);
+
+                // Fetch updated data
+                await fetchExpenseData(setExpenseData, userId, token);
+                await fetchIncomeData(setIncomeData, userId, token);
+
+                // If everything goes well, return success
+                return { success: true };
+              } catch (error) {
+                // Handle specific error cases if needed
+                console.error("Error updating transaction:", error);
+
+                // Return an object indicating failure
+                return {
+                  success: false,
+                  isConflict: error.isConflict || false, // Adjust based on your error handling logic
+                  error: error.message || "An error occurred",
+                };
+              }
             }}
             transaction={selectedTransaction}
           />
@@ -790,6 +807,7 @@ export default function Dashboard() {
                                     token
                                   );
                                   fetchIncomeData(setIncomeData, userId, token);
+                                  console.log(transactions);
                                 }}
                               />
                             </button>
