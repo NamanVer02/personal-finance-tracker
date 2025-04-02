@@ -96,7 +96,6 @@ export const handleUpdateTransaction = async (transactionId, formData, token) =>
       body: JSON.stringify(formData),
     });
 
-    console.log(transactionId);
     console.log(formData);
 
     if (res.status === 409) {

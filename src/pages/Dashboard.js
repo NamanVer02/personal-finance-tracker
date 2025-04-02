@@ -271,17 +271,28 @@ export default function Dashboard() {
       <AnimatePresence>
         {showEditPopup && (
           <EditTransaction
-            onClose={() => setShowEditPopup(false)}
+            onClose={() => {
+              setShowEditPopup(false);
+              fetchTransactions(setTransactions, token);
+              fetchIncomeData(setIncomeData, userId, token);
+              fetchExpenseData(setExpenseData, userId, token);
+            }}
             onSubmit={async (id, data) => {
               try {
                 // Attempt to update the transaction
-                await handleUpdateTransaction(id, data, token);
+                const res = await handleUpdateTransaction(id, data, token);
+                
+                if(!res.success) {
+                  toast.error("Older version of the entity is being edited. Please refresh the data before editing.")
+                  return ;
+                }
 
                 // Fetch updated data
                 await fetchExpenseData(setExpenseData, userId, token);
                 await fetchIncomeData(setIncomeData, userId, token);
 
                 // If everything goes well, return success
+                toast.success("Transaction updated sucessfully")
                 return { success: true };
               } catch (error) {
                 // Handle specific error cases if needed

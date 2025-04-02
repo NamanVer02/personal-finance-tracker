@@ -82,7 +82,6 @@ export default function EditTransaction({ onClose, onSubmit, transaction }) {
         return;
       }
 
-      toast.success("Transaction updated successfully");
       onClose();
     } catch (error) {
       console.log(error);
