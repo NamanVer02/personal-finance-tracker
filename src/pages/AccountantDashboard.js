@@ -193,10 +193,11 @@ export default function AccountantDashboard({
         }
       );
 
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+      
       const data = await response.json();
       setUserSummary(data);
     } catch (error) {

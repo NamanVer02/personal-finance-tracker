@@ -96,7 +96,6 @@ export const handleUpdateTransaction = async (transactionId, formData, token) =>
       body: JSON.stringify(formData),
     });
 
-    console.log(formData);
 
     if (res.status === 409) {
       // Handle version conflict
@@ -190,11 +189,7 @@ export const fetchIncomeData = async (setIncomeData, userId, token) => {
     }
     
     const data = await res.json();
-    const formattedData = Object.keys(data).map((key) => ({
-      name: key,
-      value: data[key],
-    }));
-    setIncomeData(formattedData);
+    setIncomeData(data);
   } catch (err) {
     console.error("Error fetching income data:", err);
     setIncomeData([]);
@@ -217,11 +212,7 @@ export const fetchExpenseData = async (setExpenseData, userId, token) => {
     }
     
     const data = await res.json();
-    const formattedData = Object.keys(data).map((key) => ({
-      name: key,
-      value: data[key],
-    }));
-    setExpenseData(formattedData);
+    setExpenseData(data);
   } catch (err) {
     console.error("Error fetching income data:", err);
     setExpenseData([]);

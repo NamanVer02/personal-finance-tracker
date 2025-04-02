@@ -143,14 +143,23 @@ export default function Dashboard() {
   }, [isAuthenticated, token, userId]);
 
   useEffect(() => {
+    const formattedIncomeData = Object.keys(incomeData).map((key) => ({
+      name: key,
+      value: incomeData[key],
+    }));
     setTotalIncome(
-      incomeData.reduce(
+      formattedIncomeData.reduce(
         (accumulator, current) => accumulator + current.value,
         0
       )
     );
+
+    const formattedExpenseData = Object.keys(expenseData).map((key) => ({
+      name: key,
+      value: expenseData[key],
+    }));
     setTotalExpense(
-      expenseData.reduce(
+      formattedExpenseData.reduce(
         (accumulator, current) => accumulator + current.value,
         0
       )
@@ -818,7 +827,6 @@ export default function Dashboard() {
                                     token
                                   );
                                   fetchIncomeData(setIncomeData, userId, token);
-                                  console.log(transactions);
                                 }}
                               />
                             </button>
