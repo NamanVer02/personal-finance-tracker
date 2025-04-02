@@ -7,6 +7,7 @@ import UserTransactions from "./pages/UserTransactions";
 import AiAssistant from "./pages/AiAssistant";
 import GoogleAuthSetup from "./pages/GoogleAuthSetup";
 import AccountantDashboard from "./pages/AccountantDashboard";
+import CustomCursor from "./components/CustomCursor";
 
 const App = () => {
     useEffect(() => {
@@ -20,7 +21,8 @@ const App = () => {
       }, []);
 
     return (
-        <div clasname="no-scrollbar">
+        <div clasname="no-scrollbar cursor-none">
+        {/* <CustomCursor /> */}
         <Routes>
             <Route path="/dashboard" element={<Dashboard/>} />
             <Route path="/user-transactions" element={<UserTransactions />} />
