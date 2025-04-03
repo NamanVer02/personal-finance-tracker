@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 
 const expenseCategories = [
   "Housing",
@@ -25,17 +26,24 @@ const incomeCategories = [
 ];
 
 export default function EditTransaction({ onClose, onSubmit, transaction }) {
-  const [formData, setFormData] = useState({
-    label: transaction?.label || "",
-    amount: transaction?.amount || "",
-    type: transaction?.type || "Expense",
-    category: transaction?.category || "Miscellaneous",
-    date: transaction?.date ? new Date(transaction?.date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
-  }, []);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [formData, setFormData] = useState(
+    {
+      label: transaction?.label || "",
+      amount: transaction?.amount || "",
+      type: transaction?.type || "Expense",
+      category: transaction?.category || "Miscellaneous",
+      date: transaction?.date
+        ? new Date(transaction?.date).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0],
+      version: transaction?.version || 0,
+    },
+    []
+  );
 
-  console.log(transaction);
-
-  let categories = formData.type === "Expense" ? expenseCategories : incomeCategories;
+  let categories =
+    formData.type === "Expense" ? expenseCategories : incomeCategories;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,9 +63,32 @@ export default function EditTransaction({ onClose, onSubmit, transaction }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    onSubmit(transaction.id, formData);
-    onClose();
+    try {
+      const result = await onSubmit(transaction.id, formData);
+
+      if (!result || typeof result.success === "undefined") {
+        toast.error("Unexpected response from server");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!result.success) {
+        if (result.isConflict) {
+          toast.error(result.error || "Failed to update transaction");
+        }
+        setIsSubmitting(false);
+        return;
+      }
+
+      onClose();
+    } catch (error) {
+      console.log(error);
+      toast.error("An error occurred while updating the transaction");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -201,9 +232,10 @@ export default function EditTransaction({ onClose, onSubmit, transaction }) {
           {/* Submit Button */}
           <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg shadow-neumorphic-purple hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
           >
-            Update Transaction
+            {isSubmitting ? "Updating..." : "Update Transaction"}
           </button>
         </form>
       </motion.div>

@@ -143,14 +143,23 @@ export default function Dashboard() {
   }, [isAuthenticated, token, userId]);
 
   useEffect(() => {
+    const formattedIncomeData = Object.keys(incomeData).map((key) => ({
+      name: key,
+      value: incomeData[key],
+    }));
     setTotalIncome(
-      incomeData.reduce(
+      formattedIncomeData.reduce(
         (accumulator, current) => accumulator + current.value,
         0
       )
     );
+
+    const formattedExpenseData = Object.keys(expenseData).map((key) => ({
+      name: key,
+      value: expenseData[key],
+    }));
     setTotalExpense(
-      expenseData.reduce(
+      formattedExpenseData.reduce(
         (accumulator, current) => accumulator + current.value,
         0
       )
@@ -271,12 +280,40 @@ export default function Dashboard() {
       <AnimatePresence>
         {showEditPopup && (
           <EditTransaction
-            onClose={() => setShowEditPopup(false)}
-            onSubmit={(id, data) => {
-              handleUpdateTransaction(id, data, setTransactions, token);
-              toast.success("Transaction updated successfully!");
-              fetchExpenseData(setExpenseData, userId, token);
+            onClose={() => {
+              setShowEditPopup(false);
+              fetchTransactions(setTransactions, token);
               fetchIncomeData(setIncomeData, userId, token);
+              fetchExpenseData(setExpenseData, userId, token);
+            }}
+            onSubmit={async (id, data) => {
+              try {
+                // Attempt to update the transaction
+                const res = await handleUpdateTransaction(id, data, token);
+                
+                if(!res.success) {
+                  toast.error("Older version of the entity is being edited. Please refresh the data before editing.")
+                  return ;
+                }
+
+                // Fetch updated data
+                await fetchExpenseData(setExpenseData, userId, token);
+                await fetchIncomeData(setIncomeData, userId, token);
+
+                // If everything goes well, return success
+                toast.success("Transaction updated sucessfully")
+                return { success: true };
+              } catch (error) {
+                // Handle specific error cases if needed
+                console.error("Error updating transaction:", error);
+
+                // Return an object indicating failure
+                return {
+                  success: false,
+                  isConflict: error.isConflict || false, // Adjust based on your error handling logic
+                  error: error.message || "An error occurred",
+                };
+              }
             }}
             transaction={selectedTransaction}
           />
