@@ -1,32 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
-import { handleAddTransaction } from "../utils/api";
-
-const expenseCategories = [
-  "Housing",
-  "Utilities",
-  "Groceries",
-  "Transportation",
-  "Insurance",
-  "Healthcare",
-  "Debt Repayment",
-  "Entertainment & Leisure",
-  "Savings & Emergency Fund",
-  "Investments",
-  "Miscellaneous",
-];
-
-const incomeCategories = [
-  "Salary",
-  "Business",
-  "Investments",
-  "Gifts",
-  "Miscellaneous",
-];
+import { getExpenseCategories, getIncomeCategories ,handleAddTransaction } from "../utils/api";
 
 export default function AddTransaction({ onClose, onSubmit }) {
   const token = localStorage.getItem("token");
+  const [expenseCategories, setExpenseCategories] = useState([]);
+  const [incomeCategories, setIncomeCategories] = useState([]);
 
   const [formData, setFormData] = useState({
     label: "",
@@ -58,6 +38,11 @@ export default function AddTransaction({ onClose, onSubmit }) {
     
     handleAddTransaction(formData, onSubmit, onClose, token);
   };
+
+  useEffect(() => {
+    getExpenseCategories(setExpenseCategories, token);
+    getIncomeCategories(setIncomeCategories, token);
+  }, []);
 
   return (
     <motion.div

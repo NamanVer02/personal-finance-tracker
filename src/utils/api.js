@@ -306,3 +306,49 @@ export const fetchMonthlySummary = async (setMonthlySummary, token) => {
     setMonthlySummary({});
   }
 };
+
+export const getExpenseCategories = async (setExpenseCategories, token) => {
+  try {
+    const res = await fetch("http://localhost:8080/api/categories/expense", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const data = await res.json();
+    const namesArray = Object.values(data).map(item => item.name);
+    setExpenseCategories(namesArray);
+  } catch (err) {
+    console.error("Error fetching expense categories:", err);
+    setExpenseCategories([]);
+  }
+}
+
+export const getIncomeCategories = async (setIncomeCategories, token) => {
+  try {
+    const res = await fetch("http://localhost:8080/api/categories/income", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const data = await res.json();
+    const namesArray = Object.values(data).map(item => item.name);
+    setIncomeCategories(namesArray);
+  } catch (err) {
+    console.error("Error fetching income categories:", err);
+    setIncomeCategories([]);
+  }
+}

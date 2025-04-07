@@ -2,32 +2,14 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-
-const expenseCategories = [
-  "Housing",
-  "Utilities",
-  "Groceries",
-  "Transportation",
-  "Insurance",
-  "Healthcare",
-  "Debt Repayment",
-  "Entertainment & Leisure",
-  "Savings & Emergency Fund",
-  "Investments",
-  "Miscellaneous",
-];
-
-const incomeCategories = [
-  "Salary",
-  "Business",
-  "Investments",
-  "Gifts",
-  "Miscellaneous",
-];
+import { useEffect } from "react";
+import { getExpenseCategories, getIncomeCategories } from "../utils/api";
 
 export default function EditTransaction({ onClose, onSubmit, transaction }) {
+  const token = localStorage.getItem("token");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isError, setIsError] = useState(false);
+  const [expenseCategories, setExpenseCategories] = useState([]);
+  const [incomeCategories, setIncomeCategories] = useState([]);
   const [formData, setFormData] = useState(
     {
       label: transaction?.label || "",
@@ -90,6 +72,11 @@ export default function EditTransaction({ onClose, onSubmit, transaction }) {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+      getExpenseCategories(setExpenseCategories, token);
+      getIncomeCategories(setIncomeCategories, token);
+    }, []);
 
   return (
     <motion.div
