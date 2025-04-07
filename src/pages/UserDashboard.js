@@ -5,24 +5,16 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
 import {
-  Menu,
   X,
-  User,
-  BarChart3,
-  MessageCircle,
-  Sun,
-  Moon,
-  LogOut,
-  Users,
-  Trash2,
   Shield,
   Eye,
   EyeOff,
   Save,
+  Trash2,
 } from "lucide-react";
+import Navbar from "../components/Navbar";
 
 export default function UserDashboard() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
 
@@ -45,13 +37,6 @@ export default function UserDashboard() {
 
   const navigate = useNavigate();
   const location = useLocation();
-
-  const toggleDarkMode = () => {
-    const isDarkMode = document.documentElement.classList.toggle("dark");
-    setIsDarkMode(isDarkMode);
-    localStorage.setItem("darkMode", isDarkMode ? "enabled" : "disabled");
-    toast.info(`Dark mode ${isDarkMode ? "enabled" : "disabled"}`);
-  };
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -76,7 +61,6 @@ export default function UserDashboard() {
   const handleLogout = () => {
     logout();
     navigate("/login");
-    toast.success("Logged out successfully");
   };
 
   const formatLoginDate = (dateString) => {
@@ -207,17 +191,6 @@ export default function UserDashboard() {
   };
 
   useEffect(() => {
-  const savedDarkMode = localStorage.getItem("darkMode");
-    if (savedDarkMode === "enabled") {
-      document.documentElement.classList.add("dark");
-      setIsDarkMode(true);
-    } else {
-      document.documentElement.classList.remove("dark");
-      setIsDarkMode(false);
-    }
-  }, []);
-
-  useEffect(() => {
     // Wait until auth is initialized
     if (loading) {
       console.log("Auth system still initializing...");
@@ -280,225 +253,14 @@ export default function UserDashboard() {
 
   return (
     <div className={`min-h-screen bg-gray-100 transition-all duration-300`}>
-      {/* Mobile Top Navbar - only visible on small screens */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-gray-100 shadow-md lg:hidden">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-purple-600" />
-            <h3 className="font-medium">{currentUser?.username || "User"}</h3>
-          </div>
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg bg-gray-100 shadow-neumorphic-button"
-          >
-            {mobileMenuOpen ? (
-              <X className="h-5 w-5 text-gray-600" />
-            ) : (
-              <Menu className="h-5 w-5 text-gray-600" />
-            )}
-          </button>
-        </div>
-
-        {/* Mobile menu overlay */}
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-gray-100 shadow-md"
-          >
-            <div className="p-4 space-y-4">
-              <div className="space-y-3">
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/dashboard"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/dashboard");
-                  }}
-                >
-                  <BarChart3 className="h-4 w-4 text-gray-600" />
-                  Dashboard
-                </button>
-
-                {currentUser?.roles?.includes("ROLE_ADMIN") && (
-                  <button
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                      location.pathname === "/user-transactions"
-                        ? "shadow-neumorphic-inset-button"
-                        : "shadow-neumorphic-button"
-                    }`}
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate("/user-transactions");
-                    }}
-                  >
-                    <Users className="h-4 w-4 text-gray-600" />
-                    User Transactions
-                  </button>
-                )}
-
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/user-settings"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/user-settings");
-                  }}
-                >
-                  <User className="h-4 w-4 text-gray-600" />
-                  Account Settings
-                </button>
-
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/ai-assistant"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/ai-assistant");
-                  }}
-                >
-                  <MessageCircle className="h-4 w-4 text-gray-600" />
-                  AI Assistant
-                </button>
-
-                <button
-                  onClick={toggleDarkMode}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                >
-                  {isDarkMode ? (
-                    <Sun className="h-4 w-4 text-gray-600" />
-                  ) : (
-                    <Moon className="h-4 w-4 text-gray-600" />
-                  )}
-                  {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
-                </button>
-
-                <button
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
-                  onClick={() => {
-                    handleLogout();
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Fixed Sidebar */}
-      <motion.nav className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="h-10 w-10 rounded-full bg-purple-600" />
-          <div>
-            <h3 className="font-medium">{currentUser?.username || "User"}</h3>
-            <p className="text-sm text-gray-600">
-              {currentUser?.roles
-                ?.map((role) =>
-                  role
-                    .replace("ROLE_", "")
-                    .toLowerCase()
-                    .split(" ")
-                    .map(function (word) {
-                      return word.charAt(0).toUpperCase() + word.slice(1);
-                    })
-                    .join(" ")
-                )
-                .join(", ") || "User"}
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="px-2 py-1">
-            <h4 className="mb-2 text-sm font-medium text-gray-600">MENU</h4>
-            <div className="space-y-4">
-              <button
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                  location.pathname === "/dashboard"
-                    ? "shadow-neumorphic-inset-button"
-                    : "shadow-neumorphic-button"
-                }`}
-                onClick={() => navigate("/dashboard")}
-              >
-                <BarChart3 className="h-4 w-4 text-gray-600" />
-                Dashboard
-              </button>
-
-              {currentUser?.roles?.includes("ROLE_ADMIN") && (
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/user-transactions"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => navigate("/user-transactions")}
-                >
-                  <Users className="h-4 w-4 text-gray-600" />
-                  User Transactions
-                </button>
-              )}
-
-              <button
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-inset-button`}
-              >
-                <User className="h-4 w-4 text-gray-600" />
-                Account Settings
-              </button>
-
-              <button
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                  location.pathname === "/ai-assistant"
-                    ? "shadow-neumorphic-inset-button"
-                    : "shadow-neumorphic-button"
-                }`}
-                onClick={() => navigate("/ai-assistant")}
-              >
-                <MessageCircle className="h-4 w-4 text-gray-600" />
-                AI Assistant
-              </button>
-            </div>
-          </div>
-
-          <div className="px-2 py-1">
-            <h4 className="mb-2 text-sm font-medium text-gray-600">ACCOUNT</h4>
-            <div className="space-y-4">
-              <button
-                onClick={toggleDarkMode}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors bg-gray-100 text-gray-700 shadow-neumorphic-button`}
-              >
-                {isDarkMode ? (
-                  <Sun className="h-4 w-4 text-gray-600" />
-                ) : (
-                  <Moon className="h-4 w-4 text-gray-600" />
-                )}
-                {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
-              </button>
-
-              <button
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </motion.nav>
+      <Navbar
+        currentUser={currentUser}
+        token={token}
+        userId={currentUser?.userId}
+        logout={handleLogout}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+      />
 
       {/* Main Content */}
       <div className="lg:ml-64 min-h-screen pt-20 lg:pt-8 px-4 lg:px-8">

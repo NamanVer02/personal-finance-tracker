@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   Upload,
+  Filter,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -33,11 +34,10 @@ import {
 } from "../utils/api";
 import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
 import "react-toastify/dist/ReactToastify.css"; // Import the default styles for the toast notifications
-import { Filter } from "lucide-react";
 import FilterAndSort from "../components/FilterAndSort";
 import { motion } from "framer-motion";
-import CsvUploadModal from "../components/CsvUploadModal";
 import Pagination from "../components/Pagination";
+import Navbar from "../components/Navbar";
 
 export default function Dashboard() {
   // Variables
@@ -62,8 +62,6 @@ export default function Dashboard() {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showCsvUploadModal, setShowCsvUploadModal] = useState(false);
   const [filterOptions, setFilterOptions] = useState({
     filter: {
       type: "all",
@@ -329,298 +327,21 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {showCsvUploadModal && (
-          <CsvUploadModal
-            onClose={() => setShowCsvUploadModal(false)}
-            onUploadSuccess={() => {
-              fetchTransactions(setTransactions, token);
-              fetchIncomeData(setIncomeData, userId, token);
-              fetchExpenseData(setExpenseData, userId, token);
-              toast.success("Transactions imported successfully!");
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Mobile Top Navbar - only visible on small screens */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-gray-100 shadow-md lg:hidden">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-purple-600" />
-            <h3 className="font-medium">{currentUser?.username || "User"}</h3>
-          </div>
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg bg-gray-100 shadow-neumorphic-button"
-          >
-            {mobileMenuOpen ? (
-              <X className="h-5 w-5 text-gray-600" />
-            ) : (
-              <Menu className="h-5 w-5 text-gray-600" />
-            )}
-          </button>
-        </div>
-
-        {/* Mobile menu overlay */}
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-gray-100 shadow-md"
-          >
-            <div className="p-4 space-y-4">
-              <div className="space-y-3">
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/dashboard"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/dashboard");
-                  }}
-                >
-                  <BarChart3 className="h-4 w-4 text-gray-600" />
-                  Dashboard
-                </button>
-
-                {currentUser?.roles?.includes("ROLE_ADMIN") && (
-                  <button
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                      location.pathname === "/user-transactions"
-                        ? "shadow-neumorphic-inset-button"
-                        : "shadow-neumorphic-button"
-                    }`}
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate("/user-transactions");
-                    }}
-                  >
-                    <Users className="h-4 w-4 text-gray-600" />
-                    User Transactions
-                  </button>
-                )}
-
-                {currentUser?.roles?.includes("ROLE_ACCOUNTANT") && (
-                  <button
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                      location.pathname === "/accountant-dashboard"
-                        ? "shadow-neumorphic-inset-button"
-                        : "shadow-neumorphic-button"
-                    }`}
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate("/accountant-dashboard");
-                    }}
-                  >
-                    <BarChart3 className="h-4 w-4 text-gray-600" />
-                    Accountant Dashboard
-                  </button>
-                )}
-
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/ai-assistant"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/ai-assistant");
-                  }}
-                >
-                  <MessageCircle className="h-4 w-4 text-gray-600" />
-                  AI Assistant
-                </button>
-
-                <button
-                  onClick={() => {
-                    fetchTransactions(setTransactions, token);
-                    toast.success("Data Synced Successfully");
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                >
-                  <FolderSync className="h-4 w-4 text-gray-600" />
-                  Sync Data
-                </button>
-
-                <button
-                  onClick={() => {
-                    toggleDarkMode();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                >
-                  {isDarkMode ? (
-                    <Sun className="h-4 w-4 text-gray-600" />
-                  ) : (
-                    <Moon className="h-4 w-4 text-gray-600" />
-                  )}
-                  {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowCsvUploadModal(true);
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                >
-                  <Upload className="h-4 w-4 text-gray-600" />
-                  Import CSV
-                </button>
-
-                <button
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
-                  onClick={() => {
-                    handleLogout();
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Fixed Sidebar */}
-      <motion.navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="h-10 w-10 rounded-full bg-purple-600 " />
-          <div>
-            <h3 className="font-medium">{currentUser?.username || "User"}</h3>
-            <p className="text-sm text-gray-600">
-              {currentUser?.roles
-                ?.map((role) =>
-                  role
-                    .toLowerCase()
-                    .split(" ")
-                    .map(function (word) {
-                      return word.charAt(5).toUpperCase() + word.slice(6);
-                    })
-                    .join(" ")
-                )
-                .join(", ") || "User"}
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="px-2 py-1">
-            <h4 className="mb-2 text-sm font-medium text-gray-600">MENU</h4>
-            <div className="space-y-4">
-              <button
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                  location.pathname === "/dashboard"
-                    ? "shadow-neumorphic-inset-button"
-                    : "shadow-neumorphic-button"
-                }`}
-              >
-                <BarChart3 className="h-4 w-4 text-gray-600" />
-                Dashboard
-              </button>
-              {/* Conditionally render History tab */}
-              {currentUser?.roles?.includes("ROLE_ADMIN") && (
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/user-transactions"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {
-                    navigate("/user-transactions");
-                  }}
-                >
-                  <Users className="h-4 w-4 text-gray-600" />
-                  User Transactions
-                </button>
-              )}
-              {currentUser?.roles?.includes("ROLE_ACCOUNTANT") && (
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/accountant-dashboard"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {
-                    navigate("/accountant-dashboard");
-                  }}
-                >
-                  <BarChart3 className="h-4 w-4 text-gray-600" />
-                  Accountant Dashboard
-                </button>
-              )}
-              <button
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                  location.pathname === "/ai-assistant"
-                    ? "shadow-neumorphic-inset-button"
-                    : "shadow-neumorphic-button"
-                }`}
-                onClick={() => {
-                  navigate("/ai-assistant");
-                }}
-              >
-                <MessageCircle className="h-4 w-4 text-gray-600" />
-                AI Assistant
-              </button>
-            </div>
-          </div>
-
-          <div className="px-2 py-1">
-            <h4 className="mb-2 text-sm font-medium text-gray-600">ACCOUNT</h4>
-            <div className="space-y-4">
-              <button
-                onClick={() => {
-                  fetchTransactions(setTransactions, token);
-                  toast.success("Data Synced Successfuly");
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-              >
-                <FolderSync className="h-4 w-4 text-gray-600" />
-                Sync Data
-              </button>
-              <button
-                onClick={toggleDarkMode}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
-                  isDarkMode
-                    ? "bg-gray-100 text-white"
-                    : "bg-gray-100 text-gray-700"
-                } shadow-neumorphic-button`}
-              >
-                {isDarkMode ? (
-                  <Sun className="h-4 w-4 text-gray-600" />
-                ) : (
-                  <Moon className="h-4 w-4 text-gray-600" />
-                )}
-                {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
-              </button>
-
-              <button
-                onClick={() => setShowCsvUploadModal(true)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-              >
-                <Upload className="h-4 w-4 text-gray-600" />
-                Import CSV
-              </button>
-
-              <button
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </motion.navbar>
+      {/* Navbar component */}
+      <Navbar
+        currentUser={currentUser}
+        token={token}
+        userId={userId}
+        logout={handleLogout}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+        setTransactions={setTransactions}
+        setIncomeData={setIncomeData}
+        setExpenseData={setExpenseData}
+        fetchTransactions={fetchTransactions}
+        fetchIncomeData={fetchIncomeData}
+        fetchExpenseData={fetchExpenseData}
+      />
 
       {/* Main Content */}
       <div className="flex-1 p-8 lg:ml-64 bg-gray-100">
@@ -705,164 +426,164 @@ export default function Dashboard() {
               </motion.div>
             </motion.div>
 
-            <motion.div
-              className="rounded-lg bg-gray-100 p-6"
-              initial={{ x: -100, opacity: 0.4 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-700">
-                    {month} Report
-                  </h2>
-                  <div className="flex gap-4">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button flex items-center gap-1"
-                      onClick={() => setShowFilterPopup(true)}
-                    >
-                      <Filter className="h-4 w-4" />
-                      Filter & Sort
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                      onClick={() => {
-                        handleDownloadCsv(token, userId);
-                        toast.success("Downloaded Successfully!");
-                      }}
-                    >
-                      Download CSV
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                      onClick={() => {
-                        handleDownloadPdf(token, userId);
-                        toast.success("Downloaded Successfully!");
-                      }}
-                    >
-                      Download PDF
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-3 py-1 text-sm rounded-lg bg-purple-500 text-white shadow-neumorphic-purple"
-                      onClick={() => setShowAddPopup(true)}
-                    >
-                      Add Transaction
-                    </motion.button>
-                  </div>
+            <div className="mt-8 space-y-3">
+              <div className="flex flex-wrap gap-3 items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-700">
+                  Latest Transactions
+                </h2>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowFilterPopup(true)}
+                    className="flex gap-1 items-center px-3 py-2 bg-gray-100 rounded-lg shadow-neumorphic-button"
+                  >
+                    <Filter className="h-4 w-4" />
+                    Filter
+                  </button>
+
+                  <button
+                    onClick={() => handleDownloadCsv(token)}
+                    className="flex gap-1 items-center px-3 py-2 bg-gray-100 rounded-lg shadow-neumorphic-button"
+                  >
+                    Download CSV
+                  </button>
+
+                  <button
+                    onClick={() => handleDownloadPdf(token)}
+                    className="flex gap-1 items-center px-3 py-2 bg-gray-100 rounded-lg shadow-neumorphic-button"
+                  >
+                    Download PDF
+                  </button>
+
+                  <button
+                    onClick={() => setShowAddPopup(true)}
+                    className="flex gap-1 items-center px-3 py-2 bg-purple-600 text-white rounded-lg shadow-neumorphic-button"
+                  >
+                    New Transaction
+                  </button>
                 </div>
               </div>
-              <div className="mt-6">
+
+              <div className="max-h-[75vh] overflow-auto">
                 <table className="w-full">
-                  <thead>
-                    <tr className="text-left text-sm text-gray-600">
-                      <th className="pb-2"></th>
-                      <th className="pb-2">LABEL</th>
-                      <th className="pb-2">AMOUNT</th>
-                      <th className="pb-2">CATEGORY</th>
-                      <th className="pb-2">DATE ADDED</th>
-                      <th className="pb-2">ACTIONS</th>
+                  <thead className="text-xs text-left text-gray-700 uppercase bg-gray-100 p-4">
+                    <tr>
+                      <th className="p-3 rounded-tl-lg">Date</th>
+                      <th className="p-3">Label</th>
+                      <th className="p-3">Category</th>
+                      <th className="p-3">Amount</th>
+                      <th className="p-3 rounded-tr-lg">Actions</th>
                     </tr>
                   </thead>
-                  <motion.tbody>
+                  <tbody>
                     {filteredTransactions
                       .slice(
                         (currentPage - 1) * itemsPerPage,
                         currentPage * itemsPerPage
                       )
                       .map((transaction, index) => (
-                        <motion.tr
-                          key={transaction.id}
-                          initial={{ opacity: 1, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1, duration: 0.3 }} // Staggered delay
-                          className="border-t border-gray-200"
+                        <tr
+                          key={index}
+                          className="bg-gray-100 border-b border-gray-200"
                         >
-                          <td className="py-3">
-                            {transaction.type === "Expense" ? (
-                              <ArrowDownLeft className="h-4 w-4 text-red-600" />
-                            ) : (
-                              <ArrowUpRight className="h-4 w-4 text-green-600" />
-                            )}
+                          <td className="p-3">
+                            {new Date(transaction.date).toLocaleDateString()}
                           </td>
-                          <td className="py-3 font-medium text-gray-700">
+                          <td className="p-3 max-w-[200px] overflow-hidden text-ellipsis">
                             {transaction.label}
                           </td>
-                          <td className="py-3 text-gray-600">
-                            {transaction.amount}
+                          <td className="p-3">{transaction.category}</td>
+                          <td
+                            className={`p-3 flex items-center gap-1 ${
+                              transaction.type === "expense"
+                                ? "text-red-500"
+                                : "text-green-500"
+                            }`}
+                          >
+                            {transaction.type === "expense" ? (
+                              <ArrowDownLeft className="h-4 w-4" />
+                            ) : (
+                              <ArrowUpRight className="h-4 w-4" />
+                            )}
+                            {`$${transaction.amount}`}
                           </td>
-                          <td className="py-3 text-gray-600">
-                            {transaction.category}
-                          </td>
-                          <td className="py-3 text-gray-600">
-                            {
-                              new Date(transaction?.date)
-                                .toISOString()
-                                .split("T")[0]
-                            }
-                          </td>
-                          <td className="py-3 flex items-center gap-3">
-                            <button className="text-gray-600 hover:text-red-600">
-                              <Trash2
-                                className="h-4 w-4"
+                          <td className="p-3">
+                            <div className="flex gap-2">
+                              <button
+                                className="p-1 text-gray-600 hover:text-amber-600"
+                                onClick={() => handleEditClick(transaction)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </button>
+                              <button
+                                className="p-1 text-gray-600 hover:text-red-600"
                                 onClick={() => {
-                                  handleDeleteTransaction(
-                                    transaction.id,
-                                    setTransactions,
-                                    token
-                                  );
-                                  toast.success(
-                                    "Transaction deleted successfully!"
-                                  );
-                                  fetchExpenseData(
-                                    setExpenseData,
-                                    userId,
-                                    token
-                                  );
-                                  fetchIncomeData(setIncomeData, userId, token);
+                                  if (
+                                    window.confirm(
+                                      "Are you sure you want to delete this transaction?"
+                                    )
+                                  ) {
+                                    handleDeleteTransaction(
+                                      transaction.id,
+                                      token
+                                    ).then(() => {
+                                      fetchTransactions(setTransactions, token);
+                                      fetchIncomeData(
+                                        setIncomeData,
+                                        userId,
+                                        token
+                                      );
+                                      fetchExpenseData(
+                                        setExpenseData,
+                                        userId,
+                                        token
+                                      );
+                                      toast.success(
+                                        "Transaction deleted successfully!"
+                                      );
+                                    });
+                                  }
                                 }}
-                              />
-                            </button>
-                            <button className="text-gray-600 hover:text-purple-600">
-                              <Edit
-                                className="h-4 w-4"
-                                onClick={() => {
-                                  handleEditClick(transaction);
-                                  fetchExpenseData(
-                                    setExpenseData,
-                                    userId,
-                                    token
-                                  );
-                                  fetchIncomeData(setIncomeData, userId, token);
-                                }}
-                              />
-                            </button>
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
                           </td>
-                        </motion.tr>
+                        </tr>
                       ))}
-                  </motion.tbody>
+                  </tbody>
                 </table>
+              </div>
+
+              {/* Pagination */}
+              {filteredTransactions.length > 0 && (
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
-                  itemsPerPage={itemsPerPage}
-                  totalItems={filteredTransactions.length}
                 />
-              </div>
-            </motion.div>
+              )}
+
+              {filteredTransactions.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">No transactions found.</p>
+                  <button
+                    onClick={() => setShowAddPopup(true)}
+                    className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg shadow-neumorphic-button"
+                  >
+                    Add Your First Transaction
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+        <ToastContainer
+          position="bottom-right"
+          autoClose={3000}
+          theme={isDarkMode ? "dark" : "light"}
+        />
       </div>
-      {/* ToastContainer component to render toasts */}
-      <ToastContainer draggable stacked />
     </motion.div>
   );
 }
