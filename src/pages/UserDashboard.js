@@ -10,13 +10,10 @@ import {
   User,
   BarChart3,
   MessageCircle,
-  FolderSync,
   Sun,
   Moon,
-  Upload,
   LogOut,
   Users,
-  Key,
   Trash2,
   Shield,
   Eye,
@@ -25,15 +22,15 @@ import {
 } from "lucide-react";
 
 export default function UserDashboard() {
-  const { currentUser, token, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [userDetails, setUserDetails] = useState({});
-  const [accountStats, setAccountStats] = useState({
-    joinDate: "Jan 15, 2023",
-    lastLogin: "Apr 7, 2025",
-    totalTransactions: 157,
-  });
+  const [userDetails, setUserDetails] = useState(null);
+
+  const authData = useAuth();
+  const { currentUser, token, logout, loading } = authData;
+  console.log("Auth data:", authData);
+
+  const [isLoading, setIsLoading] = useState(true);
 
   // Form states
   const [currentPassword, setCurrentPassword] = useState("");
@@ -210,46 +207,76 @@ export default function UserDashboard() {
   };
 
   useEffect(() => {
-    if (!currentUser) {
-      console.log("currentUser not ready yet...");
+  const savedDarkMode = localStorage.getItem("darkMode");
+    if (savedDarkMode === "enabled") {
+      document.documentElement.classList.add("dark");
+      setIsDarkMode(true);
+    } else {
+      document.documentElement.classList.remove("dark");
+      setIsDarkMode(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Wait until auth is initialized
+    if (loading) {
+      console.log("Auth system still initializing...");
       return;
     }
-
+  
+    // Check if user is authenticated
+    if (!currentUser || !token) {
+      console.log("No authenticated user found. User:", currentUser, "Token:", token ? "exists" : "missing");
+      setIsLoading(false);
+      // Handle unauthenticated state - redirect or show login prompt
+      return;
+    }
+  
+    console.log("Authenticated user:", currentUser);
+    
     const fetchUserDetails = async () => {
-      const savedDarkMode = localStorage.getItem("darkMode");
-      if (savedDarkMode === "enabled") {
-        document.documentElement.classList.add("dark");
-        setIsDarkMode(true);
-      } else {
-        document.documentElement.classList.remove("dark");
-        setIsDarkMode(false);
-      }
-
       try {
+        setIsLoading(true);
         const response = await fetch(
           `http://localhost:8080/api/users/${currentUser.userId}/details`,
           {
             method: "PUT",
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
             },
           }
         );
-
+  
         if (!response.ok) {
-          throw new Error("Failed to fetch user details");
+          throw new Error(`Failed to fetch user details: ${response.status}`);
         }
-
+  
         const data = await response.json();
         setUserDetails(data);
-        console.log(data);
+        console.log("User details fetched:", data);
       } catch (error) {
+        console.error("Error fetching user details:", error);
         toast.error(error.message || "Failed to fetch user details");
+      } finally {
+        setIsLoading(false);
       }
     };
-
+  
     fetchUserDetails();
-  }, [currentUser, token]);
+  }, [currentUser, token, loading]);
+
+  if (loading) {
+    return <div>Loading authentication...</div>;
+  }
+  
+  if (!currentUser) {
+    return <div>Please log in to access this page</div>;
+  }
+  
+  if (isLoading) {
+    return <div>Loading user details...</div>;
+  }
 
   return (
     <div className={`min-h-screen bg-gray-100 transition-all duration-300`}>
@@ -593,13 +620,13 @@ export default function UserDashboard() {
                     Two-Factor Authentication
                   </h3>
                   <p className="text-sm text-gray-500">
-                    {currentUser?.twoFactorEnabled
+                    {userDetails?.user.twoFactorEnabled
                       ? "Currently enabled"
                       : "Currently disabled"}
                   </p>
                 </div>
                 <div className="w-full sm:w-[160px] mt-2 sm:mt-0">
-                  {currentUser?.twoFactorEnabled ? (
+                  {userDetails?.user.twoFactorEnabled ? (
                     <button
                       onClick={() => setIs2FAModalOpen(true)}
                       className="w-full px-4 py-2 rounded-lg shadow-neumorphic-button text-sm"

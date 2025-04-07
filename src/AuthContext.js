@@ -17,14 +17,25 @@ export function AuthProvider({ children }) {
     const storedRefreshToken = localStorage.getItem("refreshToken");
     const storedUser = localStorage.getItem("user");
     const storedUserId = localStorage.getItem("userId");
-
-    if (storedToken && storedUser && storedUserId) {
-      setToken(storedToken);
-      setRefreshToken(storedRefreshToken);
-      setCurrentUser(JSON.parse(storedUser));
-      setUserId(storedUserId);
+  
+    if (storedToken && storedUser) {
+      try {
+        // Make sure we're properly parsing the user
+        const parsedUser = JSON.parse(storedUser);
+        setToken(storedToken);
+        setRefreshToken(storedRefreshToken);
+        setCurrentUser(parsedUser);
+        setUserId(storedUserId || parsedUser.userId); // Fallback to userId from parsed user
+        console.log("Restored user from localStorage:", parsedUser);
+      } catch (error) {
+        console.error("Failed to parse stored user:", error);
+        // Clear potentially corrupted data
+        localStorage.removeItem("user");
+      }
+    } else {
+      console.log("No stored authentication data found");
     }
-
+  
     setLoading(false);
   }, []);
 
