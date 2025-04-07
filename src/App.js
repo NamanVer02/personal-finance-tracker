@@ -8,6 +8,7 @@ import AiAssistant from "./pages/AiAssistant";
 import GoogleAuthSetup from "./pages/GoogleAuthSetup";
 import AccountantDashboard from "./pages/AccountantDashboard";
 import CustomCursor from "./components/CustomCursor";
+import UserDashboard from "./pages/UserDashboard";
 
 const App = () => {
     useEffect(() => {
@@ -31,6 +32,7 @@ const App = () => {
             <Route path="/ai-assistant" element={<AiAssistant/>} />
             <Route path="/setup-2fa" element={<GoogleAuthSetup />} />
             <Route path="/accountant-dashboard" element={<AccountantDashboard />} />
+            <Route path="/user-dashboard" element={<UserDashboard />} />
         </Routes>
         </div>
     );
