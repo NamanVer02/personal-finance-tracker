@@ -288,10 +288,12 @@ export default function Dashboard() {
               try {
                 // Attempt to update the transaction
                 const res = await handleUpdateTransaction(id, data, token);
-                
-                if(!res.success) {
-                  toast.error("Older version of the entity is being edited. Please refresh the data before editing.")
-                  return ;
+
+                if (!res.success) {
+                  toast.error(
+                    "Older version of the entity is being edited. Please refresh the data before editing."
+                  );
+                  return;
                 }
 
                 // Fetch updated data
@@ -299,7 +301,7 @@ export default function Dashboard() {
                 await fetchIncomeData(setIncomeData, userId, token);
 
                 // If everything goes well, return success
-                toast.success("Transaction updated sucessfully")
+                toast.success("Transaction updated sucessfully");
                 return { success: true };
               } catch (error) {
                 // Handle specific error cases if needed
@@ -465,92 +467,106 @@ export default function Dashboard() {
 
               <div className="max-h-[75vh] overflow-auto">
                 <table className="w-full">
-                  <thead className="text-xs text-left text-gray-700 uppercase bg-gray-100 p-4">
-                    <tr>
-                      <th className="p-3 rounded-tl-lg">Date</th>
-                      <th className="p-3">Label</th>
-                      <th className="p-3">Category</th>
-                      <th className="p-3">Amount</th>
-                      <th className="p-3 rounded-tr-lg">Actions</th>
+                  <thead>
+                    <tr className="text-left text-sm text-gray-600">
+                      <th className="pb-2"></th>
+                      <th className="pb-2">DATE</th>
+                      <th className="pb-2">LABEL</th>
+                      <th className="pb-2">CATEGORY</th>
+                      <th className="pb-2">AMOUNT</th>
+                      <th className="pb-2">ACTIONS</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {filteredTransactions
-                      .slice(
-                        (currentPage - 1) * itemsPerPage,
-                        currentPage * itemsPerPage
-                      )
-                      .map((transaction, index) => (
-                        <tr
-                          key={index}
-                          className="bg-gray-100 border-b border-gray-200"
-                        >
-                          <td className="p-3">
-                            {new Date(transaction.date).toLocaleDateString()}
-                          </td>
-                          <td className="p-3 max-w-[200px] overflow-hidden text-ellipsis">
-                            {transaction.label}
-                          </td>
-                          <td className="p-3">{transaction.category}</td>
-                          <td
-                            className={`p-3 flex items-center gap-1 ${
-                              transaction.type === "expense"
-                                ? "text-red-500"
-                                : "text-green-500"
-                            }`}
+                  <motion.tbody>
+                    {filteredTransactions.length > 0 ? (
+                      filteredTransactions
+                        .slice(
+                          (currentPage - 1) * itemsPerPage,
+                          currentPage * itemsPerPage
+                        )
+                        .map((transaction, index) => (
+                          <motion.tr
+                            key={transaction.id}
+                            className="border-t border-gray-200"
+                            initial={{ opacity: 1, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.1, duration: 0.3 }}
                           >
-                            {transaction.type === "expense" ? (
-                              <ArrowDownLeft className="h-4 w-4" />
-                            ) : (
-                              <ArrowUpRight className="h-4 w-4" />
-                            )}
-                            {`$${transaction.amount}`}
-                          </td>
-                          <td className="p-3">
-                            <div className="flex gap-2">
-                              <button
-                                className="p-1 text-gray-600 hover:text-amber-600"
-                                onClick={() => handleEditClick(transaction)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </button>
-                              <button
-                                className="p-1 text-gray-600 hover:text-red-600"
-                                onClick={() => {
-                                  if (
-                                    window.confirm(
-                                      "Are you sure you want to delete this transaction?"
-                                    )
-                                  ) {
-                                    handleDeleteTransaction(
-                                      transaction.id,
-                                      token
-                                    ).then(() => {
-                                      fetchTransactions(setTransactions, token);
-                                      fetchIncomeData(
-                                        setIncomeData,
-                                        userId,
+                            <td className="py-3">
+                              {transaction.type === "Expense" ? (
+                                <ArrowDownLeft className="h-4 w-4 text-red-600" />
+                              ) : (
+                                <ArrowUpRight className="h-4 w-4 text-green-600" />
+                              )}
+                            </td>
+                            <td className="py-3 text-gray-600">
+                              {new Date(transaction.date).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 text-gray-700">
+                              {transaction.label}
+                            </td>
+                            <td className="py-3 text-gray-600">
+                              {transaction.category}
+                            </td>
+                            <td className="py-3 text-gray-600">{`$${transaction.amount}`}</td>
+                            <td className="py-3">
+                              <div className="flex gap-2">
+                                <button
+                                  className="p-1 text-gray-600 hover:text-amber-600"
+                                  onClick={() => handleEditClick(transaction)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </button>
+                                <button
+                                  className="p-1 text-gray-600 hover:text-red-600"
+                                  onClick={() => {
+                                    if (
+                                      window.confirm(
+                                        "Are you sure you want to delete this transaction?"
+                                      )
+                                    ) {
+                                      handleDeleteTransaction(
+                                        transaction.id,
                                         token
-                                      );
-                                      fetchExpenseData(
-                                        setExpenseData,
-                                        userId,
-                                        token
-                                      );
-                                      toast.success(
-                                        "Transaction deleted successfully!"
-                                      );
-                                    });
-                                  }
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
+                                      ).then(() => {
+                                        fetchTransactions(
+                                          setTransactions,
+                                          token
+                                        );
+                                        fetchIncomeData(
+                                          setIncomeData,
+                                          userId,
+                                          token
+                                        );
+                                        fetchExpenseData(
+                                          setExpenseData,
+                                          userId,
+                                          token
+                                        );
+                                        toast.success(
+                                          "Transaction deleted successfully!"
+                                        );
+                                      });
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </motion.tr>
+                        ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="6"
+                          className="py-6 text-center text-gray-600"
+                        >
+                          No transactions found
+                        </td>
+                      </tr>
+                    )}
+                  </motion.tbody>
                 </table>
               </div>
 

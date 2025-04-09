@@ -13,7 +13,7 @@ import {
   Menu,
   X,
   Upload,
-  Filter
+  Filter,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -24,8 +24,13 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
 import CsvUploadModal from "../components/CsvUploadModal";
-import { fetchExpenseData, fetchIncomeData, fetchTransactions } from "../utils/api";
+import {
+  fetchExpenseData,
+  fetchIncomeData,
+  fetchTransactions,
+} from "../utils/api";
 import Navbar from "../components/Navbar";
+import Pagination from "../components/Pagination";
 
 export default function UserTransactions() {
   // Variables
@@ -549,100 +554,13 @@ export default function UserTransactions() {
                     </motion.tbody>
                   </table>
 
+                  {/* Pagination */}
                   {filteredTransactions.length > 0 && (
-                    <div className="flex items-center justify-between mt-4">
-                      <div className="text-sm text-gray-600">
-                        Showing{" "}
-                        {filteredTransactions.length > 0
-                          ? (currentPage - 1) * itemsPerPage + 1
-                          : 0}{" "}
-                        to{" "}
-                        {Math.min(
-                          currentPage * itemsPerPage,
-                          filteredTransactions.length
-                        )}{" "}
-                        of {filteredTransactions.length} entries
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={handlePrevPage}
-                          className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                          disabled={currentPage === 1}
-                        >
-                          Prev
-                        </button>
-                        {totalPages <= 5 ? (
-                          [...Array(totalPages)].map((_, index) => (
-                            <button
-                              key={index}
-                              onClick={() => handlePageChange(index + 1)}
-                              className={`px-3 py-1 text-sm rounded-lg ${
-                                currentPage === index + 1
-                                  ? "shadow-neumorphic-inset-button"
-                                  : "bg-gray-100 shadow-neumorphic-button"
-                              }`}
-                            >
-                              {index + 1}
-                            </button>
-                          ))
-                        ) : (
-                          <>
-                            {currentPage > 1 && (
-                              <button
-                                onClick={() => handlePageChange(1)}
-                                className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                              >
-                                1
-                              </button>
-                            )}
-                            {currentPage > 2 && <span>...</span>}
-
-                            {currentPage > 1 && (
-                              <button
-                                onClick={() =>
-                                  handlePageChange(currentPage - 1)
-                                }
-                                className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                              >
-                                {currentPage - 1}
-                              </button>
-                            )}
-
-                            <button className="px-3 py-1 text-sm rounded-lg shadow-neumorphic-inset-button">
-                              {currentPage}
-                            </button>
-
-                            {currentPage < totalPages && (
-                              <button
-                                onClick={() =>
-                                  handlePageChange(currentPage + 1)
-                                }
-                                className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                              >
-                                {currentPage + 1}
-                              </button>
-                            )}
-
-                            {currentPage < totalPages - 1 && <span>...</span>}
-                            {currentPage < totalPages && (
-                              <button
-                                onClick={() => handlePageChange(totalPages)}
-                                className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                              >
-                                {totalPages}
-                              </button>
-                            )}
-                          </>
-                        )}
-                        <button
-                          onClick={handleNextPage}
-                          className="px-3 py-1 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                          disabled={currentPage === totalPages}
-                        >
-                          Next
-                        </button>
-                      </div>
-                    </div>
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={handlePageChange}
+                    />
                   )}
                 </div>
               )}
