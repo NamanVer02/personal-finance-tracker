@@ -1,39 +1,13 @@
 import { useState } from "react";
 import { X, Filter, ArrowDownAZ, ArrowUpAZ } from "lucide-react";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
+import { getExpenseCategories, getIncomeCategories } from "../utils/api";
 
-const expenseCategories = [
-  "Housing",
-  "Utilities",
-  "Groceries",
-  "Transportation",
-  "Insurance",
-  "Healthcare",
-  "Debt Repayment",
-  "Entertainment & Leisure",
-  "Savings & Emergency Fund",
-  "Investments",
-  "Miscellaneous",
-];
-
-const incomeCategories = [
-  "Salary",
-  "Business",
-  "Investments",
-  "Gifts",
-  "Miscellaneous",
-];
-
-export default function FilterAndSort({ onClose, onApply }) {
-  const [filterCriteria, setFilterCriteria] = useState({
-    type: "all",
-    dateFrom: "",
-    dateTo: "",
-    categories: [],
-    amountMin: "",
-    amountMax: "",
-    label: "",
-  });
+export default function FilterAndSort({ onClose, onApply, filterCriteria, setFilterCriteria }) {
+  const token = localStorage.getItem("token");
+  const [expenseCategories, setExpenseCategories] = useState([]);
+  const [incomeCategories, setIncomeCategories] = useState([]);
 
   const [sortCriteria, setSortCriteria] = useState({
     field: "date",
@@ -92,6 +66,11 @@ export default function FilterAndSort({ onClose, onApply }) {
   };
 
   const allCategories = [...new Set([...expenseCategories, ...incomeCategories])];
+
+  useEffect(() => {
+    getExpenseCategories(setExpenseCategories, token);
+    getIncomeCategories(setIncomeCategories, token);
+  }, []);
 
   return (
     <motion.div

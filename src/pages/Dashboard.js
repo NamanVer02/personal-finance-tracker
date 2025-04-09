@@ -32,6 +32,7 @@ import {
   fetchExpenseData,
   handleDownloadPdf,
   fetchDataWithPagination,
+  fetchFinanceEntries,
 } from "../utils/api";
 import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
 import "react-toastify/dist/ReactToastify.css"; // Import the default styles for the toast notifications
@@ -62,23 +63,17 @@ export default function Dashboard() {
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filterOptions, setFilterOptions] = useState({
-    filter: {
-      type: "all",
-      dateFrom: "",
-      dateTo: "",
-      categories: [],
-      amountMin: "",
-      amountMax: "",
-      label: "",
-    },
-    sort: {
-      field: "date",
-      direction: "desc",
-    },
+  const [filterCriteria, setFilterCriteria] = useState({
+    type: "all",
+    dateFrom: "",
+    dateTo: "",
+    categories: [],
+    amountMin: "",
+    amountMax: "",
+    label: "",
   });
+
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -123,9 +118,15 @@ export default function Dashboard() {
     toast.info(`Dark mode ${isDarkMode ? "enabled" : "disabled"}`);
   };
 
-  const handleFilterApply = (options) => {
-    setFilterOptions(options);
-    toast.info("Filters applied");
+  const handleFilter = async () => {
+    await fetchFinanceEntries(
+      setTransactions,
+      setTotalPages,
+      currentPage,
+      token,
+      filterCriteria
+    );
+    setShowFilterPopup(false);
   };
 
   // Check authentication and redirect if not authenticated
@@ -171,6 +172,13 @@ export default function Dashboard() {
   useEffect(() => {
     fetchDataWithPagination(setTransactions, setTotalPages, currentPage, token);
   }, [currentPage, token]);
+
+
+
+
+
+
+  
 
   // useEffect(() => {
   //   if (transactions.length > 0) {
@@ -332,7 +340,9 @@ export default function Dashboard() {
         {showFilterPopup && (
           <FilterAndSort
             onClose={() => setShowFilterPopup(false)}
-            onApply={handleFilterApply}
+            onApply={handleFilter}
+            filterCriteria={filterCriteria}
+            setFilterCriteria={setFilterCriteria}
           />
         )}
       </AnimatePresence>
@@ -501,9 +511,9 @@ export default function Dashboard() {
                         >
                           <td className="w-1/12 py-3">
                             {transaction.type === "Expense" ? (
-                              <ArrowDownLeft className="h-4 w-4 text-red-600" />
+                              <ArrowUpRight className="h-4 w-4 text-red-600" />
                             ) : (
-                              <ArrowUpRight className="h-4 w-4 text-green-600" />
+                              <ArrowDownLeft className="h-4 w-4 text-green-600" />
                             )}
                           </td>
 

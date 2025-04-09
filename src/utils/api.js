@@ -375,3 +375,52 @@ export const fetchDataWithPagination = async (setTransactions, setTotalPages, cu
     console.error("Error fetching transactions:", err);
   }
 }
+
+export const fetchFinanceEntries = async (
+  setTransactions, 
+  setTotalPages,
+  currentPage,
+  token,
+  filterCriteria,
+  size = 10
+) => {
+  // Convert filter criteria to API parameters
+  const params = {
+    page: currentPage || 0,
+    size,
+    type: filterCriteria.type === 'all' ? null : filterCriteria.type,
+    category: filterCriteria.categories.join(','),
+    minAmount: filterCriteria.amountMin,
+    maxAmount: filterCriteria.amountMax,
+    startDate: filterCriteria.dateFrom,
+    endDate: filterCriteria.dateTo,
+    searchTerm: filterCriteria.label,
+    sort: 'date,desc'
+  };
+
+  // Build query string with non-empty parameters
+  const queryString = Object.entries(params)
+    .filter(([_, value]) => value !== null && value !== '')
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&');
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/search?${queryString}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    setTransactions(data.content);
+    setTotalPages(data.totalPages);
+  } catch (err) {
+    console.error("Error fetching transactions:", err);
+  }
+};
