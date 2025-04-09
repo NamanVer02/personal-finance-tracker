@@ -352,3 +352,26 @@ export const getIncomeCategories = async (setIncomeCategories, token) => {
     setIncomeCategories([]);
   }
 }
+
+
+export const fetchDataWithPagination = async (setTransactions, setTotalPages, currentPage, token) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/search?page=${currentPage}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    setTransactions(data.content);
+    setTotalPages(data.totalPages);
+  } catch (err) {
+    console.error("Error fetching transactions:", err);
+  }
+}

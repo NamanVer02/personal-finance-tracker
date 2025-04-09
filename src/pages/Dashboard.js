@@ -31,6 +31,7 @@ import {
   fetchIncomeData,
   fetchExpenseData,
   handleDownloadPdf,
+  fetchDataWithPagination,
 } from "../utils/api";
 import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
 import "react-toastify/dist/ReactToastify.css"; // Import the default styles for the toast notifications
@@ -48,7 +49,8 @@ export default function Dashboard() {
   const month = new Date().toLocaleString("default", { month: "long" });
   const { currentUser, logout, isAuthenticated } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [totalPages, setTotalPages] = useState(0);
+  const [itemsPerPage] = useState(10);
   const [incomeData, setIncomeData] = useState([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
@@ -96,10 +98,12 @@ export default function Dashboard() {
     },
   };
 
-  const totalPages = Math.ceil((transactions?.length || 0) / itemsPerPage);
-
   // Functions
-  const handlePageChange = (page) => setCurrentPage(page);
+  const handlePageChange = (page) => {
+    if (page !== currentPage) {
+      setCurrentPage(page);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -134,7 +138,7 @@ export default function Dashboard() {
   // Initial Setup
   useEffect(() => {
     if (isAuthenticated) {
-      fetchTransactions(setTransactions, token);
+      // fetchTransactions(setTransactions, token);
       fetchIncomeData(setIncomeData, userId, token);
       fetchExpenseData(setExpenseData, userId, token);
     }
@@ -165,85 +169,89 @@ export default function Dashboard() {
   }, [incomeData, expenseData]);
 
   useEffect(() => {
-    if (transactions.length > 0) {
-      let result = [...transactions];
+    fetchDataWithPagination(setTransactions, setTotalPages, currentPage, token);
+  }, [currentPage, token]);
 
-      // Apply filters
-      const { filter, sort } = filterOptions;
+  // useEffect(() => {
+  //   if (transactions.length > 0) {
+  //     let result = [...transactions];
 
-      // Filter by type
-      if (filter.type !== "all") {
-        result = result.filter((t) => t.type === filter.type);
-      }
+  //     // Apply filters
+  //     const { filter, sort } = filterOptions;
 
-      // Filter by date range
-      if (filter.dateFrom) {
-        const fromDate = new Date(filter.dateFrom);
-        result = result.filter((t) => new Date(t.date) >= fromDate);
-      }
+  //     // Filter by type
+  //     if (filter.type !== "all") {
+  //       result = result.filter((t) => t.type === filter.type);
+  //     }
 
-      if (filter.dateTo) {
-        const toDate = new Date(filter.dateTo);
-        toDate.setHours(23, 59, 59, 999); // End of the day
-        result = result.filter((t) => new Date(t.date) <= toDate);
-      }
+  //     // Filter by date range
+  //     if (filter.dateFrom) {
+  //       const fromDate = new Date(filter.dateFrom);
+  //       result = result.filter((t) => new Date(t.date) >= fromDate);
+  //     }
 
-      // Filter by amount range
-      if (filter.amountMin) {
-        result = result.filter(
-          (t) => parseFloat(t.amount) >= parseFloat(filter.amountMin)
-        );
-      }
+  //     if (filter.dateTo) {
+  //       const toDate = new Date(filter.dateTo);
+  //       toDate.setHours(23, 59, 59, 999); // End of the day
+  //       result = result.filter((t) => new Date(t.date) <= toDate);
+  //     }
 
-      if (filter.amountMax) {
-        result = result.filter(
-          (t) => parseFloat(t.amount) <= parseFloat(filter.amountMax)
-        );
-      }
+  //     // Filter by amount range
+  //     if (filter.amountMin) {
+  //       result = result.filter(
+  //         (t) => parseFloat(t.amount) >= parseFloat(filter.amountMin)
+  //       );
+  //     }
 
-      // Filter by label (search)
-      if (filter.label) {
-        const searchTerm = filter.label.toLowerCase();
-        result = result.filter((t) =>
-          t.label.toLowerCase().includes(searchTerm)
-        );
-      }
+  //     if (filter.amountMax) {
+  //       result = result.filter(
+  //         (t) => parseFloat(t.amount) <= parseFloat(filter.amountMax)
+  //       );
+  //     }
 
-      // Filter by categories
-      if (filter.categories.length > 0) {
-        result = result.filter((t) => filter.categories.includes(t.category));
-      }
+  //     // Filter by label (search)
+  //     if (filter.label) {
+  //       const searchTerm = filter.label.toLowerCase();
+  //       result = result.filter((t) =>
+  //         t.label.toLowerCase().includes(searchTerm)
+  //       );
+  //     }
 
-      // Apply sorting
-      result.sort((a, b) => {
-        if (sort.field === "date") {
-          return sort.direction === "asc"
-            ? new Date(a.date) - new Date(b.date)
-            : new Date(b.date) - new Date(a.date);
-        } else if (sort.field === "amount") {
-          return sort.direction === "asc"
-            ? parseFloat(a.amount) - parseFloat(b.amount)
-            : parseFloat(b.amount) - parseFloat(a.amount);
-        } else {
-          // For label and category (string fields)
-          const valueA = a[sort.field].toLowerCase();
-          const valueB = b[sort.field].toLowerCase();
+  //     // Filter by categories
+  //     if (filter.categories.length > 0) {
+  //       result = result.filter((t) => filter.categories.includes(t.category));
+  //     }
 
-          if (sort.direction === "asc") {
-            return valueA.localeCompare(valueB);
-          } else {
-            return valueB.localeCompare(valueA);
-          }
-        }
-      });
+  //     // Apply sorting
+  //     result.sort((a, b) => {
+  //       if (sort.field === "date") {
+  //         return sort.direction === "asc"
+  //           ? new Date(a.date) - new Date(b.date)
+  //           : new Date(b.date) - new Date(a.date);
+  //       } else if (sort.field === "amount") {
+  //         return sort.direction === "asc"
+  //           ? parseFloat(a.amount) - parseFloat(b.amount)
+  //           : parseFloat(b.amount) - parseFloat(a.amount);
+  //       } else {
+  //         // For label and category (string fields)
+  //         const valueA = a[sort.field].toLowerCase();
+  //         const valueB = b[sort.field].toLowerCase();
 
-      setFilteredTransactions(result);
-      // Update pagination when filters change
-      setCurrentPage(1);
-    } else {
-      setFilteredTransactions([]);
-    }
-  }, [transactions, filterOptions]);
+  //         if (sort.direction === "asc") {
+  //           return valueA.localeCompare(valueB);
+  //         } else {
+  //           return valueB.localeCompare(valueA);
+  //         }
+  //       }
+  //     });
+
+  //     setFilteredTransactions(result);
+  //     // Update pagination when filters change
+  //     // setCurrentPage(1);
+  //   } else {
+  //     setFilteredTransactions([]);
+  //   }
+  // }, [transactions, filterOptions]);
 
   // If still checking authentication, show loading
   if (!isAuthenticated) {
@@ -266,7 +274,7 @@ export default function Dashboard() {
           <AddTransaction
             onClose={() => setShowAddPopup(false)}
             onSubmit={() => {
-              fetchTransactions(setTransactions, token);
+              // fetchTransactions(setTransactions, token);
               fetchIncomeData(setIncomeData, userId, token);
               fetchExpenseData(setExpenseData, userId, token);
               toast.success("Transaction added successfully!");
@@ -280,7 +288,7 @@ export default function Dashboard() {
           <EditTransaction
             onClose={() => {
               setShowEditPopup(false);
-              fetchTransactions(setTransactions, token);
+              // fetchTransactions(setTransactions, token);
               fetchIncomeData(setIncomeData, userId, token);
               fetchExpenseData(setExpenseData, userId, token);
             }}
@@ -466,96 +474,98 @@ export default function Dashboard() {
               </div>
 
               <div className="max-h-[75vh] overflow-auto">
-                <table className="w-full">
+                <motion.table
+                  className="table-auto w-full"
+                  style={{ tableLayout: "fixed" }}
+                >
                   <thead>
-                    <tr className="text-left text-sm text-gray-600">
-                      <th className="pb-2"></th>
-                      <th className="pb-2">DATE</th>
-                      <th className="pb-2">LABEL</th>
-                      <th className="pb-2">CATEGORY</th>
-                      <th className="pb-2">AMOUNT</th>
-                      <th className="pb-2">ACTIONS</th>
+                    <tr>
+                      <th className="w-1/12"></th>
+                      <th className="w-2/12 text-left">Date</th>
+                      <th className="w-3/12 text-left">Label</th>
+                      <th className="w-2/12 text-left">Category</th>
+                      <th className="w-2/12 text-left">Amount</th>
+                      <th className="w-2/12 text-left">Actions</th>
                     </tr>
                   </thead>
+
                   <motion.tbody>
-                    {filteredTransactions.length > 0 ? (
-                      filteredTransactions
-                        .slice(
-                          (currentPage - 1) * itemsPerPage,
-                          currentPage * itemsPerPage
-                        )
-                        .map((transaction, index) => (
-                          <motion.tr
-                            key={transaction.id}
-                            className="border-t border-gray-200"
-                            initial={{ opacity: 1, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1, duration: 0.3 }}
-                          >
-                            <td className="py-3">
-                              {transaction.type === "Expense" ? (
-                                <ArrowDownLeft className="h-4 w-4 text-red-600" />
-                              ) : (
-                                <ArrowUpRight className="h-4 w-4 text-green-600" />
-                              )}
-                            </td>
-                            <td className="py-3 text-gray-600">
-                              {new Date(transaction.date).toLocaleDateString()}
-                            </td>
-                            <td className="py-3 text-gray-700">
-                              {transaction.label}
-                            </td>
-                            <td className="py-3 text-gray-600">
-                              {transaction.category}
-                            </td>
-                            <td className="py-3 text-gray-600">{`$${transaction.amount}`}</td>
-                            <td className="py-3">
-                              <div className="flex gap-2">
-                                <button
-                                  className="p-1 text-gray-600 hover:text-amber-600"
-                                  onClick={() => handleEditClick(transaction)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </button>
-                                <button
-                                  className="p-1 text-gray-600 hover:text-red-600"
-                                  onClick={() => {
-                                    if (
-                                      window.confirm(
-                                        "Are you sure you want to delete this transaction?"
-                                      )
-                                    ) {
-                                      handleDeleteTransaction(
-                                        transaction.id,
+                    {transactions.length > 0 ? (
+                      transactions.map((transaction, index) => (
+                        <motion.tr
+                          key={transaction.id}
+                          className="border-t border-gray-200"
+                          initial={{ opacity: 1, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1, duration: 0.3 }}
+                        >
+                          <td className="w-1/12 py-3">
+                            {transaction.type === "Expense" ? (
+                              <ArrowDownLeft className="h-4 w-4 text-red-600" />
+                            ) : (
+                              <ArrowUpRight className="h-4 w-4 text-green-600" />
+                            )}
+                          </td>
+
+                          <td className="w-2/12 py-3 text-gray-600">
+                            {new Date(transaction.date).toLocaleDateString()}
+                          </td>
+
+                          <td className="w-3/12 py-3 text-gray-700 truncate">
+                            {transaction.label}
+                          </td>
+
+                          <td className="w-2/12 py-3 text-gray-600">
+                            {transaction.category}
+                          </td>
+
+                          <td className="w-2/12 py-3 text-gray-600">
+                            ${transaction.amount}
+                          </td>
+
+                          <td className="w-2/12 py-3">
+                            <div className="flex gap-2">
+                              <button
+                                className="p-1 text-gray-600 hover:text-amber-600"
+                                onClick={() => handleEditClick(transaction)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </button>
+                              <button
+                                className="p-1 text-gray-600 hover:text-red-600"
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      "Are you sure you want to delete this transaction?"
+                                    )
+                                  ) {
+                                    handleDeleteTransaction(
+                                      transaction.id,
+                                      token
+                                    ).then(() => {
+                                      fetchIncomeData(
+                                        setIncomeData,
+                                        userId,
                                         token
-                                      ).then(() => {
-                                        fetchTransactions(
-                                          setTransactions,
-                                          token
-                                        );
-                                        fetchIncomeData(
-                                          setIncomeData,
-                                          userId,
-                                          token
-                                        );
-                                        fetchExpenseData(
-                                          setExpenseData,
-                                          userId,
-                                          token
-                                        );
-                                        toast.success(
-                                          "Transaction deleted successfully!"
-                                        );
-                                      });
-                                    }
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </td>
-                          </motion.tr>
-                        ))
+                                      );
+                                      fetchExpenseData(
+                                        setExpenseData,
+                                        userId,
+                                        token
+                                      );
+                                      toast.success(
+                                        "Transaction deleted successfully!"
+                                      );
+                                    });
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      ))
                     ) : (
                       <tr>
                         <td
@@ -567,11 +577,11 @@ export default function Dashboard() {
                       </tr>
                     )}
                   </motion.tbody>
-                </table>
+                </motion.table>
               </div>
 
               {/* Pagination */}
-              {filteredTransactions.length > 0 && (
+              {transactions.length > 0 && (
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
@@ -579,7 +589,7 @@ export default function Dashboard() {
                 />
               )}
 
-              {filteredTransactions.length === 0 && (
+              {transactions.length === 0 && (
                 <div className="text-center py-8">
                   <p className="text-gray-600">No transactions found.</p>
                   <button
