@@ -1,21 +1,11 @@
 import {
-  BarChart3,
-  LogOut,
   ArrowDownLeft,
   ArrowUpRight,
-  Moon,
-  FolderSync,
-  Sun,
-  Users,
   Search,
   Download,
-  MessageCircle,
-  Menu,
-  X,
-  Upload,
   Filter,
 } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
@@ -31,54 +21,48 @@ import {
 } from "../utils/api";
 import Navbar from "../components/Navbar";
 import Pagination from "../components/Pagination";
+import { fetchAllFinanceEntries } from "../utils/api";
 
 export default function UserTransactions() {
   // Variables
   const navigate = useNavigate();
-  const location = useLocation();
-  const { token, currentUser, logout, isAuthenticated } = useAuth();
   const userId = localStorage.getItem("userId");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
-  const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem("darkMode") === "enabled" ? true : false
-  );
+  const { token, currentUser, logout, isAuthenticated } = useAuth();
 
-  const [userTransactions, setUserTransactions] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
   const [usersList, setUsersList] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showCsvUploadModal, setShowCsvUploadModal] = useState(false);
 
   const [transactions, setTransactions] = useState([]);
   const [incomeData, setIncomeData] = useState([]);
   const [expenseData, setExpenseData] = useState([]);
 
-  const [filterOptions, setFilterOptions] = useState({
-    filter: {
-      type: "all",
-      dateFrom: "",
-      dateTo: "",
-      categories: [],
-      amountMin: "",
-      amountMax: "",
-      label: "",
-      userId: "",
-    },
-    sort: {
-      field: "date",
-      direction: "desc",
-    },
-  });
-
-  const [filteredTransactions, setFilteredTransactions] = useState([]);
-
-  const totalPages = Math.ceil(
-    (filteredTransactions?.length || 0) / itemsPerPage
+  const [isDarkMode, setIsDarkMode] = useState(
+    localStorage.getItem("darkMode") === "enabled" ? true : false
   );
+  const [sortCriteria, setSortCriteria] = useState({
+    field: "date",
+    direction: "desc",
+  });
+  const [filterCriteria, setFilterCriteria] = useState({
+    type: "all",
+    id: null,
+    categories: [],
+    amountMin: "",
+    amountMax: "",
+    dateFrom: "",
+    dateTo: "",
+    label: "",
+    sortField: "date",
+    sortDirection: "desc",
+  });
 
   // Functions
   const handlePageChange = (page) => setCurrentPage(page);
@@ -91,42 +75,17 @@ export default function UserTransactions() {
     navigate("/login");
   };
 
-  const handleFilterApply = (options) => {
-    setFilterOptions(options);
-    toast.info("Filters applied");
-  };
-
-  const fetchAllUserTransactions = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `http://localhost:8080/api/get/admin/transactions`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        // Filter out the current admin's transactions
-        const filteredData = data.filter(
-          (transaction) => transaction.userId !== currentUser.id
-        );
-        setUserTransactions(filteredData);
-        setIsLoading(false);
-      } else {
-        toast.error("Failed to fetch user transactions");
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error("Error fetching user transactions:", error);
-      toast.error("Error fetching data. Please try again.");
-      setIsLoading(false);
-    }
+  const handleFilter = async () => {
+    await fetchAllFinanceEntries(
+      setTransactions,
+      setTotalPages,
+      setTotalItems,
+      currentPage,
+      token,
+      filterCriteria,
+      sortCriteria
+    );
+    setShowFilterPopup(false);
   };
 
   const fetchAllUsers = async () => {
@@ -158,13 +117,10 @@ export default function UserTransactions() {
 
   const handleUserSelect = (userId) => {
     setSelectedUser(userId);
-    setFilterOptions({
-      ...filterOptions,
-      filter: {
-        ...filterOptions.filter,
-        userId: userId,
-      },
-    });
+    setFilterCriteria((prev) => ({
+      ...prev,
+      id: userId || null,
+    }));
   };
 
   const handleDownloadUserTransactionsCsv = async () => {
@@ -235,123 +191,32 @@ export default function UserTransactions() {
     }
   };
 
-  // Check authentication and redirect if not authenticated or not admin
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-    } else if (!currentUser?.roles?.includes("ROLE_ADMIN")) {
-      navigate("/dashboard");
-      toast.error("You don't have permission to access admin pages");
-    }
-  }, [isAuthenticated, navigate, currentUser]);
-
   // Initial Setup
   useEffect(() => {
     if (isAuthenticated && currentUser?.roles?.includes("ROLE_ADMIN")) {
-      fetchAllUserTransactions();
       fetchAllUsers();
+
+      fetchAllFinanceEntries(
+        setTransactions,
+        setTotalPages,
+        setTotalItems,
+        currentPage,
+        token,
+        filterCriteria,
+        sortCriteria,
+        itemsPerPage
+      );
     }
-  }, [isAuthenticated, token, currentUser]);
-
-  // Apply filters to transactions
-  useEffect(() => {
-    if (userTransactions.length > 0) {
-      let result = [...userTransactions];
-
-      // Apply filters
-      const { filter, sort } = filterOptions;
-
-      // Filter by userId
-      if (filter.userId) {
-        result = result.filter(
-          (t) => String(t.userId) === String(filter.userId)
-        );
-      }
-
-      // Filter by type
-      if (filter.type !== "all") {
-        result = result.filter((t) => t.type === filter.type);
-      }
-
-      // Filter by date range
-      if (filter.dateFrom) {
-        const fromDate = new Date(filter.dateFrom);
-        result = result.filter((t) => new Date(t.date) >= fromDate);
-      }
-
-      if (filter.dateTo) {
-        const toDate = new Date(filter.dateTo);
-        toDate.setHours(23, 59, 59, 999); // End of the day
-        result = result.filter((t) => new Date(t.date) <= toDate);
-      }
-
-      // Filter by amount range
-      if (filter.amountMin) {
-        result = result.filter(
-          (t) => parseFloat(t.amount) >= parseFloat(filter.amountMin)
-        );
-      }
-
-      if (filter.amountMax) {
-        result = result.filter(
-          (t) => parseFloat(t.amount) <= parseFloat(filter.amountMax)
-        );
-      }
-
-      // Filter by label (search)
-      if (filter.label) {
-        const searchTerm = filter.label.toLowerCase();
-        result = result.filter((t) =>
-          t.label.toLowerCase().includes(searchTerm)
-        );
-      }
-
-      // Filter by categories
-      if (filter.categories.length > 0) {
-        result = result.filter((t) => filter.categories.includes(t.category));
-      }
-
-      // Apply search term
-      if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-        result = result.filter(
-          (t) =>
-            (t.label?.toLowerCase() || "").includes(term) ||
-            (t.category?.toLowerCase() || "").includes(term) ||
-            (t.username?.toLowerCase() || "").includes(term)
-        );
-      }
-
-      // Apply sorting
-      result.sort((a, b) => {
-        if (sort.field === "date") {
-          return sort.direction === "asc"
-            ? new Date(a.date) - new Date(b.date)
-            : new Date(b.date) - new Date(a.date);
-        } else if (sort.field === "amount") {
-          return sort.direction === "asc"
-            ? parseFloat(a.amount) - parseFloat(b.amount)
-            : parseFloat(b.amount) - parseFloat(a.amount);
-        } else {
-          // For label, category, and username (string fields)
-          const valueA = (a[sort.field] || "")?.toLowerCase() || "";
-          const valueB = (b[sort.field] || "")?.toLowerCase() || "";
-
-          if (sort.direction === "asc") {
-            return valueA.localeCompare(valueB);
-          } else {
-            return valueB.localeCompare(valueA);
-          }
-        }
-      });
-
-      setFilteredTransactions(result);
-      // Update pagination when filters change
-      setCurrentPage(1);
-    } else {
-      setFilteredTransactions([]);
-    }
-  }, [userTransactions, filterOptions, searchTerm]);
+  }, [
+    isAuthenticated,
+    token,
+    currentUser,
+    currentPage,
+    token,
+    filterCriteria,
+    sortCriteria,
+    itemsPerPage,
+  ]);
 
   // If still checking authentication, show loading
   if (!isAuthenticated) {
@@ -365,6 +230,8 @@ export default function UserTransactions() {
     );
   }
 
+  console.log("Transactions:", transactions);
+
   // Page
   return (
     <motion.div className="flex min-h-screen bg-gray-100">
@@ -372,9 +239,11 @@ export default function UserTransactions() {
         {showFilterPopup && (
           <FilterAndSort
             onClose={() => setShowFilterPopup(false)}
-            onApply={handleFilterApply}
-            showUserFilter={true}
-            usersList={usersList}
+            onApply={handleFilter}
+            filterCriteria={filterCriteria}
+            setFilterCriteria={setFilterCriteria}
+            sortCriteria={sortCriteria}
+            setSortCriteria={setSortCriteria}
           />
         )}
       </AnimatePresence>
@@ -400,7 +269,7 @@ export default function UserTransactions() {
         logout={handleLogout}
         isDarkMode={isDarkMode}
         setIsDarkMode={setIsDarkMode}
-        fetchTransactions={fetchAllUserTransactions}
+        fetchTransactions={fetchAllFinanceEntries}
         setTransactions={setTransactions}
         setIncomeData={setIncomeData}
         setExpenseData={setExpenseData}
@@ -433,8 +302,13 @@ export default function UserTransactions() {
                       type="text"
                       placeholder="Search transactions..."
                       className="pl-10 pr-4 py-2 rounded-lg bg-gray-100 shadow-neumorphic-inset-button w-64"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      value={filterCriteria.label}
+                      onChange={(e) =>
+                        setFilterCriteria((prev) => ({
+                          ...prev,
+                          label: e.target.value,
+                        }))
+                      }
                     />
                   </div>
 
@@ -477,93 +351,84 @@ export default function UserTransactions() {
                 </div>
               </div>
 
-              {isLoading ? (
-                <div className="flex justify-center items-center py-12">
-                  <div className="h-8 w-8 rounded-full bg-purple-600 animate-pulse mx-auto" />
-                </div>
-              ) : (
-                <div className="mt-6 overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="text-left text-sm text-gray-600">
-                        <th className="pb-2"></th>
-                        <th className="pb-2">USER</th>
-                        <th className="pb-2">LABEL</th>
-                        <th className="pb-2">AMOUNT</th>
-                        <th className="pb-2">CATEGORY</th>
-                        <th className="pb-2">DATE</th>
-                      </tr>
-                    </thead>
-                    <motion.tbody>
-                      {filteredTransactions.length > 0 ? (
-                        filteredTransactions
-                          .slice(
-                            (currentPage - 1) * itemsPerPage,
-                            currentPage * itemsPerPage
-                          )
-                          .map((transaction, index) => (
-                            <motion.tr
-                              key={transaction.id}
-                              className="border-t border-gray-200"
-                              initial={{ opacity: 1, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.1, duration: 0.3 }}
-                            >
-                              <td className="py-3">
-                                {transaction.type === "Expense" ? (
-                                  <ArrowDownLeft className="h-4 w-4 text-red-600" />
-                                ) : (
-                                  <ArrowUpRight className="h-4 w-4 text-green-600" />
-                                )}
-                              </td>
-                              <td className="py-3 font-medium text-gray-600">
-                                {usersList.find(
-                                  (user) =>
-                                    String(user.id) ===
-                                    String(transaction.userId)
-                                )?.username || "Unknown User"}
-                              </td>
-                              <td className="py-3 text-gray-700">
-                                {transaction.label}
-                              </td>
-                              <td className="py-3 text-gray-600">
-                                {transaction.amount}
-                              </td>
-                              <td className="py-3 text-gray-600">
-                                {transaction.category}
-                              </td>
-                              <td className="py-3 text-gray-600">
-                                {
-                                  new Date(transaction?.date)
-                                    .toISOString()
-                                    .split("T")[0]
-                                }
-                              </td>
-                            </motion.tr>
-                          ))
-                      ) : (
-                        <tr>
-                          <td
-                            colSpan="6"
-                            className="py-6 text-center text-gray-600"
-                          >
-                            No transactions found
+              <div className="mt-6 overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-left text-sm text-gray-600">
+                      <th className="pb-2"></th>
+                      <th className="pb-2">USER</th>
+                      <th className="pb-2">LABEL</th>
+                      <th className="pb-2">AMOUNT</th>
+                      <th className="pb-2">CATEGORY</th>
+                      <th className="pb-2">DATE</th>
+                    </tr>
+                  </thead>
+                  <motion.tbody>
+                    {transactions.length > 0 ? (
+                      transactions.map((transaction, index) => (
+                        <motion.tr
+                          key={transaction.id}
+                          className="border-t border-gray-200"
+                          initial={{ opacity: 1, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1, duration: 0.3 }}
+                        >
+                          <td className="py-3">
+                            {transaction.type === "Expense" ? (
+                              <ArrowDownLeft className="h-4 w-4 text-red-600" />
+                            ) : (
+                              <ArrowUpRight className="h-4 w-4 text-green-600" />
+                            )}
                           </td>
-                        </tr>
-                      )}
-                    </motion.tbody>
-                  </table>
+                          <td className="py-3 font-medium text-gray-600">
+                            {usersList.find(
+                              (user) =>
+                                String(user.id) === String(transaction.userId)
+                            )?.username || "Unknown User"}
+                          </td>
+                          <td className="py-3 text-gray-700">
+                            {transaction.label}
+                          </td>
+                          <td className="py-3 text-gray-600">
+                            {transaction.amount}
+                          </td>
+                          <td className="py-3 text-gray-600">
+                            {transaction.category}
+                          </td>
+                          <td className="py-3 text-gray-600">
+                            {
+                              new Date(transaction?.date)
+                                .toISOString()
+                                .split("T")[0]
+                            }
+                          </td>
+                        </motion.tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="6"
+                          className="py-6 text-center text-gray-600"
+                        >
+                          No transactions found
+                        </td>
+                      </tr>
+                    )}
+                  </motion.tbody>
+                </table>
 
-                  {/* Pagination */}
-                  {filteredTransactions.length > 0 && (
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={handlePageChange}
-                    />
-                  )}
-                </div>
-              )}
+                {/* Pagination */}
+                {transactions.length > 0 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    onPageChange={handlePageChange}
+                    totalPages={totalPages}
+                    itemsPerPage={itemsPerPage}
+                    setItemsPerPage={setItemsPerPage}
+                    totalItems={totalItems}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </motion.div>

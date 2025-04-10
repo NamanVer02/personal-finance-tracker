@@ -4,6 +4,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Filter,
+  Search
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -62,6 +63,7 @@ export default function Dashboard() {
   });
   const [filterCriteria, setFilterCriteria] = useState({
     type: "all",
+    id: null,
     categories: [],
     amountMin: "",
     amountMax: "",
@@ -113,6 +115,7 @@ export default function Dashboard() {
     await fetchFinanceEntries(
       setTransactions,
       setTotalPages,
+      setTotalItems,
       currentPage,
       token,
       filterCriteria,
@@ -362,12 +365,27 @@ export default function Dashboard() {
               </motion.div>
             </motion.div>
 
-            <div className="mt-8 space-y-3">
+            <div className="mt-8 space-y-10 py-10">
               <div className="flex flex-wrap gap-3 items-center justify-between">
                 <h2 className="text-xl font-semibold text-gray-700">
                   Latest Transactions
                 </h2>
                 <div className="flex gap-3">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                    <input
+                      type="text"
+                      placeholder="Search transactions..."
+                      className="pl-10 pr-4 py-2 rounded-lg bg-gray-100 shadow-neumorphic-inset-button w-64"
+                      value={filterCriteria.label}
+                      onChange={(e) =>
+                        setFilterCriteria((prev) => ({
+                          ...prev,
+                          label: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
                   <button
                     onClick={() => {
                       setCurrentPage(0);
