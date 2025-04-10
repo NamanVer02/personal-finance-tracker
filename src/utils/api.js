@@ -357,6 +357,7 @@ export const getIncomeCategories = async (setIncomeCategories, token) => {
 export const fetchFinanceEntries = async (
   setTransactions,
   setTotalPages,
+  setTotalItems,
   currentPage,
   token,
   filterCriteria,
@@ -404,6 +405,8 @@ export const fetchFinanceEntries = async (
     const data = await res.json();
     setTransactions(data.content);
     setTotalPages(data.totalPages);
+    setTotalItems(data.totalElements);
+    console.log(data);
   } catch (err) {
     console.error("Error fetching transactions:", err);
   }

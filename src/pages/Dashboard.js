@@ -21,7 +21,6 @@ import {
   fetchIncomeData,
   fetchExpenseData,
   handleDownloadPdf,
-  fetchDataWithPagination,
   fetchFinanceEntries,
 } from "../utils/api";
 import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
@@ -37,20 +36,26 @@ export default function Dashboard() {
   const userId = localStorage.getItem("userId");
   const { token } = useAuth();
   const { currentUser, logout, isAuthenticated } = useAuth();
+
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+
   const [incomeData, setIncomeData] = useState([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
   const [expenseData, setExpenseData] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem("darkMode") === "enabled" ? true : false
-  );
+
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
+
+  const [isDarkMode, setIsDarkMode] = useState(
+    localStorage.getItem("darkMode") === "enabled" ? true : false
+  );
   const [sortCriteria, setSortCriteria] = useState({
     field: "date",
     direction: "desc",
@@ -88,8 +93,8 @@ export default function Dashboard() {
 
   // Functions
   const handlePageChange = (page) => {
-    if (page !== currentPage - 1) {
-      setCurrentPage(page - 1);
+    if (page !== currentPage) {
+      setCurrentPage(page);
     }
   };
 
@@ -161,12 +166,14 @@ export default function Dashboard() {
     fetchFinanceEntries(
       setTransactions,
       setTotalPages,
+      setTotalItems,
       currentPage,
       token,
       filterCriteria,
-      sortCriteria
+      sortCriteria,
+      itemsPerPage
     );
-  }, [currentPage, token, filterCriteria, sortCriteria]); // Add filterCriteria as dependency
+  }, [currentPage, token, filterCriteria, sortCriteria, itemsPerPage]); // Add filterCriteria as dependency
 
   // If still checking authentication, show loading
   if (!isAuthenticated) {
@@ -506,8 +513,11 @@ export default function Dashboard() {
               {transactions.length > 0 && (
                 <Pagination
                   currentPage={currentPage}
-                  totalPages={totalPages}
                   onPageChange={handlePageChange}
+                  totalPages={totalPages}
+                  itemsPerPage={itemsPerPage}
+                  setItemsPerPage={setItemsPerPage}
+                  totalItems={totalItems}
                 />
               )}
 
