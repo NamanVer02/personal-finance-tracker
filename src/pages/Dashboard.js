@@ -1,18 +1,8 @@
 import {
-  BarChart3,
-  Users,
-  LogOut,
   Trash2,
   Edit,
   ArrowDownLeft,
   ArrowUpRight,
-  Moon,
-  FolderSync,
-  Sun,
-  MessageCircle,
-  Menu,
-  X,
-  Upload,
   Filter,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -44,14 +34,11 @@ import Navbar from "../components/Navbar";
 export default function Dashboard() {
   // Variables
   const navigate = useNavigate();
-  const location = useLocation();
   const userId = localStorage.getItem("userId");
   const { token } = useAuth();
-  const month = new Date().toLocaleString("default", { month: "long" });
   const { currentUser, logout, isAuthenticated } = useAuth();
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [itemsPerPage] = useState(10);
   const [incomeData, setIncomeData] = useState([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
@@ -64,14 +51,20 @@ export default function Dashboard() {
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [sortCriteria, setSortCriteria] = useState({
+    field: "date",
+    direction: "desc",
+  });
   const [filterCriteria, setFilterCriteria] = useState({
     type: "all",
-    dateFrom: "",
-    dateTo: "",
     categories: [],
     amountMin: "",
     amountMax: "",
+    dateFrom: "",
+    dateTo: "",
     label: "",
+    sortField: "date",
+    sortDirection: "desc",
   });
 
   const containerVariants = {
@@ -95,8 +88,8 @@ export default function Dashboard() {
 
   // Functions
   const handlePageChange = (page) => {
-    if (page !== currentPage) {
-      setCurrentPage(page);
+    if (page !== currentPage - 1) {
+      setCurrentPage(page - 1);
     }
   };
 
@@ -111,20 +104,14 @@ export default function Dashboard() {
     setShowEditPopup(true);
   };
 
-  const toggleDarkMode = () => {
-    const isDarkMode = document.documentElement.classList.toggle("dark");
-    setIsDarkMode(isDarkMode);
-    localStorage.setItem("darkMode", isDarkMode ? "enabled" : "disabled");
-    toast.info(`Dark mode ${isDarkMode ? "enabled" : "disabled"}`);
-  };
-
   const handleFilter = async () => {
     await fetchFinanceEntries(
       setTransactions,
       setTotalPages,
       currentPage,
       token,
-      filterCriteria
+      filterCriteria,
+      sortCriteria
     );
     setShowFilterPopup(false);
   };
@@ -170,96 +157,16 @@ export default function Dashboard() {
   }, [incomeData, expenseData]);
 
   useEffect(() => {
-    fetchDataWithPagination(setTransactions, setTotalPages, currentPage, token);
-  }, [currentPage, token]);
-
-
-
-
-
-
-  
-
-  // useEffect(() => {
-  //   if (transactions.length > 0) {
-  //     let result = [...transactions];
-
-  //     // Apply filters
-  //     const { filter, sort } = filterOptions;
-
-  //     // Filter by type
-  //     if (filter.type !== "all") {
-  //       result = result.filter((t) => t.type === filter.type);
-  //     }
-
-  //     // Filter by date range
-  //     if (filter.dateFrom) {
-  //       const fromDate = new Date(filter.dateFrom);
-  //       result = result.filter((t) => new Date(t.date) >= fromDate);
-  //     }
-
-  //     if (filter.dateTo) {
-  //       const toDate = new Date(filter.dateTo);
-  //       toDate.setHours(23, 59, 59, 999); // End of the day
-  //       result = result.filter((t) => new Date(t.date) <= toDate);
-  //     }
-
-  //     // Filter by amount range
-  //     if (filter.amountMin) {
-  //       result = result.filter(
-  //         (t) => parseFloat(t.amount) >= parseFloat(filter.amountMin)
-  //       );
-  //     }
-
-  //     if (filter.amountMax) {
-  //       result = result.filter(
-  //         (t) => parseFloat(t.amount) <= parseFloat(filter.amountMax)
-  //       );
-  //     }
-
-  //     // Filter by label (search)
-  //     if (filter.label) {
-  //       const searchTerm = filter.label.toLowerCase();
-  //       result = result.filter((t) =>
-  //         t.label.toLowerCase().includes(searchTerm)
-  //       );
-  //     }
-
-  //     // Filter by categories
-  //     if (filter.categories.length > 0) {
-  //       result = result.filter((t) => filter.categories.includes(t.category));
-  //     }
-
-  //     // Apply sorting
-  //     result.sort((a, b) => {
-  //       if (sort.field === "date") {
-  //         return sort.direction === "asc"
-  //           ? new Date(a.date) - new Date(b.date)
-  //           : new Date(b.date) - new Date(a.date);
-  //       } else if (sort.field === "amount") {
-  //         return sort.direction === "asc"
-  //           ? parseFloat(a.amount) - parseFloat(b.amount)
-  //           : parseFloat(b.amount) - parseFloat(a.amount);
-  //       } else {
-  //         // For label and category (string fields)
-  //         const valueA = a[sort.field].toLowerCase();
-  //         const valueB = b[sort.field].toLowerCase();
-
-  //         if (sort.direction === "asc") {
-  //           return valueA.localeCompare(valueB);
-  //         } else {
-  //           return valueB.localeCompare(valueA);
-  //         }
-  //       }
-  //     });
-
-  //     setFilteredTransactions(result);
-  //     // Update pagination when filters change
-  //     // setCurrentPage(1);
-  //   } else {
-  //     setFilteredTransactions([]);
-  //   }
-  // }, [transactions, filterOptions]);
+    // Use the filter-enabled function only
+    fetchFinanceEntries(
+      setTransactions,
+      setTotalPages,
+      currentPage,
+      token,
+      filterCriteria,
+      sortCriteria
+    );
+  }, [currentPage, token, filterCriteria, sortCriteria]); // Add filterCriteria as dependency
 
   // If still checking authentication, show loading
   if (!isAuthenticated) {
@@ -343,6 +250,8 @@ export default function Dashboard() {
             onApply={handleFilter}
             filterCriteria={filterCriteria}
             setFilterCriteria={setFilterCriteria}
+            sortCriteria={sortCriteria}
+            setSortCriteria={setSortCriteria}
           />
         )}
       </AnimatePresence>
@@ -453,7 +362,10 @@ export default function Dashboard() {
                 </h2>
                 <div className="flex gap-3">
                   <button
-                    onClick={() => setShowFilterPopup(true)}
+                    onClick={() => {
+                      setCurrentPage(0);
+                      setShowFilterPopup(true);
+                    }}
                     className="flex gap-1 items-center px-3 py-2 bg-gray-100 rounded-lg shadow-neumorphic-button"
                   >
                     <Filter className="h-4 w-4" />
@@ -483,7 +395,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="max-h-[75vh] overflow-auto">
+              <div className="max-h-[75vh] overflow-auto no-scrollbar">
                 <motion.table
                   className="table-auto w-full"
                   style={{ tableLayout: "fixed" }}

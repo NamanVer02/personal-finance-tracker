@@ -354,34 +354,13 @@ export const getIncomeCategories = async (setIncomeCategories, token) => {
 }
 
 
-export const fetchDataWithPagination = async (setTransactions, setTotalPages, currentPage, token) => {
-  try {
-    const res = await fetch(`http://localhost:8080/api/search?page=${currentPage}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-
-    const data = await res.json();
-    setTransactions(data.content);
-    setTotalPages(data.totalPages);
-  } catch (err) {
-    console.error("Error fetching transactions:", err);
-  }
-}
-
 export const fetchFinanceEntries = async (
-  setTransactions, 
+  setTransactions,
   setTotalPages,
   currentPage,
   token,
   filterCriteria,
+  sortCriteria,
   size = 10
 ) => {
   // Convert filter criteria to API parameters
@@ -389,20 +368,25 @@ export const fetchFinanceEntries = async (
     page: currentPage || 0,
     size,
     type: filterCriteria.type === 'all' ? null : filterCriteria.type,
-    category: filterCriteria.categories.join(','),
-    minAmount: filterCriteria.amountMin,
-    maxAmount: filterCriteria.amountMax,
-    startDate: filterCriteria.dateFrom,
-    endDate: filterCriteria.dateTo,
-    searchTerm: filterCriteria.label,
-    sort: 'date,desc'
+    category: filterCriteria.categories.length > 0 ? filterCriteria.categories.join(',') : null,
+    minAmount: filterCriteria.amountMin || null,
+    maxAmount: filterCriteria.amountMax || null,
+    startDate: filterCriteria.dateFrom || null,
+    endDate: filterCriteria.dateTo || null,
+    searchTerm: filterCriteria.label || null,
+    sort: [`${sortCriteria.field},${sortCriteria.direction}`]  
   };
 
-  // Build query string with non-empty parameters
+  // Build query string with proper URL encoding
   const queryString = Object.entries(params)
-    .filter(([_, value]) => value !== null && value !== '')
-    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-    .join('&');
+  .filter(([_, value]) => value !== null && value !== '' && value.length !== 0)
+  .flatMap(([key, value]) => {
+    if (Array.isArray(value)) {
+      return value.map(v => `${key}=${encodeURIComponent(v)}`);
+    }
+    return `${key}=${encodeURIComponent(value)}`;
+  })
+  .join('&');
 
   try {
     const res = await fetch(`http://localhost:8080/api/search?${queryString}`, {
@@ -424,3 +408,4 @@ export const fetchFinanceEntries = async (
     console.error("Error fetching transactions:", err);
   }
 };
+

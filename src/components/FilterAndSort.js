@@ -4,15 +4,10 @@ import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { getExpenseCategories, getIncomeCategories } from "../utils/api";
 
-export default function FilterAndSort({ onClose, onApply, filterCriteria, setFilterCriteria }) {
+export default function FilterAndSort({ onClose, onApply, filterCriteria, setFilterCriteria, sortCriteria, setSortCriteria }) {
   const token = localStorage.getItem("token");
   const [expenseCategories, setExpenseCategories] = useState([]);
   const [incomeCategories, setIncomeCategories] = useState([]);
-
-  const [sortCriteria, setSortCriteria] = useState({
-    field: "date",
-    direction: "desc",
-  });
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -45,7 +40,7 @@ export default function FilterAndSort({ onClose, onApply, filterCriteria, setFil
   };
 
   const handleApply = () => {
-    onApply({ filter: filterCriteria, sort: sortCriteria });
+    onApply({ ...filterCriteria });
     onClose();
   };
 
