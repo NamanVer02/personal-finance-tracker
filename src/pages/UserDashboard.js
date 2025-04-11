@@ -20,7 +20,6 @@ export default function UserDashboard() {
 
   const authData = useAuth();
   const { currentUser, token, logout, loading } = authData;
-  console.log("Auth data:", authData);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -88,8 +87,6 @@ export default function UserDashboard() {
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
-
-    console.log(currentUser);
 
     if (newPassword !== confirmPassword) {
       toast.error("New passwords don't match");
@@ -205,7 +202,6 @@ export default function UserDashboard() {
       return;
     }
   
-    console.log("Authenticated user:", currentUser);
     
     const fetchUserDetails = async () => {
       try {

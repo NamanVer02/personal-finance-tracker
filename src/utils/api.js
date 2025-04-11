@@ -190,6 +190,7 @@ export const fetchIncomeData = async (setIncomeData, userId, token) => {
     
     const data = await res.json();
     setIncomeData(data);
+    console.log("Income data:", data);
   } catch (err) {
     console.error("Error fetching income data:", err);
     setIncomeData([]);
@@ -213,6 +214,7 @@ export const fetchExpenseData = async (setExpenseData, userId, token) => {
     
     const data = await res.json();
     setExpenseData(data);
+    console.log("Expense data:", data);
   } catch (err) {
     console.error("Error fetching income data:", err);
     setExpenseData([]);
@@ -447,7 +449,6 @@ export const fetchAllFinanceEntries = async (
   })
   .join('&');
 
-  console.log("Query String:", queryString);
 
   try {
     const res = await fetch(`http://localhost:8080/api/admin/search?${queryString}`, {
