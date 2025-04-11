@@ -26,7 +26,6 @@ export function AuthProvider({ children }) {
         setRefreshToken(storedRefreshToken);
         setCurrentUser(parsedUser);
         setUserId(storedUserId || parsedUser.userId); // Fallback to userId from parsed user
-        console.log("Restored user from localStorage:", parsedUser);
       } catch (error) {
         console.error("Failed to parse stored user:", error);
         // Clear potentially corrupted data

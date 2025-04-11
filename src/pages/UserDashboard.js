@@ -223,7 +223,6 @@ export default function UserDashboard() {
   
         const data = await response.json();
         setUserDetails(data);
-        console.log("User details fetched:", data);
       } catch (error) {
         console.error("Error fetching user details:", error);
         toast.error(error.message || "Failed to fetch user details");
