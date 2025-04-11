@@ -178,10 +178,6 @@ export default function Dashboard() {
     );
   }, [currentPage, token, filterCriteria, sortCriteria, itemsPerPage]); // Add filterCriteria as dependency
 
-  useEffect(() => {
-    console.log("Transactions: ", transactions);
-  }, [transactions]);
-
   // If still checking authentication, show loading
   if (!isAuthenticated) {
     return (

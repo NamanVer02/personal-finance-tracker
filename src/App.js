@@ -9,6 +9,7 @@ import GoogleAuthSetup from "./pages/GoogleAuthSetup";
 import AccountantDashboard from "./pages/AccountantDashboard";
 import CustomCursor from "./components/CustomCursor";
 import UserDashboard from "./pages/UserDashboard";
+import UserRoleManagement from "./pages/UserRoleManagement";
 
 const App = () => {
     useEffect(() => {
@@ -20,7 +21,7 @@ const App = () => {
           document.documentElement.classList.remove("dark");
         }
       }, []);
-
+    
     return (
         <div clasname="no-scrollbar cursor-none">
         {/* <CustomCursor /> */}
@@ -33,6 +34,7 @@ const App = () => {
             <Route path="/setup-2fa" element={<GoogleAuthSetup />} />
             <Route path="/accountant-dashboard" element={<AccountantDashboard />} />
             <Route path="/user-dashboard" element={<UserDashboard />} />
+            <Route path="/user-role-management" element={<UserRoleManagement />} />
         </Routes>
         </div>
     );

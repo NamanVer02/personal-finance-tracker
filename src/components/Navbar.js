@@ -10,6 +10,7 @@ import {
   X,
   Upload,
   User,
+  BadgeDollarSign,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -148,7 +149,22 @@ export default function Navbar({
                   <User className="h-4 w-4 text-gray-600" />
                   User Dashboard
                 </button>
-
+                {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/user-role-management"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/user-role-management");
+                    }}
+                  >
+                    <Users className="h-4 w-4 text-gray-600" />
+                    Role Management
+                  </button>
+                )}
                 {currentUser?.roles?.includes("ROLE_ADMIN") && (
                   <button
                     className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
@@ -161,7 +177,7 @@ export default function Navbar({
                       navigate("/user-transactions");
                     }}
                   >
-                    <Users className="h-4 w-4 text-gray-600" />
+                    <BadgeDollarSign className="h-4 w-4 text-gray-600" />
                     User Transactions
                   </button>
                 )}
@@ -253,7 +269,6 @@ export default function Navbar({
           </motion.div>
         )}
       </div>
-
       {/* Fixed Sidebar */}
       <motion.navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
         <div className="flex items-center gap-3 mb-8">
@@ -303,7 +318,19 @@ export default function Navbar({
                 <User className="h-4 w-4 text-gray-600" />
                 User Dashboard
               </button>
-
+              {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/user-role-management"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => navigate("/user-role-management")}
+                >
+                  <Users className="h-4 w-4 text-gray-600" />
+                  Role Management
+                </button>
+              )}
               {currentUser?.roles?.includes("ROLE_ADMIN") && (
                 <button
                   className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
@@ -313,7 +340,7 @@ export default function Navbar({
                   }`}
                   onClick={() => navigate("/user-transactions")}
                 >
-                  <Users className="h-4 w-4 text-gray-600" />
+                  <BadgeDollarSign className="h-4 w-4 text-gray-600" />
                   User Transactions
                 </button>
               )}
