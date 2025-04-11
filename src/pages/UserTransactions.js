@@ -47,10 +47,12 @@ export default function UserTransactions() {
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem("darkMode") === "enabled" ? true : false
   );
+
   const [sortCriteria, setSortCriteria] = useState({
     field: "date",
     direction: "desc",
   });
+  
   const [filterCriteria, setFilterCriteria] = useState({
     type: "all",
     id: null,
@@ -229,8 +231,6 @@ export default function UserTransactions() {
       </div>
     );
   }
-
-  console.log("Transactions:", transactions);
 
   // Page
   return (
