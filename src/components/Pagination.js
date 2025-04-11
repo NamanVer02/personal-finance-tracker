@@ -2,36 +2,40 @@ import React from 'react';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 
 const Pagination = ({
-  currentPage,
+  currentPage,  // Zero-indexed (0 = first page)
   totalPages,
   onPageChange,
   itemsPerPage,
+  setItemsPerPage,
   totalItems
 }) => {
+  // Common page size options
+  const pageSizeOptions = [10, 25, 50, 100];
+
   // Generate page buttons with ellipsis logic
   const generatePageButtons = () => {
     // If total pages is 6 or less, show all pages
     if (totalPages <= 6) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
+      return Array.from({ length: totalPages }, (_, i) => i);
     }
 
     // Complex logic for pagination with ellipsis
     const pages = [];
     
-    // Always show first page
-    pages.push(1);
+    // Always show first page (page 0)
+    pages.push(0);
 
     // Determine the range of pages to show
     let startPage, endPage;
-    if (currentPage <= 3) {
+    if (currentPage <= 2) {
       // If current page is in the first 3 pages
-      startPage = 2;
-      endPage = 4;
+      startPage = 1;
+      endPage = 3;
       pages.push('start-ellipsis');
-    } else if (currentPage >= totalPages - 2) {
+    } else if (currentPage >= totalPages - 3) {
       // If current page is in the last 3 pages
-      startPage = totalPages - 3;
-      endPage = totalPages - 1;
+      startPage = totalPages - 4;
+      endPage = totalPages - 2;
       pages.push('start-ellipsis');
     } else {
       // Current page is in the middle
@@ -42,18 +46,18 @@ const Pagination = ({
 
     // Add middle pages
     for (let i = startPage; i <= endPage; i++) {
-      if (i > 1 && i < totalPages) {
+      if (i > 0 && i < totalPages - 1) {
         pages.push(i);
       }
     }
 
     // Add end ellipsis if needed
-    if (currentPage < totalPages - 2) {
+    if (currentPage < totalPages - 3) {
       pages.push('end-ellipsis');
     }
 
     // Always show last page
-    pages.push(totalPages);
+    pages.push(totalPages - 1);
 
     return pages;
   };
@@ -74,6 +78,9 @@ const Pagination = ({
         );
       }
 
+      // For display purposes, show page + 1 (so page 0 shows as "1")
+      const displayPage = page + 1;
+
       return (
         <button
           key={page}
@@ -85,26 +92,60 @@ const Pagination = ({
               : 'bg-gray-100 shadow-neumorphic-button hover:bg-gray-200'}
           `}
         >
-          {page}
+          {displayPage}
         </button>
       );
     });
   };
 
+  // Handle items per page change
+  const handleItemsPerPageChange = (e) => {
+    const newItemsPerPage = parseInt(e.target.value, 10);
+    setItemsPerPage(newItemsPerPage);
+    
+    // Adjust current page if necessary to avoid showing empty pages
+    const newMaxPage = Math.ceil(totalItems / newItemsPerPage) - 1;
+    if (currentPage > newMaxPage) {
+      onPageChange(newMaxPage >= 0 ? newMaxPage : 0);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-between mt-4">
-      {/* Items showing information */}
-      <div className="text-sm text-gray-600">
-        Showing{" "}
-        {totalItems > 0
-          ? (currentPage - 1) * itemsPerPage + 1
-          : 0}{" "}
-        to{" "}
-        {Math.min(
-          currentPage * itemsPerPage,
-          totalItems
-        )}{" "}
-        of {totalItems} entries
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-4">
+      {/* Items showing information and items per page selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="text-sm text-gray-600">
+          Showing{" "}
+          {totalItems > 0
+            ? (currentPage) * itemsPerPage + 1
+            : 0}{" "}
+          to{" "}
+          {Math.min(
+            (currentPage + 1) * itemsPerPage,
+            totalItems
+          )}{" "}
+          of {totalItems} entries
+        </div>
+        
+        {/* Items per page dropdown */}
+        <div className="flex items-center gap-2">
+          <label htmlFor="itemsPerPage" className="text-sm font-medium text-gray-600">
+            Show
+          </label>
+          <select
+            id="itemsPerPage"
+            value={itemsPerPage}
+            onChange={handleItemsPerPageChange}
+            className="rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2 text-sm"
+          >
+            {pageSizeOptions.map(option => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          <span className="text-sm text-gray-600">per page</span>
+        </div>
       </div>
 
       {/* Pagination controls */}
@@ -112,7 +153,7 @@ const Pagination = ({
         {/* Previous button */}
         <button
           onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+          disabled={currentPage === 0}
           className="
             px-3 py-1 text-sm rounded-lg bg-gray-100 
             shadow-neumorphic-button 
@@ -130,8 +171,8 @@ const Pagination = ({
 
         {/* Next button */}
         <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          onClick={() => {onPageChange(currentPage + 1);}}
+          disabled={currentPage === totalPages - 1}
           className="
             px-3 py-1 text-sm rounded-lg bg-gray-100 
             shadow-neumorphic-button 

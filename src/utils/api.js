@@ -190,6 +190,7 @@ export const fetchIncomeData = async (setIncomeData, userId, token) => {
     
     const data = await res.json();
     setIncomeData(data);
+    console.log("Income data:", data);
   } catch (err) {
     console.error("Error fetching income data:", err);
     setIncomeData([]);
@@ -213,6 +214,7 @@ export const fetchExpenseData = async (setExpenseData, userId, token) => {
     
     const data = await res.json();
     setExpenseData(data);
+    console.log("Expense data:", data);
   } catch (err) {
     console.error("Error fetching income data:", err);
     setExpenseData([]);
@@ -352,3 +354,120 @@ export const getIncomeCategories = async (setIncomeCategories, token) => {
     setIncomeCategories([]);
   }
 }
+
+
+export const fetchFinanceEntries = async (
+  setTransactions,
+  setTotalPages,
+  setTotalItems,
+  currentPage,
+  token,
+  filterCriteria,
+  sortCriteria,
+  size = 10
+) => {
+  // Convert filter criteria to API parameters
+  const params = {
+    page: currentPage || 0,
+    size,
+    type: filterCriteria.type === 'all' ? null : filterCriteria.type,
+    category: filterCriteria.categories.length > 0 ? filterCriteria.categories.join(',') : null,
+    minAmount: filterCriteria.amountMin || null,
+    maxAmount: filterCriteria.amountMax || null,
+    startDate: filterCriteria.dateFrom || null,
+    endDate: filterCriteria.dateTo || null,
+    searchTerm: filterCriteria.label || null,
+    sort: [`${sortCriteria.field},${sortCriteria.direction}`]  
+  };
+
+  // Build query string with proper URL encoding
+  const queryString = Object.entries(params)
+  .filter(([_, value]) => value !== null && value !== '' && value.length !== 0)
+  .flatMap(([key, value]) => {
+    if (Array.isArray(value)) {
+      return value.map(v => `${key}=${encodeURIComponent(v)}`);
+    }
+    return `${key}=${encodeURIComponent(value)}`;
+  })
+  .join('&');
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/search?${queryString}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    setTransactions(data.content);
+    setTotalPages(data.totalPages);
+    setTotalItems(data.totalElements);
+  } catch (err) {
+    console.error("Error fetching transactions:", err);
+  }
+};
+
+export const fetchAllFinanceEntries = async (
+  setTransactions,
+  setTotalPages,
+  setTotalItems,
+  currentPage,
+  token,
+  filterCriteria,
+  sortCriteria,
+  size = 10
+) => {
+  // Convert filter criteria to API parameters
+  const params = {
+    page: currentPage || 0,
+    size,
+    type: filterCriteria.type === 'all' ? null : filterCriteria.type,
+    id: filterCriteria.id || null,
+    category: filterCriteria.categories.length > 0 ? filterCriteria.categories.join(',') : null,
+    minAmount: filterCriteria.amountMin || null,
+    maxAmount: filterCriteria.amountMax || null,
+    startDate: filterCriteria.dateFrom || null,
+    endDate: filterCriteria.dateTo || null,
+    searchTerm: filterCriteria.label || null,
+    sort: [`${sortCriteria.field},${sortCriteria.direction}`]  
+  };
+
+  // Build query string with proper URL encoding
+  const queryString = Object.entries(params)
+  .filter(([_, value]) => value !== null && value !== '' && value.length !== 0)
+  .flatMap(([key, value]) => {
+    if (Array.isArray(value)) {
+      return value.map(v => `${key}=${encodeURIComponent(v)}`);
+    }
+    return `${key}=${encodeURIComponent(value)}`;
+  })
+  .join('&');
+
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/admin/search?${queryString}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    setTransactions(data.content);
+    setTotalPages(data.totalPages);
+    setTotalItems(data.totalElements);
+  } catch (err) {
+    console.error("Error fetching transactions:", err);
+  }
+};

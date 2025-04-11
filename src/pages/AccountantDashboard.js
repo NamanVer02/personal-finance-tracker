@@ -23,8 +23,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../AuthContext";
 import StatCard from "../components/StatCard";
 import GraphCard from "../components/GraphCard";
-import { AnimatePresence } from "framer-motion";
-import CsvUploadModal from "../components/CsvUploadModal";
+import Navbar from "../components/Navbar";
 
 // User card for selecting a user
 const UserCard = ({ user, isSelected, onClick }) => (
@@ -71,8 +70,6 @@ export default function AccountantDashboard({
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
   const { currentUser, token, logout } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showCsvUploadModal, setShowCsvUploadModal] = useState(false);
 
   // Data states
   const [users, setUsers] = useState([]);
@@ -116,14 +113,6 @@ export default function AccountantDashboard({
   const handleLogout = () => {
     logout();
     navigate("/login");
-    toast.success("Logged out successfully!");
-  };
-
-  const toggleDarkMode = () => {
-    const isDarkMode = document.documentElement.classList.toggle("dark");
-    setIsDarkMode(isDarkMode);
-    localStorage.setItem("darkMode", isDarkMode ? "enabled" : "disabled");
-    toast.info(`Dark mode ${isDarkMode ? "enabled" : "disabled"}`);
   };
 
   // Fetch data functions
@@ -266,293 +255,24 @@ export default function AccountantDashboard({
   };
 
   return (
-    <motion.div className="flex min-h-screen bg-gray-100">
-      <AnimatePresence>
-        {showCsvUploadModal && (
-          <CsvUploadModal
-            onClose={() => setShowCsvUploadModal(false)}
-            onUploadSuccess={() => {
-              fetchTransactions(setTransactions, token);
-              fetchIncomeData(setIncomeData, userId, token);
-              fetchExpenseData(setExpenseData, userId, token);
-              toast.success("Transactions imported successfully!");
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Mobile Top Navbar - only visible on small screens */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-gray-100 shadow-md lg:hidden">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-purple-600" />
-            <h3 className="font-medium">{currentUser?.username || "User"}</h3>
-          </div>
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg bg-gray-100 shadow-neumorphic-button"
-          >
-            {mobileMenuOpen ? (
-              <X className="h-5 w-5 text-gray-600" />
-            ) : (
-              <Menu className="h-5 w-5 text-gray-600" />
-            )}
-          </button>
-        </div>
-
-        {/* Mobile menu overlay */}
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-gray-100 shadow-md"
-          >
-            <div className="p-4 space-y-4">
-              <div className="space-y-3">
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/dashboard"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/dashboard");
-                  }}
-                >
-                  <BarChart3 className="h-4 w-4 text-gray-600" />
-                  Dashboard
-                </button>
-
-                {currentUser?.roles?.includes("ROLE_ADMIN") && (
-                  <button
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                      location.pathname === "/user-transactions"
-                        ? "shadow-neumorphic-inset-button"
-                        : "shadow-neumorphic-button"
-                    }`}
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate("/user-transactions");
-                    }}
-                  >
-                    <Users className="h-4 w-4 text-gray-600" />
-                    User Transactions
-                  </button>
-                )}
-
-                {currentUser?.roles?.includes("ROLE_ACCOUNTANT") && (
-                  <button
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                      location.pathname === "/accountant-dashboard"
-                        ? "shadow-neumorphic-inset-button"
-                        : "shadow-neumorphic-button"
-                    }`}
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate("/accountant-dashboard");
-                    }}
-                  >
-                    <BarChart3 className="h-4 w-4 text-gray-600" />
-                    Accountant Dashboard
-                  </button>
-                )}
-
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/ai-assistant"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/ai-assistant");
-                  }}
-                >
-                  <MessageCircle className="h-4 w-4 text-gray-600" />
-                  AI Assistant
-                </button>
-
-                <button
-                  onClick={() => {
-                    fetchOverallSummary();
-                    fetchMonthlySummary();
-                    toast.success("Data Synced Successfully");
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                >
-                  <FolderSync className="h-4 w-4 text-gray-600" />
-                  Sync Data
-                </button>
-
-                <button
-                  onClick={() => {
-                    toggleDarkMode();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-                >
-                  {isDarkMode ? (
-                    <Sun className="h-4 w-4 text-gray-600" />
-                  ) : (
-                    <Moon className="h-4 w-4 text-gray-600" />
-                  )}
-                  {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
-                </button>
-
-                <button
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Fixed Sidebar */}
-      <motion.navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="h-10 w-10 rounded-full bg-purple-600 " />
-          <div>
-            <h3 className="font-medium">{currentUser?.username || "User"}</h3>
-            <p className="text-sm text-gray-600">
-              {currentUser &&
-              currentUser.roles &&
-              Array.isArray(currentUser.roles)
-                ? currentUser.roles
-                    .filter((role) => typeof role === "string")
-                    .map((role) =>
-                      role
-                        .toLowerCase()
-                        .split(" ")
-                        .map(function (word) {
-                          return word.charAt(5).toUpperCase() + word.slice(6);
-                        })
-                        .join(" ")
-                    )
-                    .join(", ")
-                : "User"}
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="px-2 py-1">
-            <h4 className="mb-2 text-sm font-medium text-gray-600">MENU</h4>
-            <div className="space-y-4">
-              <button
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                  location.pathname === "/dashboard"
-                    ? "shadow-neumorphic-inset-button"
-                    : "shadow-neumorphic-button"
-                }`}
-                onClick={() => navigate("/dashboard")}
-              >
-                <BarChart3 className="h-4 w-4 text-gray-600" />
-                Dashboard
-              </button>
-
-              {currentUser?.roles?.includes("ROLE_ADMIN") && (
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/user-transactions"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => navigate("/user-transactions")}
-                >
-                  <Users className="h-4 w-4 text-gray-600" />
-                  User Transactions
-                </button>
-              )}
-
-              {currentUser?.roles?.includes("ROLE_ACCOUNTANT") && (
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/accountant-dashboard"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => navigate("/accountant-dashboard")}
-                >
-                  <BarChart3 className="h-4 w-4 text-gray-600" />
-                  Accountant Dashboard
-                </button>
-              )}
-
-              <button
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                  location.pathname === "/ai-assistant"
-                    ? "shadow-neumorphic-inset-button"
-                    : "shadow-neumorphic-button"
-                }`}
-                onClick={() => navigate("/ai-assistant")}
-              >
-                <MessageCircle className="h-4 w-4 text-gray-600" />
-                AI Assistant
-              </button>
-            </div>
-          </div>
-
-          <div className="px-2 py-1">
-            <h4 className="mb-2 text-sm font-medium text-gray-600">ACCOUNT</h4>
-            <div className="space-y-4">
-              <button
-                onClick={() => {
-                  fetchOverallSummary();
-                  fetchMonthlySummary();
-                  toast.success("Data Synced Successfully");
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-              >
-                <FolderSync className="h-4 w-4 text-gray-600" />
-                Sync Data
-              </button>
-
-              <button
-                onClick={toggleDarkMode}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
-                  isDarkMode
-                    ? "bg-gray-100 text-white"
-                    : "bg-gray-100 text-gray-700"
-                } shadow-neumorphic-button`}
-              >
-                {isDarkMode ? (
-                  <Sun className="h-4 w-4 text-gray-600" />
-                ) : (
-                  <Moon className="h-4 w-4 text-gray-600" />
-                )}
-                {isDarkMode ? "Enable Light Mode" : "Enable Dark Mode"}
-              </button>
-
-              <button
-                onClick={() => setShowCsvUploadModal(true)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
-              >
-                <Upload className="h-4 w-4 text-gray-600" />
-                Import CSV
-              </button>
-
-              <button
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </motion.navbar>
+    <div className="min-h-screen overflow-hidden bg-gray-100">
+      <Navbar
+        currentUser={currentUser}
+        token={token}
+        userId={userId}
+        logout={handleLogout}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+        setTransactions={setTransactions}
+        setIncomeData={setIncomeData}
+        setExpenseData={setExpenseData}
+        fetchTransactions={fetchTransactions}
+        fetchIncomeData={fetchIncomeData}
+        fetchExpenseData={fetchExpenseData}
+      />
 
       {/* Main Content */}
-      <div className="flex-1 p-8 lg:ml-64 bg-gray-100">
+      <div className="lg:ml-64 p-4 pt-16 lg:pt-6">
         <div className="mx-auto max-w-6xl space-y-8">
           <motion.div
             className="space-y-2"
@@ -836,6 +556,6 @@ export default function AccountantDashboard({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
