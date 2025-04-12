@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
 import { getExpenseCategories, getIncomeCategories ,handleAddTransaction } from "../utils/api";
+import { validateTransaction } from "../utils/validation";
+import { toast } from "react-toastify";
 
 export default function AddTransaction({ onClose, onSubmit }) {
   const token = localStorage.getItem("token");
@@ -35,6 +37,15 @@ export default function AddTransaction({ onClose, onSubmit }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate transaction data
+    const errors = validateTransaction(formData);
+    if (errors) {
+      // Display the first error message
+      const firstError = Object.values(errors)[0];
+      toast.error(firstError);
+      return;
+    }
     
     handleAddTransaction(formData, onSubmit, onClose, token);
   };

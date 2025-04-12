@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
 import { getExpenseCategories, getIncomeCategories } from "../utils/api";
+import { validateTransaction } from "../utils/validation";
 
 export default function EditTransaction({ onClose, onSubmit, transaction }) {
   const token = localStorage.getItem("token");
@@ -46,6 +47,16 @@ export default function EditTransaction({ onClose, onSubmit, transaction }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    // Validate transaction data
+    const errors = validateTransaction(formData);
+    if (errors) {
+      // Display the first error message
+      const firstError = Object.values(errors)[0];
+      toast.error(firstError);
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const result = await onSubmit(transaction.id, formData);

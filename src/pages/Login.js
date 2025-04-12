@@ -5,6 +5,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PasswordResetModal from "../components/PasswordResetModal";
 import { Eye, EyeOff } from "lucide-react";
+import { validateUsername, validate2FACode } from "../utils/validation";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -19,6 +20,21 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate inputs
+    const usernameError = validateUsername(username);
+    const twoFactorError = validate2FACode(twoFactorCode);
+
+    if (usernameError) {
+      toast.error(usernameError);
+      return;
+    }
+
+    if (twoFactorError) {
+      toast.error(twoFactorError);
+      return;
+    }
+
     setLoading(true);
 
     try {

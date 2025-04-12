@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify"; // Import react-toastify
+import { toast, ToastContainer } from "react-toastify";
+import { validateUsername, validateEmail, validatePassword } from "../utils/validation";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
@@ -26,13 +27,27 @@ export default function Signup() {
     e.preventDefault();
 
     // Form validation
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match.");
+    const usernameError = validateUsername(username);
+    const emailError = validateEmail(email);
+    const passwordError = validatePassword(password);
+
+    if (usernameError) {
+      toast.error(usernameError);
       return;
     }
 
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters long");
+    if (emailError) {
+      toast.error(emailError);
+      return;
+    }
+
+    if (passwordError) {
+      toast.error(passwordError);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match.");
       return;
     }
 
