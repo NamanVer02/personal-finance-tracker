@@ -13,6 +13,7 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
@@ -36,6 +37,7 @@ export default function Signup() {
       return;
     }
 
+    setErrors(prev => ({...prev, email: emailError || ''}));
     if (emailError) {
       toast.error(emailError);
       return;
@@ -46,8 +48,10 @@ export default function Signup() {
       return;
     }
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match.");
+    const confirmError = !confirmPassword ? "Confirm password is required" : password !== confirmPassword ? "Passwords do not match" : "";
+    
+    if (confirmError) {
+      toast.error(confirmError);
       return;
     }
 
@@ -140,10 +144,18 @@ export default function Signup() {
               type="email"
               id="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setErrors(prev => ({...prev, email: validateEmail(e.target.value) || ''}));
+              }}
+              className={`mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset ${
+                errors.email ? 'border-red-500' : 'focus:ring-2 focus:ring-purple-500'
+              } outline-none p-2`}
               required
             />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
           </div>
 
           {/* Password Field */}

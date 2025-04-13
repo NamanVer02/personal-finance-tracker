@@ -27,7 +27,7 @@ const CacheMonitor = () => {
   }, []);
 
   return (
-    <div className="bg-white shadow rounded-lg p-4 mt-4">
+    <div className=" shadow rounded-lg p-4 mt-4">
       <h2 className="text-xl font-semibold mb-4">Cache Monitor</h2>
       <div className="space-y-4">
         {Object.entries(cacheStats).map(([key, stats]) => (

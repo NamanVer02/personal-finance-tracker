@@ -21,18 +21,17 @@ export const validateEmail = (email) => {
 
 // Password validation
 export const validatePassword = (password) => {
-  if (!password || password.length < 6) {
-    return 'Password must be at least 6 characters long';
-  }
-  if (!/[A-Z]/.test(password)) {
-    return 'Password must contain at least one uppercase letter';
-  }
-  if (!/[a-z]/.test(password)) {
-    return 'Password must contain at least one lowercase letter';
-  }
-  if (!/[0-9]/.test(password)) {
-    return 'Password must contain at least one number';
-  }
+  const minLength = 8;
+  const hasUpper = /[A-Z]/;
+  const hasLower = /[a-z]/;
+  const hasNumber = /\d/;
+  const hasSpecial = /[!@#$%^&*]/;
+
+  if (!password || password.length < minLength) return `Password must be at least ${minLength} characters`;
+  if (!hasUpper.test(password)) return 'Must contain one uppercase letter';
+  if (!hasLower.test(password)) return 'Must contain one lowercase letter';
+  if (!hasNumber.test(password)) return 'Must contain one number';
+  if (!hasSpecial.test(password)) return 'Must contain one special character (!@#$%^&*)';
   return null;
 };
 
@@ -42,6 +41,21 @@ export const validate2FACode = (code) => {
     return 'Please enter a valid 6-digit code';
   }
   return null;
+};
+
+// Number range validation
+export const validateNumberRange = (value, min, max) => {
+  const num = Number(value);
+  if (isNaN(num)) return 'Must be a valid number';
+  if (num < min) return `Minimum value is ${min}`;
+  if (num > max) return `Maximum value is ${max}`;
+  return null;
+};
+
+// Date validation
+export const validateDateNotFuture = (dateString) => {
+  const inputDate = new Date(dateString);
+  return inputDate > new Date() ? 'Date cannot be in future' : null;
 };
 
 // Transaction validation

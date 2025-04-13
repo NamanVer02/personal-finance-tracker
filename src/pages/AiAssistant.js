@@ -29,6 +29,7 @@ export default function AiAssistant() {
     localStorage.getItem("darkMode") === "enabled" ? true : false
   );
   const [question, setQuestion] = useState("");
+  const [inputError, setInputError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -48,7 +49,11 @@ export default function AiAssistant() {
   const sendMessage = async (e) => {
     e?.preventDefault();
 
-    if (!question.trim()) return;
+    const inputError = validateChatInput(question);
+    if (inputError) {
+      toast.error(inputError);
+      return;
+    }
 
     const userMessage = {
         type: "user",
@@ -287,9 +292,12 @@ export default function AiAssistant() {
               ref={inputRef}
               type="text"
               placeholder="Type your question..."
-              className="flex-grow px-4 py-3 rounded-lg bg-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none shadow-neumorphic-inset-button"
+              className={`flex-grow px-4 py-3 rounded-lg bg-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none shadow-neumorphic-inset-button w-full p-3 pr-12 ${inputError ? 'border-red-500' : ''}`}
               value={question}
-              onChange={(e) => setQuestion(e.target.value)}
+              onChange={(e) => {
+            setQuestion(e.target.value);
+            setInputError(validateChatInput(e.target.value));
+          }}
               disabled={isLoading}
             />
             <button
@@ -307,3 +315,9 @@ export default function AiAssistant() {
     </motion.div>
   );
 }
+
+const validateChatInput = (input) => {
+  if (!input.trim()) return 'Question cannot be empty';
+  if (input.length > 500) return 'Question is too long (max 500 characters)';
+  return null;
+};

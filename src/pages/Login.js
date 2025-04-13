@@ -13,6 +13,11 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    username: '',
+    password: '',
+    twoFactorCode: ''
+  });
   // New state for password reset modal
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const { login } = useAuth();
@@ -22,13 +27,11 @@ export default function Login() {
     e.preventDefault();
 
     // Validate inputs
-    const usernameError = validateUsername(username);
     const twoFactorError = validate2FACode(twoFactorCode);
-
-    if (usernameError) {
-      toast.error(usernameError);
-      return;
-    }
+    
+    setErrors({
+      twoFactorCode: twoFactorError || ''
+    });
 
     if (twoFactorError) {
       toast.error(twoFactorError);
@@ -122,10 +125,18 @@ export default function Login() {
               type="text"
               id="username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
+              onChange={(e) => {
+                setUsername(e.target.value);
+                setErrors(prev => ({...prev, username: validateUsername(e.target.value) || ''}));
+              }}
+              className={`mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset ${
+                errors.username ? 'border-red-500' : 'focus:ring-2 focus:ring-purple-500'
+              } outline-none p-2`}
               required
             />
+            {errors.username && (
+              <p className="text-red-500 text-xs mt-1">{errors.username}</p>
+            )}
           </div>
 
           {/* Password Field */}
