@@ -17,6 +17,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import CsvUploadModal from "./CsvUploadModal";
 import { toast } from "react-toastify";
+import CacheMonitor from "./CacheMonitor";
 
 export default function Navbar({
   currentUser,
@@ -36,6 +37,7 @@ export default function Navbar({
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showCsvUploadModal, setShowCsvUploadModal] = useState(false);
+  const [showCacheModal, setShowCacheModal] = useState(false);
 
   // Initialize dark mode from localStorage when component mounts
   useEffect(() => {
@@ -413,6 +415,16 @@ export default function Navbar({
                 Import CSV
               </button>
 
+              {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                <button
+                  onClick={() => setShowCacheModal(true)}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                >
+                  <BarChart3 className="h-4 w-4 text-gray-600" />
+                  Cache Metrics
+                </button>
+              )}
+
               <button
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
                 onClick={() => {
@@ -427,6 +439,38 @@ export default function Navbar({
           </div>
         </div>
       </motion.navbar>
+
+      {/* Cache Metrics Modal */}
+      <AnimatePresence>
+        {showCacheModal && currentUser?.roles?.includes("ROLE_ADMIN") && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+            onClick={() => setShowCacheModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-gray-100 rounded-lg shadow-lg w-full max-w-lg mx-4"
+            >
+              <div className="p-4">
+                <h2 className="text-xl font-semibold mb-4">Cache Metrics</h2>
+                <CacheMonitor />
+                <button
+                  onClick={() => setShowCacheModal(false)}
+                  className="mt-4 w-full px-4 py-2 bg-purple-600 text-white rounded-lg shadow-neumorphic-purple"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

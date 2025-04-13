@@ -1,24 +1,21 @@
+  import { getCachedTransactions, cacheTransactions, getCachedIncomeData, cacheIncomeData, getCachedExpenseData, cacheExpenseData, invalidateCache, CACHE_KEYS, getWithExpiry, setWithExpiry, CACHE_DURATIONS } from './cacheService';
+
 export const fetchTransactions = async (setTransactions, token) => {  
   try {
+    // Check cache first
+    const cachedData = getCachedTransactions();
+    if (cachedData) {
+      setTransactions(cachedData);
+      return;
+    }
+
     const res = await fetch("http://localhost:8080/api/get", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, // Include the token in the headers
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
-
-    // if (res.status === 401) {
-    //   const newToken = await refreshAccessToken();
-    //   if (newToken) {
-    //     res = await fetch("http://localhost:8080/api/get", {
-    //       headers: {
-    //         Authorization: `Bearer ${newToken}`, // Include the token in the headers
-    //         'Content-Type': 'application/json',
-    //       },
-    //     });
-    //   }
-    // }
 
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
@@ -26,6 +23,8 @@ export const fetchTransactions = async (setTransactions, token) => {
 
     const data = await res.json();
     setTransactions(data);
+    // Cache the response
+    cacheTransactions(data);
   } catch (err) {
     console.error("Error fetching transactions:", err);
     setTransactions([]);
@@ -37,7 +36,7 @@ export const handleAddTransaction = async (formData, onSubmit, onClose, token) =
     const res = await fetch("http://localhost:8080/api/post", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, // Include the token in the headers
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(formData), 
@@ -46,6 +45,11 @@ export const handleAddTransaction = async (formData, onSubmit, onClose, token) =
     if (!res.ok) {
       throw new Error("Failed to add transaction");
     }
+
+    // Invalidate relevant caches when adding new transaction
+    invalidateCache(CACHE_KEYS.TRANSACTIONS);
+    invalidateCache(CACHE_KEYS.INCOME_DATA);
+    invalidateCache(CACHE_KEYS.EXPENSE_DATA);
 
     onSubmit();
     onClose();
@@ -79,6 +83,12 @@ export const handleDeleteTransaction = async (id, setTransactions, token) => {
     setTransactions((prev) =>
       prev.filter((transaction) => transaction.id !== id)
     );
+
+    // Invalidate relevant caches when deleting transaction
+    invalidateCache(CACHE_KEYS.TRANSACTIONS);
+    invalidateCache(CACHE_KEYS.INCOME_DATA);
+    invalidateCache(CACHE_KEYS.EXPENSE_DATA);
+
   } catch (error) {
     console.error("Error deleting transaction:", error);
   }
@@ -86,7 +96,6 @@ export const handleDeleteTransaction = async (id, setTransactions, token) => {
 
 export const handleUpdateTransaction = async (transactionId, formData, token) => {
   try {
-
     const res = await fetch(`http://localhost:8080/api/put/${transactionId}`, {
       method: "PUT",
       headers: {
@@ -95,7 +104,6 @@ export const handleUpdateTransaction = async (transactionId, formData, token) =>
       },
       body: JSON.stringify(formData),
     });
-
 
     if (res.status === 409) {
       // Handle version conflict
@@ -111,6 +119,12 @@ export const handleUpdateTransaction = async (transactionId, formData, token) =>
     }
 
     const data = await res.json();
+
+    // Invalidate relevant caches when updating transaction
+    invalidateCache(CACHE_KEYS.TRANSACTIONS);
+    invalidateCache(CACHE_KEYS.INCOME_DATA);
+    invalidateCache(CACHE_KEYS.EXPENSE_DATA);
+
     return { success: true, data };
   } catch (err) {
     console.error("Error updating transaction:", err);
@@ -176,10 +190,17 @@ export const handleDownloadPdf = async (token, userId) => {
 
 export const fetchIncomeData = async (setIncomeData, userId, token) => {
   try {
+    // Check cache first
+    const cachedData = getCachedIncomeData();
+    if (cachedData) {
+      setIncomeData(cachedData);
+      return;
+    }
+
     const res = await fetch(`http://localhost:8080/api/get/summary/income/${userId}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, // Include the token in the headers
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
@@ -190,6 +211,8 @@ export const fetchIncomeData = async (setIncomeData, userId, token) => {
     
     const data = await res.json();
     setIncomeData(data);
+    // Cache the response
+    cacheIncomeData(data);
   } catch (err) {
     console.error("Error fetching income data:", err);
     setIncomeData([]);
@@ -199,10 +222,17 @@ export const fetchIncomeData = async (setIncomeData, userId, token) => {
 
 export const fetchExpenseData = async (setExpenseData, userId, token) => {
   try {
+    // Check cache first
+    const cachedData = getCachedExpenseData();
+    if (cachedData) {
+      setExpenseData(cachedData);
+      return;
+    }
+
     const res = await fetch(`http://localhost:8080/api/get/summary/expense/${userId}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, // Include the token in the headers
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
@@ -213,14 +243,23 @@ export const fetchExpenseData = async (setExpenseData, userId, token) => {
     
     const data = await res.json();
     setExpenseData(data);
+    // Cache the response
+    cacheExpenseData(data);
   } catch (err) {
-    console.error("Error fetching income data:", err);
+    console.error("Error fetching expense data:", err);
     setExpenseData([]);
   }
 };
 
 export const fetchOverallSummary = async (setOverallSummary, token) => {
   try {
+    // Check cache first
+    const cachedData = getWithExpiry(CACHE_KEYS.FINANCIAL_SUMMARY);
+    if (cachedData) {
+      setOverallSummary(cachedData);
+      return;
+    }
+
     const res = await fetch(`http://localhost:8080/api/accountant/summary/overall`, {
       method: "POST",
       headers: {
@@ -235,6 +274,8 @@ export const fetchOverallSummary = async (setOverallSummary, token) => {
     
     const data = await res.json();
     setOverallSummary(data);
+    // Cache the response
+    setWithExpiry(CACHE_KEYS.FINANCIAL_SUMMARY, data, CACHE_DURATIONS.FINANCIAL_SUMMARY);
   } catch (err) {
     console.error("Error fetching overall summary:", err);
     setOverallSummary({});

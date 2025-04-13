@@ -4,7 +4,8 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Filter,
-  Search
+  Search,
+  MonitorDown
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -30,6 +31,7 @@ import FilterAndSort from "../components/FilterAndSort";
 import { motion } from "framer-motion";
 import Pagination from "../components/Pagination";
 import Navbar from "../components/Navbar";
+import CacheMonitor from "../components/CacheMonitor";
 
 export default function Dashboard() {
   // Variables
@@ -57,6 +59,7 @@ export default function Dashboard() {
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem("darkMode") === "enabled" ? true : false
   );
+  const [showCacheMonitor, setShowCacheMonitor] = useState(false);
   const [sortCriteria, setSortCriteria] = useState({
     field: "date",
     direction: "desc",
@@ -285,6 +288,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="flex-1 p-8 lg:ml-64 bg-gray-100">
         <div className="mx-auto max-w-6xl space-y-8">
+
           <motion.div
             className="space-y-2"
             initial={{ x: -100, opacity: 0.4 }}
