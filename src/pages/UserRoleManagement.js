@@ -94,6 +94,19 @@ const AdminUserRolesPage = () => {
   };
 
   const handleRemoveRole = async (userId, roleName) => {
+    // Check if user has only one role
+    const user = users.find(u => u.id === userId);
+    if (user && user.roles.length <= 1) {
+      toast.error('Users must have at least one role');
+      return;
+    }
+
+    // Check if trying to remove admin's own admin role
+    if (userId === currentUser?.id && roleName === 'ROLE_ADMIN') {
+      toast.error('Admins cannot remove their own admin role');
+      return;
+    }
+
     try {
       const response = await fetch(
         `http://localhost:8080/api/admin/users/${userId}/roles/${roleName}`,
