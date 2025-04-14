@@ -10,6 +10,7 @@ import AccountantDashboard from "./pages/AccountantDashboard";
 import CustomCursor from "./components/CustomCursor";
 import UserDashboard from "./pages/UserDashboard";
 import UserRoleManagement from "./pages/UserRoleManagement";
+import Categories from "./pages/Categories";
 
 const App = () => {
     useEffect(() => {
@@ -35,6 +36,7 @@ const App = () => {
             <Route path="/accountant-dashboard" element={<AccountantDashboard />} />
             <Route path="/user-dashboard" element={<UserDashboard />} />
             <Route path="/user-role-management" element={<UserRoleManagement />} />
+            <Route path="/categories" element={<Categories />} />
         </Routes>
         </div>
     );

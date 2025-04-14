@@ -11,6 +11,7 @@ import {
   Upload,
   User,
   BadgeDollarSign,
+  Tags,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -183,6 +184,23 @@ export default function Navbar({
                     User Transactions
                   </button>
                 )}
+                
+                {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/categories"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/categories");
+                    }}
+                  >
+                    <Tags className="h-4 w-4 text-gray-600" />
+                    Categories
+                  </button>
+                )}
 
                 {currentUser?.roles?.includes("ROLE_ACCOUNTANT") && (
                   <button
@@ -344,6 +362,20 @@ export default function Navbar({
                 >
                   <BadgeDollarSign className="h-4 w-4 text-gray-600" />
                   User Transactions
+                </button>
+              )}
+              
+              {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/categories"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => navigate("/categories")}
+                >
+                  <Tags className="h-4 w-4 text-gray-600" />
+                  Categories
                 </button>
               )}
 

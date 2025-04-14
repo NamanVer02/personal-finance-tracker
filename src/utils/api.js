@@ -421,6 +421,54 @@ export const addCategory = async (categoryData, token) => {
   }
 }
 
+export const updateCategory = async (categoryType, originalName, newName, token) => {
+  try {
+    const response = await fetch(`http://localhost:8080/api/categories/${categoryType.toLowerCase()}/${originalName}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: newName }),
+    });
+
+    if (response.status === 409) {
+      return { success: false, error: "Category name already exists", isConflict: true };
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error updating category:", error);
+    return { success: false, error: error.message || "Failed to update category" };
+  }
+}
+
+export const deleteCategory = async (categoryType, categoryName, token) => {
+  try {
+    const response = await fetch(`http://localhost:8080/api/categories/${categoryType.toLowerCase()}/${categoryName}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    return { success: false, error: error.message || "Failed to delete category" };
+  }
+}
+
 
 export const fetchFinanceEntries = async (
   setTransactions,
