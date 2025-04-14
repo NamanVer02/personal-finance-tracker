@@ -86,6 +86,11 @@ const AdminUserRolesPage = () => {
   const handleRoleToggle = (roleName) => {
     setSelectedRoles((prev) => {
       if (prev.includes(roleName)) {
+        // Prevent removing the last role
+        if (prev.length <= 1) {
+          toast.error("Cannot remove user's only role");
+          return prev;
+        }
         return prev.filter((r) => r !== roleName);
       } else {
         return [...prev, roleName];
@@ -94,20 +99,16 @@ const AdminUserRolesPage = () => {
   };
 
   const handleRemoveRole = async (userId, roleName) => {
-    // Check if user has only one role
-    const user = users.find(u => u.id === userId);
-    if (user && user.roles.length <= 1) {
-      toast.error('Users must have at least one role');
-      return;
-    }
-
-    // Check if trying to remove admin's own admin role
-    if (userId === currentUser?.id && roleName === 'ROLE_ADMIN') {
-      toast.error('Admins cannot remove their own admin role');
-      return;
-    }
-
-    try {
+  const user = users.find(u => u.id === userId);
+  if (!user) {
+    toast.error("User not found");
+    return;
+  }
+  if (user.roles.length === 1) {
+    toast.error("Cannot remove user's only role");
+    return;
+  }
+  try {
       const response = await fetch(
         `http://localhost:8080/api/admin/users/${userId}/roles/${roleName}`,
         {
@@ -436,6 +437,7 @@ const AdminUserRolesPage = () => {
                     id={`role-${role}`}
                     checked={selectedRoles.includes(role)}
                     onChange={() => handleRoleToggle(role)}
+                    disabled={selectedRoles.length <= 1 && selectedRoles.includes(role)}
                     className="mr-3 h-4 w-4"
                   />
                   <label htmlFor={`role-${role}`} className="flex-grow">
@@ -453,8 +455,9 @@ const AdminUserRolesPage = () => {
                     </button>
                     <button
                       onClick={() => handleRemoveRole(editingUser.id, role)}
-                      className="p-1 rounded-full hover:bg-purple-100"
+                      className="p-1 rounded-full hover:bg-purple-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Remove role"
+                      disabled={selectedRoles.length <= 1 || editingUser.id === currentUser?.id}
                     >
                       <XCircle size={18} className="text-red-600" />
                     </button>
