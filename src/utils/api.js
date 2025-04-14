@@ -1,4 +1,4 @@
-  import { getCachedTransactions, cacheTransactions, getCachedIncomeData, cacheIncomeData, getCachedExpenseData, cacheExpenseData, invalidateCache, CACHE_KEYS, getWithExpiry, setWithExpiry, CACHE_DURATIONS } from './cacheService';
+import { getCachedTransactions, cacheTransactions, getCachedIncomeData, cacheIncomeData, getCachedExpenseData, cacheExpenseData, invalidateCache, CACHE_KEYS, getWithExpiry, setWithExpiry, CACHE_DURATIONS } from './cacheService';
 
 export const fetchTransactions = async (setTransactions, token) => {  
   try {
@@ -391,6 +391,33 @@ export const getIncomeCategories = async (setIncomeCategories, token) => {
   } catch (err) {
     console.error("Error fetching income categories:", err);
     setIncomeCategories([]);
+  }
+}
+
+export const addCategory = async (categoryData, token) => {
+  try {
+    const response = await fetch("http://localhost:8080/api/categories", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(categoryData),
+    });
+
+    if (response.status === 409) {
+      return { success: false, error: "Category already exists", isConflict: true };
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error adding category:", error);
+    return { success: false, error: error.message || "Failed to add category" };
   }
 }
 

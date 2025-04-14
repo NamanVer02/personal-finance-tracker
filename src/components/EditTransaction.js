@@ -5,12 +5,14 @@ import { toast } from "react-toastify";
 import { useEffect } from "react";
 import { getExpenseCategories, getIncomeCategories } from "../utils/api";
 import { validateTransaction } from "../utils/validation";
+import CategoryModal from "./CategoryModal";
 
 export default function EditTransaction({ onClose, onSubmit, transaction }) {
   const token = localStorage.getItem("token");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expenseCategories, setExpenseCategories] = useState([]);
   const [incomeCategories, setIncomeCategories] = useState([]);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [formData, setFormData] = useState(
     {
       label: transaction?.label || "",
@@ -25,8 +27,7 @@ export default function EditTransaction({ onClose, onSubmit, transaction }) {
     []
   );
 
-  let categories =
-    formData.type === "Expense" ? expenseCategories : incomeCategories;
+  const categories = formData.type === "Expense" ? expenseCategories : incomeCategories;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,7 +42,6 @@ export default function EditTransaction({ onClose, onSubmit, transaction }) {
       ...prevData,
       type,
     }));
-    categories = type === "Expense" ? expenseCategories : incomeCategories;
   };
 
   const handleSubmit = async (e) => {
@@ -84,19 +84,39 @@ export default function EditTransaction({ onClose, onSubmit, transaction }) {
     }
   };
 
+  const handleCategoryAdded = (newCategory) => {
+    if (formData.type === "Expense") {
+      setExpenseCategories([...expenseCategories, newCategory]);
+    } else {
+      setIncomeCategories([...incomeCategories, newCategory]);
+    }
+    setFormData(prev => ({
+      ...prev,
+      category: newCategory
+    }));
+  };
+
   useEffect(() => {
       getExpenseCategories(setExpenseCategories, token);
       getIncomeCategories(setIncomeCategories, token);
     }, []);
 
   return (
-    <motion.div
-      className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-50"
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.8, opacity: 0 }}
-      transition={{ duration: 0.2 }}
-    >
+    <>
+      {showCategoryModal && (
+        <CategoryModal 
+          onClose={() => setShowCategoryModal(false)} 
+          onCategoryAdded={handleCategoryAdded} 
+          type={formData.type}
+        />
+      )}
+      <motion.div
+        className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-50"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        transition={{ duration: 0.2 }}
+      >
       <motion.div
         className="absolute right-0 top-0 w-96 bg-gray-100 h-full p-6 overflow-y-auto"
         initial={{ x: "100%" }}
@@ -192,20 +212,30 @@ export default function EditTransaction({ onClose, onSubmit, transaction }) {
             >
               Category
             </label>
-            <select
-              id="category"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
-              required
-            >
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-2">
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none p-2"
+                required
+              >
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => setShowCategoryModal(true)}
+                className="mt-1 bg-purple-600 text-white p-2 rounded-lg shadow-neumorphic-purple hover:bg-purple-700 focus:outline-none"
+                title="Add new category"
+              >
+                +
+              </button>
+            </div>
           </div>
 
           {/* Date */}
@@ -238,5 +268,6 @@ export default function EditTransaction({ onClose, onSubmit, transaction }) {
         </form>
       </motion.div>
     </motion.div>
+    </>
   );
 }
