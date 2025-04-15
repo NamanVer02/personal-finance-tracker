@@ -63,13 +63,14 @@ export default function Login() {
       const token = data.accessToken || data.token;
       const refreshToken = data.refreshToken;
       const userId = data.id;
+      const profileImage = data.profileImage
 
       if (!token) {
         throw new Error("Authentication failed: No token received");
       }
 
       // Pass the token to your auth context
-      login(token, refreshToken, data.username, data.roles || ["user"], userId);
+      login(token, refreshToken, data.username, data.roles || ["user"], userId, profileImage);
 
       // Show success toast
       toast.success("Login successful! Redirecting to dashboard...");

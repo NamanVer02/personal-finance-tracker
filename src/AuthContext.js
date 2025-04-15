@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Login function
-  const login = (accessToken, refreshTokenValue, username, roles, userId) => {
+  const login = (accessToken, refreshTokenValue, username, roles, userId, profileImage) => {
     localStorage.setItem("token", accessToken);
     localStorage.setItem("refreshToken", refreshTokenValue);
     localStorage.setItem("userId", userId);
@@ -48,6 +48,7 @@ export function AuthProvider({ children }) {
       userId,
       username,
       roles,
+      profileImage
     };
 
     localStorage.setItem("user", JSON.stringify(user));

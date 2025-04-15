@@ -39,6 +39,7 @@ export default function Navbar({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showCsvUploadModal, setShowCsvUploadModal] = useState(false);
   const [showCacheModal, setShowCacheModal] = useState(false);
+  const [profileImage, setProfileImage] = useState("")
 
   // Initialize dark mode from localStorage when component mounts
   useEffect(() => {
@@ -80,6 +81,18 @@ export default function Navbar({
     return "Transactions imported successfully!";
   };
 
+  useEffect(() => {
+    if (currentUser?.profileImage) {
+      setProfileImage(`data:image/jpeg;base64,${currentUser.profileImage}`);
+    } else {
+      setProfileImage(null);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    console.log(profileImage);
+  }, [profileImage]);
+
   return (
     <>
       <AnimatePresence>
@@ -98,7 +111,15 @@ export default function Navbar({
       <div className="fixed top-0 left-0 right-0 z-50 bg-gray-100 shadow-md lg:hidden">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-purple-600" />
+            {currentUser?.profileImage ? (
+              <img
+                src={`data:image/jpeg;base64,${currentUser.profileImage}`}
+                alt="Profile"
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-purple-600" />
+            )}
             <h3 className="font-medium">{currentUser?.username || "User"}</h3>
           </div>
           <button
@@ -184,7 +205,7 @@ export default function Navbar({
                     User Transactions
                   </button>
                 )}
-                
+
                 {currentUser?.roles?.includes("ROLE_ADMIN") && (
                   <button
                     className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
@@ -292,7 +313,15 @@ export default function Navbar({
       {/* Fixed Sidebar */}
       <motion.navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
         <div className="flex items-center gap-3 mb-8">
-          <div className="h-10 w-10 rounded-full bg-purple-600" />
+          {currentUser?.profileImage ? (
+            <img
+              src={`data:image/jpeg;base64,${currentUser.profileImage}`}
+              alt="Profile"
+              className="h-10 w-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="h-10 w-10 rounded-full bg-purple-600" />
+          )}
           <div>
             <h3 className="font-medium">{currentUser?.username || "User"}</h3>
             <p className="text-sm text-gray-600">
@@ -364,7 +393,7 @@ export default function Navbar({
                   User Transactions
                 </button>
               )}
-              
+
               {currentUser?.roles?.includes("ROLE_ADMIN") && (
                 <button
                   className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
