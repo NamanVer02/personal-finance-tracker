@@ -423,7 +423,28 @@ export const addCategory = async (categoryData, token) => {
 
 export const updateCategory = async (categoryType, originalName, newName, token) => {
   try {
-    const response = await fetch(`http://localhost:8080/api/categories/${categoryType.toLowerCase()}/${originalName}`, {
+    // First, get all categories of the specified type to find the ID
+    const categoriesRes = await fetch(`http://localhost:8080/api/categories/${categoryType.toLowerCase()}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!categoriesRes.ok) {
+      throw new Error(`HTTP error! status: ${categoriesRes.status}`);
+    }
+
+    const categories = await categoriesRes.json();
+    const category = categories.find(cat => cat.name === originalName);
+
+    if (!category) {
+      return { success: false, error: `Category '${originalName}' not found`, isNotFound: true };
+    }
+
+    // Now use the ID for the update request
+    const response = await fetch(`http://localhost:8080/api/categories/${category.id}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -450,7 +471,28 @@ export const updateCategory = async (categoryType, originalName, newName, token)
 
 export const deleteCategory = async (categoryType, categoryName, token) => {
   try {
-    const response = await fetch(`http://localhost:8080/api/categories/${categoryType.toLowerCase()}/${categoryName}`, {
+    // First, get all categories of the specified type to find the ID
+    const categoriesRes = await fetch(`http://localhost:8080/api/categories/${categoryType.toLowerCase()}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!categoriesRes.ok) {
+      throw new Error(`HTTP error! status: ${categoriesRes.status}`);
+    }
+
+    const categories = await categoriesRes.json();
+    const category = categories.find(cat => cat.name === categoryName);
+
+    if (!category) {
+      return { success: false, error: `Category '${categoryName}' not found`, isNotFound: true };
+    }
+
+    // Now use the ID for the delete request
+    const response = await fetch(`http://localhost:8080/api/categories/${category.id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
