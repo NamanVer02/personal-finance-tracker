@@ -39,7 +39,7 @@ export default function Navbar({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showCsvUploadModal, setShowCsvUploadModal] = useState(false);
   const [showCacheModal, setShowCacheModal] = useState(false);
-  const [profileImage, setProfileImage] = useState("")
+  const [profileImage, setProfileImage] = useState("");
 
   // Initialize dark mode from localStorage when component mounts
   useEffect(() => {
@@ -89,10 +89,6 @@ export default function Navbar({
     }
   }, [currentUser]);
 
-  useEffect(() => {
-    console.log(profileImage);
-  }, [profileImage]);
-
   return (
     <>
       <AnimatePresence>
@@ -111,14 +107,13 @@ export default function Navbar({
       <div className="fixed top-0 left-0 right-0 z-50 bg-gray-100 shadow-md lg:hidden">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            {currentUser?.profileImage ? (
+            {profileImage ? (
               <img
-                src={`data:image/jpeg;base64,${currentUser.profileImage}`}
-                alt="Profile"
-                className="h-8 w-8 rounded-full object-cover"
+                src={profileImage}
+                className="h-10 w-10 rounded-full object-cover"
               />
             ) : (
-              <div className="h-8 w-8 rounded-full bg-purple-600" />
+              <div className="h-10 w-10 rounded-full bg-purple-600" />
             )}
             <h3 className="font-medium">{currentUser?.username || "User"}</h3>
           </div>
@@ -313,10 +308,9 @@ export default function Navbar({
       {/* Fixed Sidebar */}
       <motion.navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
         <div className="flex items-center gap-3 mb-8">
-          {currentUser?.profileImage ? (
+          {profileImage ? (
             <img
-              src={`data:image/jpeg;base64,${currentUser.profileImage}`}
-              alt="Profile"
+              src={profileImage}
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (

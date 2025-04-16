@@ -57,6 +57,19 @@ export function AuthProvider({ children }) {
     setCurrentUser(user);
     setUserId(userId);
   };
+  
+  // Update profile image function
+  const updateProfileImage = (newProfileImage) => {
+    if (currentUser) {
+      const updatedUser = {
+        ...currentUser,
+        profileImage: newProfileImage
+      };
+      
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setCurrentUser(updatedUser);
+    }
+  };
 
   // Logout function
   const logout = async () => {
@@ -144,6 +157,7 @@ export function AuthProvider({ children }) {
     refreshAccessToken,
     hasRole,
     authHeader,
+    updateProfileImage,
     isAuthenticated: !!token,
     loading,
   };

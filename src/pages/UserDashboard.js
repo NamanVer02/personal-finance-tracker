@@ -4,22 +4,16 @@ import { useAuth } from "../AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
-import {
-  X,
-  Shield,
-  Eye,
-  EyeOff,
-  Save,
-  Trash2,
-} from "lucide-react";
+import { X, Shield, Eye, EyeOff, Save, Trash2 } from "lucide-react";
 import Navbar from "../components/Navbar";
+import { useRef } from "react";
 
 export default function UserDashboard() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
 
   const authData = useAuth();
-  const { currentUser, token, logout, loading } = authData;
+  const { currentUser, token, logout, loading, userId } = authData;
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -33,9 +27,12 @@ export default function UserDashboard() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
+  
+  const [profileImage, setProfileImage] = useState("");
+  const [hovered, setHovered] = useState(false);
+  const fileInputRef = useRef(null);
 
   const navigate = useNavigate();
-  const location = useLocation();
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -61,6 +58,48 @@ export default function UserDashboard() {
     logout();
     navigate("/login");
   };
+
+  const handleOverlayClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+  
+    const formData = new FormData();
+    formData.append("file", file);
+  
+    try {
+      const response = await fetch(`http://localhost:8080/api/users/${userId}/profileImage`, {
+        method: "PUT",
+        headers: {
+          // Do NOT set Content-Type when sending FormData
+          "Authorization": `Bearer ${token}`,
+        },
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+  
+      const data = await response.json();
+      const newProfileImage = data.profileImage;
+      
+      // Update local state
+      setProfileImage(`data:image/jpeg;base64,${newProfileImage}`);
+      
+      // Update the profile image in AuthContext so it's available globally
+      authData.updateProfileImage(newProfileImage);
+      
+      toast.success("Profile image updated successfully");
+    } catch (err) {
+      console.error("Upload failed", err);
+      toast.error("Failed to update profile image");
+    }
+  };
+  
 
   const formatLoginDate = (dateString) => {
     const date = new Date(dateString);
@@ -158,51 +197,27 @@ export default function UserDashboard() {
     }
   };
 
-  const handleDisable2FA = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:8080/api/users/${currentUser.userId}/2fa/disable`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            password: currentPassword,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to disable 2FA");
-      }
-
-      toast.success("Two-factor authentication disabled successfully");
-      setIs2FAModalOpen(false);
-      setCurrentPassword("");
-    } catch (error) {
-      toast.error(error.message || "Failed to disable 2FA");
-    }
-  };
-
   useEffect(() => {
     // Wait until auth is initialized
     if (loading) {
       console.log("Auth system still initializing...");
       return;
     }
-  
+
     // Check if user is authenticated
     if (!currentUser || !token) {
-      console.log("No authenticated user found. User:", currentUser, "Token:", token ? "exists" : "missing");
+      console.log(
+        "No authenticated user found. User:",
+        currentUser,
+        "Token:",
+        token ? "exists" : "missing"
+      );
       setIsLoading(false);
       // Handle unauthenticated state - redirect or show login prompt
       return;
     }
-  
-    
+
+    // Fetch user details
     const fetchUserDetails = async () => {
       try {
         setIsLoading(true);
@@ -212,15 +227,15 @@ export default function UserDashboard() {
             method: "PUT",
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
             },
           }
         );
-  
+
         if (!response.ok) {
           throw new Error(`Failed to fetch user details: ${response.status}`);
         }
-  
+
         const data = await response.json();
         setUserDetails(data);
       } catch (error) {
@@ -230,18 +245,27 @@ export default function UserDashboard() {
         setIsLoading(false);
       }
     };
-  
+
     fetchUserDetails();
   }, [currentUser, token, loading]);
+
+  useEffect(() => {
+    if (currentUser?.profileImage) {
+      setProfileImage(`data:image/jpeg;base64,${currentUser.profileImage}`);
+    } else {
+      setProfileImage(null);
+    }
+  }, [currentUser]);
+
 
   if (loading) {
     return <div>Loading authentication...</div>;
   }
-  
+
   if (!currentUser) {
     return <div>Please log in to access this page</div>;
   }
-  
+
   if (isLoading) {
     return <div>Loading user details...</div>;
   }
@@ -290,8 +314,42 @@ export default function UserDashboard() {
               User Profile
             </h2>
             <div className="flex flex-col md:flex-row gap-6">
-              <div className="flex-shrink-0">
-                <div className="h-20 w-20 rounded-full bg-purple-600"></div>
+              <div
+                className="relative flex-shrink-0 group"
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+                style={{ width: 48, height: 48 }}
+              >
+                {profileImage ? (
+                  <img
+                    src={profileImage}
+                    className="h-12 w-12 rounded-full object-cover"
+                    alt="Profile"
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded-full bg-purple-600" />
+                )}
+
+                {/* Overlay appears on hover */}
+                {hovered && (
+                  <div
+                    className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full cursor-pointer"
+                    onClick={handleOverlayClick}
+                  >
+                    <span className="text-white text-xs font-medium">
+                      Change
+                    </span>
+                  </div>
+                )}
+
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
               </div>
               <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -367,34 +425,6 @@ export default function UserDashboard() {
                   >
                     Update Password
                   </button>
-                </div>
-              </div>
-
-              {/* 2FA Section */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-gray-100 rounded-lg">
-                <div className="w-full sm:w-auto">
-                  <h3 className="font-medium mb-1">
-                    Two-Factor Authentication
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {userDetails?.user.twoFactorEnabled
-                      ? "Currently enabled"
-                      : "Currently disabled"}
-                  </p>
-                </div>
-                <div className="w-full sm:w-[160px] mt-2 sm:mt-0">
-                  {userDetails?.user.twoFactorEnabled ? (
-                    <button
-                      onClick={() => setIs2FAModalOpen(true)}
-                      className="w-full px-4 py-2 rounded-lg shadow-neumorphic-button text-sm"
-                    >
-                      Disable 2FA
-                    </button>
-                  ) : (
-                    <button className="w-full px-4 py-2 rounded-lg shadow-neumorphic-button text-sm">
-                      Enable 2FA
-                    </button>
-                  )}
                 </div>
               </div>
 
@@ -665,24 +695,6 @@ export default function UserDashboard() {
                   className="w-full rounded-lg bg-gray-100 shadow-neumorphic-inset p-2"
                   required
                 />
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setIs2FAModalOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-gray-100 shadow-neumorphic-button text-gray-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDisable2FA}
-                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg shadow-lg flex items-center gap-2"
-                >
-                  <Shield size={18} />
-                  Disable 2FA
-                </button>
               </div>
             </div>
           </div>
