@@ -31,7 +31,6 @@ import FilterAndSort from "../components/FilterAndSort";
 import { motion } from "framer-motion";
 import Pagination from "../components/Pagination";
 import Navbar from "../components/Navbar";
-import CacheMonitor from "../components/CacheMonitor";
 
 export default function Dashboard() {
   // Variables
@@ -59,7 +58,6 @@ export default function Dashboard() {
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem("darkMode") === "enabled" ? true : false
   );
-  const [showCacheMonitor, setShowCacheMonitor] = useState(false);
   const [sortCriteria, setSortCriteria] = useState({
     field: "date",
     direction: "desc",

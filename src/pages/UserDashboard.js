@@ -71,7 +71,7 @@ export default function UserDashboard() {
     formData.append("file", file);
   
     try {
-      const response = await fetch(`http://localhost:8080/api/users/${userId}/profileImage`, {
+      const response = await fetch(`https://localhost:8080/api/users/${userId}/profileImage`, {
         method: "PUT",
         headers: {
           // Do NOT set Content-Type when sending FormData
@@ -134,7 +134,7 @@ export default function UserDashboard() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/users/${currentUser.userId}/password`,
+        `https://localhost:8080/api/users/${currentUser.userId}/password`,
         {
           method: "PUT",
           headers: {
@@ -171,7 +171,7 @@ export default function UserDashboard() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/users/${currentUser.userId}`,
+        `https://localhost:8080/api/users/${currentUser.userId}`,
         {
           method: "DELETE",
           headers: {
@@ -222,7 +222,7 @@ export default function UserDashboard() {
       try {
         setIsLoading(true);
         const response = await fetch(
-          `http://localhost:8080/api/users/${currentUser.userId}/details`,
+          `https://localhost:8080/api/users/${currentUser.userId}/details`,
           {
             method: "PUT",
             headers: {

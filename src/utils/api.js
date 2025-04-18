@@ -9,7 +9,7 @@ export const fetchTransactions = async (setTransactions, token) => {
       return;
     }
 
-    const res = await fetch("http://localhost:8080/api/get", {
+    const res = await fetch("https://localhost:8080/api/get", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -33,7 +33,7 @@ export const fetchTransactions = async (setTransactions, token) => {
 
 export const handleAddTransaction = async (formData, onSubmit, onClose, token) => {
   try{
-    const res = await fetch("http://localhost:8080/api/post", {
+    const res = await fetch("https://localhost:8080/api/post", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -66,7 +66,7 @@ export const handleDeleteTransaction = async (id, setTransactions, token) => {
   if (!confirmDelete) return;
 
   try {
-    const response = await fetch(`http://localhost:8080/api/delete/${id}`, {
+    const response = await fetch(`https://localhost:8080/api/delete/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`, // Include the token in the headers
         'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ export const handleDeleteTransaction = async (id, setTransactions, token) => {
 
 export const handleUpdateTransaction = async (transactionId, formData, token) => {
   try {
-    const res = await fetch(`http://localhost:8080/api/put/${transactionId}`, {
+    const res = await fetch(`https://localhost:8080/api/put/${transactionId}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -137,7 +137,7 @@ export const handleUpdateTransaction = async (transactionId, formData, token) =>
 
 export const handleDownloadCsv = async (token, userId) => {
   try {
-    const response = await fetch(`http://localhost:8080/api/download/${userId}/csv`, {
+    const response = await fetch(`https://localhost:8080/api/download/${userId}/csv`, {
       headers: {
         Authorization: `Bearer ${token}`, // Include the token in the headers
         'Content-Type': 'application/json',
@@ -164,7 +164,7 @@ export const handleDownloadCsv = async (token, userId) => {
 
 export const handleDownloadPdf = async (token, userId) => {
   try {
-    const response = await fetch(`http://localhost:8080/api/download/${userId}/pdf`, {
+    const response = await fetch(`https://localhost:8080/api/download/${userId}/pdf`, {
       headers: {
         Authorization: `Bearer ${token}`, // Include the token in the headers
         'Content-Type': 'application/json',
@@ -197,7 +197,7 @@ export const fetchIncomeData = async (setIncomeData, userId, token) => {
       return;
     }
 
-    const res = await fetch(`http://localhost:8080/api/get/summary/income/${userId}`, {
+    const res = await fetch(`https://localhost:8080/api/get/summary/income/${userId}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -211,6 +211,7 @@ export const fetchIncomeData = async (setIncomeData, userId, token) => {
     
     const data = await res.json();
     setIncomeData(data);
+    console.log("Income data:", data);
     // Cache the response
     cacheIncomeData(data);
   } catch (err) {
@@ -229,7 +230,7 @@ export const fetchExpenseData = async (setExpenseData, userId, token) => {
       return;
     }
 
-    const res = await fetch(`http://localhost:8080/api/get/summary/expense/${userId}`, {
+    const res = await fetch(`https://localhost:8080/api/get/summary/expense/${userId}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -260,7 +261,7 @@ export const fetchOverallSummary = async (setOverallSummary, token) => {
       return;
     }
 
-    const res = await fetch(`http://localhost:8080/api/accountant/summary/overall`, {
+    const res = await fetch(`https://localhost:8080/api/accountant/summary/overall`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -284,7 +285,7 @@ export const fetchOverallSummary = async (setOverallSummary, token) => {
 
 export const fetchUsersList = async (setUsers, token) => {
   try {
-    const res = await fetch(`http://localhost:8080/api/accountant/users`, {
+    const res = await fetch(`https://localhost:8080/api/accountant/users`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -306,7 +307,7 @@ export const fetchUsersList = async (setUsers, token) => {
 
 export const fetchUserSummary = async (setUserSummary, userId, token) => {
   try {
-    const res = await fetch(`http://localhost:8080/api/accountant/summary/user/${userId}`, {
+    const res = await fetch(`https://localhost:8080/api/accountant/summary/user/${userId}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -328,7 +329,7 @@ export const fetchUserSummary = async (setUserSummary, userId, token) => {
 
 export const fetchMonthlySummary = async (setMonthlySummary, token) => {
   try {
-    const res = await fetch(`http://localhost:8080/api/accountant/summary/monthly`, {
+    const res = await fetch(`https://localhost:8080/api/accountant/summary/monthly`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -350,7 +351,7 @@ export const fetchMonthlySummary = async (setMonthlySummary, token) => {
 
 export const getExpenseCategories = async (setExpenseCategories, token) => {
   try {
-    const res = await fetch("http://localhost:8080/api/categories/expense", {
+    const res = await fetch("https://localhost:8080/api/categories/expense", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -373,7 +374,7 @@ export const getExpenseCategories = async (setExpenseCategories, token) => {
 
 export const getIncomeCategories = async (setIncomeCategories, token) => {
   try {
-    const res = await fetch("http://localhost:8080/api/categories/income", {
+    const res = await fetch("https://localhost:8080/api/categories/income", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -396,7 +397,7 @@ export const getIncomeCategories = async (setIncomeCategories, token) => {
 
 export const addCategory = async (categoryData, token) => {
   try {
-    const response = await fetch("http://localhost:8080/api/categories", {
+    const response = await fetch("https://localhost:8080/api/categories", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -424,7 +425,7 @@ export const addCategory = async (categoryData, token) => {
 export const updateCategory = async (categoryType, originalName, newName, token) => {
   try {
     // First, get all categories of the specified type to find the ID
-    const categoriesRes = await fetch(`http://localhost:8080/api/categories/${categoryType.toLowerCase()}`, {
+    const categoriesRes = await fetch(`https://localhost:8080/api/categories/${categoryType.toLowerCase()}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -444,7 +445,7 @@ export const updateCategory = async (categoryType, originalName, newName, token)
     }
 
     // Now use the ID for the update request
-    const response = await fetch(`http://localhost:8080/api/categories/${category.id}`, {
+    const response = await fetch(`https://localhost:8080/api/categories/${category.id}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -472,7 +473,7 @@ export const updateCategory = async (categoryType, originalName, newName, token)
 export const deleteCategory = async (categoryType, categoryName, token) => {
   try {
     // First, get all categories of the specified type to find the ID
-    const categoriesRes = await fetch(`http://localhost:8080/api/categories/${categoryType.toLowerCase()}`, {
+    const categoriesRes = await fetch(`https://localhost:8080/api/categories/${categoryType.toLowerCase()}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -492,7 +493,7 @@ export const deleteCategory = async (categoryType, categoryName, token) => {
     }
 
     // Now use the ID for the delete request
-    const response = await fetch(`http://localhost:8080/api/categories/${category.id}`, {
+    const response = await fetch(`https://localhost:8080/api/categories/${category.id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -548,7 +549,7 @@ export const fetchFinanceEntries = async (
   .join('&');
 
   try {
-    const res = await fetch(`http://localhost:8080/api/search?${queryString}`, {
+    const res = await fetch(`https://localhost:8080/api/search?${queryString}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -607,7 +608,7 @@ export const fetchAllFinanceEntries = async (
 
 
   try {
-    const res = await fetch(`http://localhost:8080/api/admin/search?${queryString}`, {
+    const res = await fetch(`https://localhost:8080/api/admin/search?${queryString}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

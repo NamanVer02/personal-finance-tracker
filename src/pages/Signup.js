@@ -192,7 +192,7 @@ export default function Signup() {
         formData.append("profileImage", profileImage);
       }
 
-      const response = await fetch("http://localhost:8080/api/auth/signup", {
+      const response = await fetch("https://localhost:8080/api/auth/signup", {
         method: "POST",
         body: formData,
         // Don't set Content-Type header when using FormData

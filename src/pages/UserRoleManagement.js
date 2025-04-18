@@ -110,7 +110,7 @@ const AdminUserRolesPage = () => {
   }
   try {
       const response = await fetch(
-        `http://localhost:8080/api/admin/users/${userId}/roles/${roleName}`,
+        `https://localhost:8080/api/admin/users/${userId}/roles/${roleName}`,
         {
           method: "DELETE",
           headers: {
@@ -146,7 +146,7 @@ const AdminUserRolesPage = () => {
   const handleAddRole = async (userId, roleName) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/admin/users/${userId}/roles/${roleName}`,
+        `https://localhost:8080/api/admin/users/${userId}/roles/${roleName}`,
         {
           method: "POST",
           headers: {
@@ -186,7 +186,7 @@ const AdminUserRolesPage = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/admin/users/${editingUser.id}/roles`,
+        `https://localhost:8080/api/admin/users/${editingUser.id}/roles`,
         {
           method: "PUT",
           headers: {
@@ -239,7 +239,7 @@ const AdminUserRolesPage = () => {
   const fetchUsers = async (authToken) => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8080/api/admin/users", {
+      const response = await fetch("https://localhost:8080/api/admin/users", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${authToken}`,
@@ -309,7 +309,7 @@ const AdminUserRolesPage = () => {
 
           {/* Search and Actions Bar */}
           <motion.div
-            className="bg-gray-100 rounded-lg p-4 shadow-neumorphic flex flex-col sm:flex-row items-center justify-between gap-4"
+            className="bg-gray-100 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-4"
             variants={cardVariants}
           >
             <div className="relative flex-grow">

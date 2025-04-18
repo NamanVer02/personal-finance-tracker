@@ -93,7 +93,7 @@ export default function UserTransactions() {
   const fetchAllUsers = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/get/admin/users`,
+        `https://localhost:8080/api/get/admin/users`,
         {
           method: "POST",
           headers: {
@@ -127,7 +127,7 @@ export default function UserTransactions() {
 
   const handleDownloadUserTransactionsCsv = async () => {
     try {
-      let url = `http://localhost:8080/api/download/admin/csv`;
+      let url = `https://localhost:8080/api/download/admin/csv`;
 
       if (selectedUser) {
         url += `?userId=${selectedUser}`;
@@ -161,7 +161,7 @@ export default function UserTransactions() {
 
   const handleDownloadUserTransactionsPdf = async () => {
     try {
-      let url = `http://localhost:8080/api/download/admin/pdf`;
+      let url = `https://localhost:8080/api/download/admin/pdf`;
 
       if (selectedUser) {
         url += `?userId=${selectedUser}`;

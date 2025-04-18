@@ -76,7 +76,7 @@ export function AuthProvider({ children }) {
     try {
       if (token) {
         // Notify the server to blacklist the token
-        await fetch("http://localhost:8080/api/auth/logout", {
+        await fetch("https://localhost:8080/api/auth/logout", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -119,7 +119,7 @@ export default function AccountantDashboard({
   const fetchUsers = async () => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/accountant/users",
+        "https://localhost:8080/api/accountant/users",
         {
           method: "POST",
           headers: {
@@ -145,7 +145,7 @@ export default function AccountantDashboard({
   const fetchOverallSummary = async () => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/accountant/summary/overall",
+        "https://localhost:8080/api/accountant/summary/overall",
         {
           method: "POST",
           headers: {
@@ -171,7 +171,7 @@ export default function AccountantDashboard({
   const fetchUserSummary = async (userId) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/accountant/summary/user/${userId}`,
+        `https://localhost:8080/api/accountant/summary/user/${userId}`,
         {
           method: "POST",
           headers: {
@@ -198,7 +198,7 @@ export default function AccountantDashboard({
   const fetchMonthlySummary = async () => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/accountant/summary/monthly",
+        "https://localhost:8080/api/accountant/summary/monthly",
         {
           method: "POST",
           headers: {

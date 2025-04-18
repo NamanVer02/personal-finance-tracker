@@ -70,7 +70,7 @@ export default function AiAssistant() {
         var transactionsData = [];
 
         try {
-          const res = await fetch("http://localhost:8080/api/get", {
+          const res = await fetch("https://localhost:8080/api/get", {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`, 
@@ -87,7 +87,7 @@ export default function AiAssistant() {
           console.error("Error fetching transactions:", err);
         }
 
-        const response = await fetch("http://localhost:5000/chatbot", {
+        const response = await fetch("https://localhost:5000/chatbot", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

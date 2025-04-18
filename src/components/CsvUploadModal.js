@@ -33,7 +33,7 @@ const CsvUploadModal = ({ onClose, onUploadSuccess }) => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8080/api/import-csv", {
+      const response = await fetch("https://localhost:8080/api/import-csv", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
