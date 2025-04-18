@@ -4,10 +4,9 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Filter,
-  Search,
-  MonitorDown
+  Search
 } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
