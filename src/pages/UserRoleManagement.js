@@ -7,6 +7,8 @@ import {
   XCircle,
   Save,
   RefreshCw,
+  Clock,
+  AlertTriangle,
 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -265,6 +267,76 @@ const AdminUserRolesPage = () => {
     toast.info("Refreshing user list...");
   };
 
+  const handleExpireAccount = async (userId) => {
+    try {
+      const response = await fetch(
+        `https://localhost:8080/api/admin/users/${userId}/expire`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to expire account");
+      }
+
+      const updatedUser = await response.json();
+      
+      // Update the user in local state
+      setUsers((prev) =>
+        prev.map((user) => {
+          if (user.id === userId) {
+            return { ...user, expired: true, expirationDate: updatedUser.expirationDate };
+          }
+          return user;
+        })
+      );
+
+      toast.success(`Account for ${updatedUser.username} will be expired in 7 days if not logged in`);
+    } catch (error) {
+      console.error("Error expiring account:", error);
+      toast.error("Failed to expire account");
+    }
+  };
+
+  const handleUnexpireAccount = async (userId) => {
+    try {
+      const response = await fetch(
+        `https://localhost:8080/api/admin/users/${userId}/unexpire`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to unexpire account");
+      }
+
+      const updatedUser = await response.json();
+      
+      // Update the user in local state
+      setUsers((prev) =>
+        prev.map((user) => {
+          if (user.id === userId) {
+            return { ...user, expired: false, expirationDate: null };
+          }
+          return user;
+        })
+      );
+
+      toast.success(`Account for ${updatedUser.username} is no longer marked for expiration`);
+    } catch (error) {
+      console.error("Error unexpiring account:", error);
+      toast.error("Failed to unexpire account");
+    }
+  };
+
   const formatRoleName = (roleName) => {
     return roleName
       .replace("ROLE_", "")
@@ -379,12 +451,34 @@ const AdminUserRolesPage = () => {
                             </div>
                           </td>
                           <td className="py-4 text-right">
-                            <button
-                              onClick={() => handleEditUser(user)}
-                              className="px-3 py-1 rounded-lg shadow-neumorphic-button text-sm mr-2"
-                            >
-                              Edit Roles
-                            </button>
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => handleEditUser(user)}
+                                className="px-3 py-1 rounded-lg shadow-neumorphic-button text-sm"
+                              >
+                                Edit Roles
+                              </button>
+                              {user.expired ? (
+                                <button
+                                  onClick={() => handleUnexpireAccount(user.id)}
+                                  className="px-3 py-1 rounded-lg shadow-neumorphic-button text-sm bg-green-100 text-green-700 flex items-center gap-1"
+                                  title="Unexpire Account"
+                                >
+                                  <Clock size={14} />
+                                  <span>Unexpire</span>
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleExpireAccount(user.id)}
+                                  className="px-3 py-1 rounded-lg shadow-neumorphic-button text-sm bg-amber-100 text-amber-700 flex items-center gap-1"
+                                  title="Expire Account"
+                                  disabled={user.id === currentUser?.id}
+                                >
+                                  <AlertTriangle size={14} />
+                                  <span>Expire</span>
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))
