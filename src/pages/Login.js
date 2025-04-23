@@ -5,7 +5,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PasswordResetModal from "../components/PasswordResetModal";
 import { Eye, EyeOff } from "lucide-react";
-import { validateUsername, validate2FACode } from "../utils/validation";
+import { validate2FACode } from "../utils/validation";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -128,7 +128,6 @@ export default function Login() {
               value={username}
               onChange={(e) => {
                 setUsername(e.target.value);
-                setErrors(prev => ({...prev, username: validateUsername(e.target.value) || ''}));
               }}
               className={`mt-1 block w-full rounded-lg bg-gray-100 shadow-neumorphic-inset ${
                 errors.username ? 'border-red-500' : 'focus:ring-2 focus:ring-purple-500'
