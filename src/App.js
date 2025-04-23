@@ -11,6 +11,7 @@ import CustomCursor from "./components/CustomCursor";
 import UserDashboard from "./pages/UserDashboard";
 import UserRoleManagement from "./pages/UserRoleManagement";
 import Categories from "./pages/Categories";
+import MenuManagement from "./pages/MenuManagement";
 
 const App = () => {
     useEffect(() => {
@@ -37,6 +38,7 @@ const App = () => {
             <Route path="/user-dashboard" element={<UserDashboard />} />
             <Route path="/user-role-management" element={<UserRoleManagement />} />
             <Route path="/categories" element={<Categories />} />
+            <Route path="/menu-management" element={<MenuManagement />} />
         </Routes>
         </div>
     );

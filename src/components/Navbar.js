@@ -6,7 +6,7 @@ import {
   FolderSync,
   Sun,
   MessageCircle,
-  Menu,
+  Menu as MenuIcon,
   X,
   Upload,
   User,
@@ -40,6 +40,7 @@ export default function Navbar({
   const [showCsvUploadModal, setShowCsvUploadModal] = useState(false);
   const [showCacheModal, setShowCacheModal] = useState(false);
   const [profileImage, setProfileImage] = useState("");
+  const [menuItems, setMenuItems] = useState([]);
 
   // Initialize dark mode from localStorage when component mounts
   useEffect(() => {
@@ -52,6 +53,36 @@ export default function Navbar({
       setIsDarkMode(false);
     }
   }, [setIsDarkMode]);
+
+  // Fetch menu items from the server
+  useEffect(() => {
+    if (token) {
+      fetchMenuItems();
+    }
+  }, [token]);
+
+  const fetchMenuItems = async () => {
+    try {
+      const response = await fetch("https://localhost:8080/api/menu-items", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch menu items");
+      }
+
+      const data = await response.json();
+      setMenuItems(data);
+    } catch (error) {
+      console.error("Error fetching menu items:", error);
+      // Fallback to default menu items if server request fails
+      setMenuItems([]);
+    }
+  };
 
   const toggleDarkMode = () => {
     const darkModeEnabled = document.documentElement.classList.toggle("dark");
@@ -124,7 +155,7 @@ export default function Navbar({
             {mobileMenuOpen ? (
               <X className="h-5 w-5 text-gray-600" />
             ) : (
-              <Menu className="h-5 w-5 text-gray-600" />
+              <MenuIcon className="h-5 w-5 text-gray-600" />
             )}
           </button>
         </div>
@@ -139,116 +170,53 @@ export default function Navbar({
           >
             <div className="p-4 space-y-4">
               <div className="space-y-3">
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/dashboard"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/dashboard");
-                  }}
-                >
-                  <BarChart3 className="h-4 w-4 text-gray-600" />
-                  Dashboard
-                </button>
-
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/user-dashboard"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/user-dashboard");
-                  }}
-                >
-                  <User className="h-4 w-4 text-gray-600" />
-                  User Dashboard
-                </button>
-                {currentUser?.roles?.includes("ROLE_ADMIN") && (
-                  <button
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                      location.pathname === "/user-role-management"
-                        ? "shadow-neumorphic-inset-button"
-                        : "shadow-neumorphic-button"
-                    }`}
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate("/user-role-management");
-                    }}
-                  >
-                    <Users className="h-4 w-4 text-gray-600" />
-                    Role Management
-                  </button>
+                {menuItems.length > 0 ? (
+                  // Render menu items from server
+                  menuItems.map((item) => (
+                    <button
+                      key={item.id}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === item.path ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        navigate(item.path);
+                      }}
+                    >
+                      {/* Dynamically render icon based on icon name */}
+                      {item.icon === "BarChart3" && <BarChart3 className="h-4 w-4 text-gray-600" />}
+                      {item.icon === "User" && <User className="h-4 w-4 text-gray-600" />}
+                      {item.icon === "Users" && <Users className="h-4 w-4 text-gray-600" />}
+                      {item.icon === "BadgeDollarSign" && <BadgeDollarSign className="h-4 w-4 text-gray-600" />}
+                      {item.icon === "Tags" && <Tags className="h-4 w-4 text-gray-600" />}
+                      {item.icon === "MessageCircle" && <MessageCircle className="h-4 w-4 text-gray-600" />}
+                      {item.icon === "Menu" && <MenuIcon className="h-4 w-4 text-gray-600" />}
+                      {item.name}
+                    </button>
+                  ))
+                ) : (
+                  // Fallback menu items if server request fails
+                  <>
+                    <button
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/dashboard" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        navigate("/dashboard");
+                      }}
+                    >
+                      <BarChart3 className="h-4 w-4 text-gray-600" />
+                      Dashboard
+                    </button>
+                    <button
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/user-dashboard" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        navigate("/user-dashboard");
+                      }}
+                    >
+                      <User className="h-4 w-4 text-gray-600" />
+                      User Dashboard
+                    </button>
+                  </>
                 )}
-                {currentUser?.roles?.includes("ROLE_ADMIN") && (
-                  <button
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                      location.pathname === "/user-transactions"
-                        ? "shadow-neumorphic-inset-button"
-                        : "shadow-neumorphic-button"
-                    }`}
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate("/user-transactions");
-                    }}
-                  >
-                    <BadgeDollarSign className="h-4 w-4 text-gray-600" />
-                    User Transactions
-                  </button>
-                )}
-
-                {currentUser?.roles?.includes("ROLE_ADMIN") && (
-                  <button
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                      location.pathname === "/categories"
-                        ? "shadow-neumorphic-inset-button"
-                        : "shadow-neumorphic-button"
-                    }`}
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate("/categories");
-                    }}
-                  >
-                    <Tags className="h-4 w-4 text-gray-600" />
-                    Categories
-                  </button>
-                )}
-
-                {currentUser?.roles?.includes("ROLE_ACCOUNTANT") && (
-                  <button
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                      location.pathname === "/accountant-dashboard"
-                        ? "shadow-neumorphic-inset-button"
-                        : "shadow-neumorphic-button"
-                    }`}
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate("/accountant-dashboard");
-                    }}
-                  >
-                    <BarChart3 className="h-4 w-4 text-gray-600" />
-                    Accountant Dashboard
-                  </button>
-                )}
-
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/ai-assistant"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/ai-assistant");
-                  }}
-                >
-                  <MessageCircle className="h-4 w-4 text-gray-600" />
-                  AI Assistant
-                </button>
 
                 <button
                   onClick={() => {
@@ -338,95 +306,44 @@ export default function Navbar({
           <div className="px-2 py-1">
             <h4 className="mb-2 text-sm font-medium text-gray-600">MENU</h4>
             <div className="space-y-4">
-              <button
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                  location.pathname === "/dashboard"
-                    ? "shadow-neumorphic-inset-button"
-                    : "shadow-neumorphic-button"
-                }`}
-                onClick={() => navigate("/dashboard")}
-              >
-                <BarChart3 className="h-4 w-4 text-gray-600" />
-                Dashboard
-              </button>
-
-              <button
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                  location.pathname === "/user-dashboard"
-                    ? "shadow-neumorphic-inset-button"
-                    : "shadow-neumorphic-button"
-                }`}
-                onClick={() => navigate("/user-dashboard")}
-              >
-                <User className="h-4 w-4 text-gray-600" />
-                User Dashboard
-              </button>
-              {currentUser?.roles?.includes("ROLE_ADMIN") && (
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/user-role-management"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => navigate("/user-role-management")}
-                >
-                  <Users className="h-4 w-4 text-gray-600" />
-                  Role Management
-                </button>
+              {menuItems.length > 0 ? (
+                // Render menu items from server
+                menuItems.map((item) => (
+                  <button
+                    key={item.id}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === item.path ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                    onClick={() => navigate(item.path)}
+                  >
+                    {/* Dynamically render icon based on icon name */}
+                    {item.icon === "BarChart3" && <BarChart3 className="h-4 w-4 text-gray-600" />}
+                    {item.icon === "User" && <User className="h-4 w-4 text-gray-600" />}
+                    {item.icon === "Users" && <Users className="h-4 w-4 text-gray-600" />}
+                    {item.icon === "BadgeDollarSign" && <BadgeDollarSign className="h-4 w-4 text-gray-600" />}
+                    {item.icon === "Tags" && <Tags className="h-4 w-4 text-gray-600" />}
+                    {item.icon === "MessageCircle" && <MessageCircle className="h-4 w-4 text-gray-600" />}
+                    {item.icon === "Menu" && <MenuIcon className="h-4 w-4 text-gray-600" />}
+                    {item.name}
+                  </button>
+                ))
+              ) : (
+                // Fallback menu items if server request fails
+                <>
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/dashboard" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                    onClick={() => navigate("/dashboard")}
+                  >
+                    <BarChart3 className="h-4 w-4 text-gray-600" />
+                    Dashboard
+                  </button>
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/user-dashboard" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                    onClick={() => navigate("/user-dashboard")}
+                  >
+                    <User className="h-4 w-4 text-gray-600" />
+                    User Dashboard
+                  </button>
+                </>
               )}
-              {currentUser?.roles?.includes("ROLE_ADMIN") && (
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/user-transactions"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => navigate("/user-transactions")}
-                >
-                  <BadgeDollarSign className="h-4 w-4 text-gray-600" />
-                  User Transactions
-                </button>
-              )}
-
-              {currentUser?.roles?.includes("ROLE_ADMIN") && (
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/categories"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => navigate("/categories")}
-                >
-                  <Tags className="h-4 w-4 text-gray-600" />
-                  Categories
-                </button>
-              )}
-
-              {currentUser?.roles?.includes("ROLE_ACCOUNTANT") && (
-                <button
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                    location.pathname === "/accountant-dashboard"
-                      ? "shadow-neumorphic-inset-button"
-                      : "shadow-neumorphic-button"
-                  }`}
-                  onClick={() => navigate("/accountant-dashboard")}
-                >
-                  <BarChart3 className="h-4 w-4 text-gray-600" />
-                  Accountant Dashboard
-                </button>
-              )}
-
-              <button
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
-                  location.pathname === "/ai-assistant"
-                    ? "shadow-neumorphic-inset-button"
-                    : "shadow-neumorphic-button"
-                }`}
-                onClick={() => navigate("/ai-assistant")}
-              >
-                <MessageCircle className="h-4 w-4 text-gray-600" />
-                AI Assistant
-              </button>
             </div>
           </div>
 
