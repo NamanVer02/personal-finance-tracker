@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { X, Upload, AlertCircle } from "lucide-react";
 import { useAuth } from "../AuthContext";
+import { invalidateCache, CACHE_KEYS} from '../utils/cacheService';
+
 
 const CsvUploadModal = ({ onClose, onUploadSuccess }) => {
   const [file, setFile] = useState(null);
@@ -31,6 +33,11 @@ const CsvUploadModal = ({ onClose, onUploadSuccess }) => {
 
     const formData = new FormData();
     formData.append("file", file);
+
+    // Invalidate relevant caches when deleting transaction
+    invalidateCache(CACHE_KEYS.TRANSACTIONS);
+    invalidateCache(CACHE_KEYS.INCOME_DATA);
+    invalidateCache(CACHE_KEYS.EXPENSE_DATA);
 
     try {
       const response = await fetch("https://localhost:8080/api/import-csv", {

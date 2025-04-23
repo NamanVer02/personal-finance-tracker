@@ -32,6 +32,11 @@ export const fetchTransactions = async (setTransactions, token) => {
 };
 
 export const handleAddTransaction = async (formData, onSubmit, onClose, token) => {
+  // Invalidate relevant caches when deleting transaction
+  invalidateCache(CACHE_KEYS.TRANSACTIONS);
+  invalidateCache(CACHE_KEYS.INCOME_DATA);
+  invalidateCache(CACHE_KEYS.EXPENSE_DATA);
+
   try{
     const res = await fetch("https://localhost:8080/api/post", {
       method: "POST",
@@ -65,6 +70,11 @@ export const handleDeleteTransaction = async (id, setTransactions, token) => {
   );
   if (!confirmDelete) return;
 
+  // Invalidate relevant caches when deleting transaction
+  invalidateCache(CACHE_KEYS.TRANSACTIONS);
+  invalidateCache(CACHE_KEYS.INCOME_DATA);
+  invalidateCache(CACHE_KEYS.EXPENSE_DATA);
+
   try {
     const response = await fetch(`https://localhost:8080/api/delete/${id}`, {
       headers: {
@@ -95,6 +105,11 @@ export const handleDeleteTransaction = async (id, setTransactions, token) => {
 };
 
 export const handleUpdateTransaction = async (transactionId, formData, token) => {
+  // Invalidate relevant caches when deleting transaction
+  invalidateCache(CACHE_KEYS.TRANSACTIONS);
+  invalidateCache(CACHE_KEYS.INCOME_DATA);
+  invalidateCache(CACHE_KEYS.EXPENSE_DATA);
+
   try {
     const res = await fetch(`https://localhost:8080/api/put/${transactionId}`, {
       method: "PUT",

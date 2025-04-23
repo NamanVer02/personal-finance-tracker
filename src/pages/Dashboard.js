@@ -399,14 +399,14 @@ export default function Dashboard() {
                   </button>
 
                   <button
-                    onClick={() => handleDownloadCsv(token)}
+                    onClick={() => handleDownloadCsv(token, userId)}
                     className="flex gap-1 items-center px-3 py-2 bg-gray-100 rounded-lg shadow-neumorphic-button"
                   >
                     Download CSV
                   </button>
 
                   <button
-                    onClick={() => handleDownloadPdf(token)}
+                    onClick={() => handleDownloadPdf(token, userId)}
                     className="flex gap-1 items-center px-3 py-2 bg-gray-100 rounded-lg shadow-neumorphic-button"
                   >
                     Download PDF
