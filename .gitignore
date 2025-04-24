@@ -29,3 +29,4 @@ localhost.crt
 springboot.crt
 localhost.key
 openssl-san.cnf
+springboot.key
