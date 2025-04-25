@@ -274,7 +274,7 @@ export default function Navbar({
         )}
       </div>
       {/* Fixed Sidebar */}
-      <motion.navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100">
+      <motion.navbar className="hidden w-64 p-6 lg:block fixed h-screen bg-gray-100 overflow-y-auto">
         <div className="flex items-center gap-3 mb-8">
           {profileImage ? (
             <img

@@ -34,7 +34,7 @@ const PasswordResetModal = ({ isOpen, onClose, username = '' }) => {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      toast.success('Password reset instructions have been sent. Please check your email for the 2FA code.');
+      toast.success('Password reset initiated.');
       setStep(2);
     } catch (error) {
       toast.error(error.message || 'Failed to process request. Please try again.');
