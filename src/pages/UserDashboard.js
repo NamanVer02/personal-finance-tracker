@@ -4,7 +4,7 @@ import { useAuth } from "../AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
-import { X, Shield, Eye, EyeOff, Save, Trash2 } from "lucide-react";
+import { X, Shield, Eye, EyeOff, Save, Trash2, RefreshCw } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { useRef } from "react";
 
@@ -69,6 +69,11 @@ export default function UserDashboard() {
   
     const formData = new FormData();
     formData.append("file", file);
+    
+    // Add version if available
+    if (userDetails?.user?.version !== undefined) {
+      formData.append("version", userDetails.user.version);
+    }
   
     try {
       const response = await fetch(`https://localhost:8080/api/users/${userId}/profileImage`, {
@@ -79,6 +84,23 @@ export default function UserDashboard() {
         },
         body: formData,
       });
+      
+      if (response.status === 409) {
+        // Version conflict detected
+        toast.error(
+          "This profile was updated by someone else.",
+          {
+            autoClose: 5000,
+            closeButton: true,
+            onClick: () => refreshUserDetails()
+          }
+        );
+        toast.info(
+          "Click this message to refresh data",
+          { autoClose: 5000, closeButton: true }
+        );
+        return;
+      }
   
       if (!response.ok) {
         throw new Error("Upload failed");
@@ -91,7 +113,19 @@ export default function UserDashboard() {
       setProfileImage(`data:image/jpeg;base64,${newProfileImage}`);
       
       // Update the profile image in AuthContext so it's available globally
-      authData.updateProfileImage(newProfileImage);
+      // Pass the version if available in the response
+      authData.updateProfileImage(newProfileImage, data.version);
+      
+      // Update version in userDetails if returned
+      if (data.version !== undefined && userDetails) {
+        setUserDetails({
+          ...userDetails,
+          user: {
+            ...userDetails.user,
+            version: data.version
+          }
+        });
+      }
       
       toast.success("Profile image updated successfully");
     } catch (err) {
@@ -133,6 +167,16 @@ export default function UserDashboard() {
     }
 
     try {
+      const requestBody = {
+        currentPassword,
+        newPassword,
+      };
+      
+      // Add version if available
+      if (userDetails?.user?.version !== undefined) {
+        requestBody.version = userDetails.user.version;
+      }
+      
       const response = await fetch(
         `https://localhost:8080/api/users/${currentUser.userId}/password`,
         {
@@ -141,16 +185,42 @@ export default function UserDashboard() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            currentPassword,
-            newPassword,
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
 
+      if (response.status === 409) {
+        toast.error(
+          "This account was updated by someone else.",
+          {
+            autoClose: 5000,
+            closeButton: true,
+            onClick: () => refreshUserDetails()
+          }
+        );
+        toast.info(
+          "Click this message to refresh data",
+          { autoClose: 5000, closeButton: true }
+        );
+        return;
+      }
+      
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Failed to update password");
+      }
+      
+      const data = await response.json();
+      
+      // Update version in userDetails if returned
+      if (data.version !== undefined && userDetails) {
+        setUserDetails({
+          ...userDetails,
+          user: {
+            ...userDetails.user,
+            version: data.version
+          }
+        });
       }
 
       toast.success("Password updated successfully");
@@ -170,6 +240,15 @@ export default function UserDashboard() {
     }
 
     try {
+      const requestBody = {
+        password: currentPassword,
+      };
+      
+      // Add version if available
+      if (userDetails?.user?.version !== undefined) {
+        requestBody.version = userDetails.user.version;
+      }
+      
       const response = await fetch(
         `https://localhost:8080/api/users/${currentUser.userId}`,
         {
@@ -178,12 +257,26 @@ export default function UserDashboard() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            password: currentPassword,
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
 
+      if (response.status === 409) {
+        toast.error(
+          "This account was updated by someone else.",
+          {
+            autoClose: 5000,
+            closeButton: true,
+            onClick: () => refreshUserDetails()
+          }
+        );
+        toast.info(
+          "Click this message to refresh data",
+          { autoClose: 5000, closeButton: true }
+        );
+        return;
+      }
+      
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Failed to delete account");
@@ -237,7 +330,9 @@ export default function UserDashboard() {
         }
 
         const data = await response.json();
+        // Store the data including the version information
         setUserDetails(data);
+        console.log("User details fetched with version:", data.user?.version);
       } catch (error) {
         console.error("Error fetching user details:", error);
         toast.error(error.message || "Failed to fetch user details");
@@ -248,6 +343,38 @@ export default function UserDashboard() {
 
     fetchUserDetails();
   }, [currentUser, token, loading]);
+  
+  // Function to refresh user details (can be called after version conflicts)
+  const refreshUserDetails = async () => {
+    if (!currentUser || !token) return;
+    
+    try {
+      setIsLoading(true);
+      const response = await fetch(
+        `https://localhost:8080/api/users/${currentUser.userId}/details`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to refresh user details: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setUserDetails(data);
+      toast.info("User details refreshed");
+    } catch (error) {
+      console.error("Error refreshing user details:", error);
+      toast.error(error.message || "Failed to refresh user details");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (currentUser?.profileImage) {
@@ -310,9 +437,19 @@ export default function UserDashboard() {
             initial="hidden"
             animate="show"
           >
-            <h2 className="text-lg font-semibold mb-4 text-gray-700">
-              User Profile
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-700">
+                User Profile
+              </h2>
+              <button 
+                onClick={refreshUserDetails}
+                className="text-sm flex items-center gap-1 px-3 py-1 rounded-lg shadow-neumorphic-button text-gray-600 hover:text-purple-600 transition-colors"
+                title="Refresh user data"
+              >
+                <RefreshCw size={14} />
+                Refresh
+              </button>
+            </div>
             <div className="flex flex-col md:flex-row gap-6">
               <div
                 className="relative flex-shrink-0 group"
@@ -387,6 +524,13 @@ export default function UserDashboard() {
                       : "N/A"}
                   </p>
                 </div>
+                {userDetails?.user?.version !== undefined && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    <span title="This version number helps prevent conflicts when multiple people edit your profile simultaneously">
+                      Version: {userDetails.user.version}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="flex items-center justify-center ml-auto">
                 <div className="shadow-neumorphic-inset p-4 rounded-lg bg-gray-100 flex flex-col items-center justify-center">

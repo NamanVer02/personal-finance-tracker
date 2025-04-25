@@ -83,6 +83,11 @@ const AdminUserRolesPage = () => {
   const handleEditUser = (user) => {
     setEditingUser(user);
     setSelectedRoles(user.roles.map((role) => role.name));
+    
+    // If user doesn't have a version property, log a warning
+    if (user.version === undefined) {
+      console.warn('User object does not have version information for optimistic locking');
+    }
   };
 
   const handleRoleToggle = (roleName) => {
@@ -187,6 +192,12 @@ const AdminUserRolesPage = () => {
     if (!editingUser) return;
 
     try {
+      // Include version in the request body if available
+      const requestBody = { 
+        roleNames: selectedRoles,
+        version: editingUser.version // Include version for optimistic locking
+      };
+      
       const response = await fetch(
         `https://localhost:8080/api/admin/users/${editingUser.id}/roles`,
         {
@@ -195,19 +206,37 @@ const AdminUserRolesPage = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ roleNames: selectedRoles }),
+          body: JSON.stringify(requestBody),
         }
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to update roles");
+      
+      // Handle version conflict (409 Conflict status)
+      if (response.status === 409) {
+        toast.error(
+          "This user was updated by someone else. Refreshing data...",
+          { autoClose: 5000, closeButton: true }
+        );
+        refreshUsers();
+        setEditingUser(null);
+        return;
       }
 
-      // Update user in the local state
+      if (!response.ok) {
+        throw new Error("Failed to update roles. Please referesh the page.");
+      }
+
+      // Get updated user data with new version from response
+      const updatedUser = await response.json();
+      
+      // Update user in the local state with new version
       setUsers((prev) =>
         prev.map((user) => {
           if (user.id === editingUser.id) {
-            return { ...user, roles: selectedRoles.map((name) => ({ name })) };
+            return { 
+              ...user, 
+              roles: selectedRoles.map((name) => ({ name })),
+              version: updatedUser.version // Update version from response
+            };
           }
           return user;
         })
@@ -234,7 +263,7 @@ const AdminUserRolesPage = () => {
       }, 10000);
     } catch (error) {
       console.error("Error updating roles:", error);
-      toast.error("Failed to update roles");
+      toast.error("Failed to update roles. Please refresh the page.");
     }
   };
 
@@ -247,6 +276,11 @@ const AdminUserRolesPage = () => {
           Authorization: `Bearer ${authToken}`,
         },
       });
+      
+      // Display toast when refreshing data after version conflict
+      if (editingUser) {
+        setEditingUser(null);
+      }
 
       if (!response.ok) {
         throw new Error("Failed to fetch users");
@@ -436,7 +470,14 @@ const AdminUserRolesPage = () => {
                     {filteredUsers.length > 0 ? (
                       filteredUsers.map((user) => (
                         <tr key={user.id} className="border-b border-gray-200">
-                          <td className="py-4">{user.username}</td>
+                          <td className="py-4">
+                            {user.username}
+                            {user.version !== undefined && (
+                              <span className="text-xs text-gray-500 ml-2" title="Version for optimistic locking">
+                                v{user.version}
+                              </span>
+                            )}
+                          </td>
                           <td className="py-4">{user.email}</td>
                           <td className="py-4">
                             <div className="flex flex-wrap gap-1">
@@ -517,9 +558,16 @@ const AdminUserRolesPage = () => {
             </div>
 
             <div className="space-y-4">
-              <p className="text-sm text-gray-600 mb-2">
-                Select roles to assign to this user:
-              </p>
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-gray-600 mb-2">
+                  Select roles to assign to this user:
+                </p>
+                {editingUser.version !== undefined && (
+                  <span className="text-xs text-gray-500" title="This version number helps prevent conflicts when multiple admins edit roles simultaneously">
+                    Version: {editingUser.version}
+                  </span>
+                )}
+              </div>
 
               {roles.map((role) => (
                 <div

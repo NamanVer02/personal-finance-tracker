@@ -1,4 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { invalidateCache, CACHE_KEYS } from './utils/cacheService';
+
 
 const AuthContext = createContext();
 
@@ -58,12 +60,14 @@ export function AuthProvider({ children }) {
     setUserId(userId);
   };
   
-  // Update profile image function
-  const updateProfileImage = (newProfileImage) => {
+  // Update profile image function with version support
+  const updateProfileImage = (newProfileImage, version) => {
     if (currentUser) {
       const updatedUser = {
         ...currentUser,
-        profileImage: newProfileImage
+        profileImage: newProfileImage,
+        // Update version if provided
+        ...(version !== undefined && { version })
       };
       
       localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -96,6 +100,10 @@ export function AuthProvider({ children }) {
       setRefreshToken(null);
       setCurrentUser(null);
       setUserId(null);
+
+      invalidateCache(CACHE_KEYS.TRANSACTIONS);
+      invalidateCache(CACHE_KEYS.INCOME_DATA);
+      invalidateCache(CACHE_KEYS.EXPENSE_DATA);
     }
   };
 
