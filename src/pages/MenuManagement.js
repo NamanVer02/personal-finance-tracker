@@ -151,7 +151,7 @@ const MenuManagement = () => {
             </button>
           </div>
 
-          <div className="bg-white shadow-neumorphic rounded-lg p-6">
+          <div className="bg-gray-100 shadow-neumorphic rounded-lg p-6">
             <div className="mb-4">
               <p className="text-sm text-gray-500">
                 Configure which roles can access each menu item. Changes will take effect after saving.
