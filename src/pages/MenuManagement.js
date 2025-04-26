@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../AuthContext";
 import Navbar from "../components/Navbar";
 import { Save, X, Check, AlertTriangle } from "lucide-react";
+import { ToastContainer } from "react-toastify";
 
 const MenuManagement = () => {
   const { currentUser, token, logout } = useAuth();
@@ -112,6 +113,21 @@ const MenuManagement = () => {
     }
   };
 
+  const moveMenuItem = (index, direction) => {
+    setMenuItems((prevItems) => {
+      const newItems = [...prevItems];
+      const targetIndex = index + direction;
+      if (targetIndex < 0 || targetIndex >= newItems.length) return newItems;
+      // Swap displayOrder values
+      const tempOrder = newItems[index].displayOrder;
+      newItems[index].displayOrder = newItems[targetIndex].displayOrder;
+      newItems[targetIndex].displayOrder = tempOrder;
+      // Swap items in array
+      [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
+      return newItems;
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -164,36 +180,56 @@ const MenuManagement = () => {
               animate="show"
               className="space-y-4"
             >
-              {menuItems.map((menuItem) => (
+              {menuItems.map((menuItem, idx) => (
                 <motion.div
                   key={menuItem.id}
                   variants={itemVariants}
-                  className="shadow-neumorphic bg-gray-100 p-4 rounded-lg"
+                  className="bg-gray-100 rounded-lg shadow-md p-4 mb-4 flex flex-col gap-2 relative"
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <div>
-                      <h3 className="font-medium text-gray-700">{menuItem.name}</h3>
-                      <p className="text-sm text-gray-500">{menuItem.path}</p>
-                    </div>
+                  <div className="flex items-center gap-2 absolute right-4 top-4">
+                    <button
+                      aria-label="Move Up"
+                      disabled={idx === 0}
+                      onClick={() => moveMenuItem(idx, -1)}
+                      className={`p-1 rounded-full border ${idx === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200'}`}
+                    >
+                      <span aria-hidden="true">↑</span>
+                    </button>
+                    <button
+                      aria-label="Move Down"
+                      disabled={idx === menuItems.length - 1}
+                      onClick={() => moveMenuItem(idx, 1)}
+                      className={`p-1 rounded-full border ${idx === menuItems.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200'}`}
+                    >
+                      <span aria-hidden="true">↓</span>
+                    </button>
                   </div>
+                  <div className="shadow-neumorphic bg-gray-100 p-4 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <div>
+                        <h3 className="font-medium text-gray-700">{menuItem.name}</h3>
+                        <p className="text-sm text-gray-500">{menuItem.path}</p>
+                      </div>
+                    </div>
 
-                  <div className="mt-3">
-                    <p className="text-xs text-gray-500 mb-2">Allowed Roles:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {roles.map((role) => (
-                        <button
-                          key={`${menuItem.id}-${role}`}
-                          onClick={() => handleRoleToggle(menuItem.id, role)}
-                          className={`px-3 py-1 text-xs rounded-full flex items-center gap-1 ${menuItem.allowedRoles.includes(role) ? "bg-purple-100 text-purple-700 shadow-neumorphic-inset-button" : "bg-gray-100 text-gray-500 shadow-neumorphic-button"}`}
-                        >
-                          {menuItem.allowedRoles.includes(role) ? (
-                            <Check size={12} />
-                          ) : (
-                            <X size={12} />
-                          )}
-                          {role.replace("ROLE_", "")}
-                        </button>
-                      ))}
+                    <div className="mt-3">
+                      <p className="text-xs text-gray-500 mb-2">Allowed Roles:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {roles.map((role) => (
+                          <button
+                            key={`${menuItem.id}-${role}`}
+                            onClick={() => handleRoleToggle(menuItem.id, role)}
+                            className={`px-3 py-1 text-xs rounded-full flex items-center gap-1 ${menuItem.allowedRoles.includes(role) ? "bg-purple-100 text-purple-700 shadow-neumorphic-inset-button" : "bg-gray-100 text-gray-500 shadow-neumorphic-button"}`}
+                          >
+                            {menuItem.allowedRoles.includes(role) ? (
+                              <Check size={12} />
+                            ) : (
+                              <X size={12} />
+                            )}
+                            {role.replace("ROLE_", "")}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -202,6 +238,11 @@ const MenuManagement = () => {
           </div>
         </div>
       </div>
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        theme={isDarkMode ? "dark" : "light"}
+       />
     </div>
   );
 };

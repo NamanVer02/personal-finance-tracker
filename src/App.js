@@ -12,6 +12,7 @@ import UserDashboard from "./pages/UserDashboard";
 import UserRoleManagement from "./pages/UserRoleManagement";
 import Categories from "./pages/Categories";
 import MenuManagement from "./pages/MenuManagement";
+import HikariCPDemo from "./pages/HikariCPDemo";
 
 const App = () => {
     useEffect(() => {
@@ -39,6 +40,9 @@ const App = () => {
             <Route path="/user-role-management" element={<UserRoleManagement />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/menu-management" element={<MenuManagement />} />
+            <Route path="/" element={<Login />} />
+            <Route path="*" element={<Login />} />
+            <Route path="/connection-pool" element={<HikariCPDemo />} />
         </Routes>
         </div>
     );
