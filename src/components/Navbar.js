@@ -18,7 +18,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import CsvUploadModal from "./CsvUploadModal";
 import { toast } from "react-toastify";
-import CacheMonitor from "./CacheMonitor";
+import CacheMonitor from "./CacheMonitorModal";
 
 export default function Navbar({
   currentUser,
@@ -389,8 +389,8 @@ export default function Navbar({
 
               {currentUser?.roles?.includes("ROLE_ADMIN") && (
                 <button
-                  onClick={() => setShowCacheModal(true)}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button"
+                  onClick={() => navigate("/cache-metrics")}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/dashboard" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
                 >
                   <BarChart3 className="h-4 w-4 text-gray-600" />
                   Cache Metrics

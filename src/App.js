@@ -13,6 +13,7 @@ import UserRoleManagement from "./pages/UserRoleManagement";
 import Categories from "./pages/Categories";
 import MenuManagement from "./pages/MenuManagement";
 import HikariCPDemo from "./pages/HikariCPDemo";
+import CacheMonitor from "./pages/CacheMonitor";
 
 const App = () => {
     useEffect(() => {
@@ -43,6 +44,7 @@ const App = () => {
             <Route path="/" element={<Login />} />
             <Route path="*" element={<Login />} />
             <Route path="/connection-pool" element={<HikariCPDemo />} />
+            <Route path="/cache-metrics" element={<CacheMonitor />} />
         </Routes>
         </div>
     );
