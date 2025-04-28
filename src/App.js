@@ -43,7 +43,7 @@ const App = () => {
             <Route path="/menu-management" element={<MenuManagement />} />
             <Route path="/" element={<Login />} />
             <Route path="*" element={<Login />} />
-            <Route path="/connection-pool" element={<HikariCPDemo />} />
+            <Route path="/connection-pooling" element={<HikariCPDemo />} />
             <Route path="/cache-metrics" element={<CacheMonitor />} />
         </Routes>
         </div>

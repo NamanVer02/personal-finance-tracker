@@ -12,6 +12,7 @@ import {
   User,
   BadgeDollarSign,
   Tags,
+  BarChart2
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -365,11 +366,10 @@ export default function Navbar({
                   const message = toggleDarkMode();
                   toast.info(message);
                 }}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
-                  isDarkMode
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${isDarkMode
                     ? "bg-gray-100 text-white"
                     : "bg-gray-100 text-gray-700"
-                } shadow-neumorphic-button`}
+                  } shadow-neumorphic-button`}
               >
                 {isDarkMode ? (
                   <Sun className="h-4 w-4 text-gray-600" />
@@ -390,10 +390,21 @@ export default function Navbar({
               {currentUser?.roles?.includes("ROLE_ADMIN") && (
                 <button
                   onClick={() => navigate("/cache-metrics")}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/dashboard" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/cache-metrics" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
                 >
                   <BarChart3 className="h-4 w-4 text-gray-600" />
                   Cache Metrics
+                </button>
+              )}
+
+
+              {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                <button
+                  onClick={() => navigate("/connection-pooling")}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/connection-pooling" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                >
+                  <BarChart2 className="h-4 w-4 text-gray-600" />
+                  Connection Pooling
                 </button>
               )}
 

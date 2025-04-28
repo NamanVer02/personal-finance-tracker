@@ -365,9 +365,9 @@ const HikariCPDemo = () => {
               className="lg:col-span-3 bg-gray-100 shadow-neumorphic rounded-lg p-6"
             >
               <h2 className="text-lg font-semibold text-gray-700 mb-4">Connection Pool Logs</h2>
-              <div className="bg-gray-800 text-gray-100 rounded-md p-4 h-64 overflow-y-auto font-mono text-sm">
+              <div className="bg-gray-200 text-gray-100 rounded-md p-4 h-64 overflow-y-auto font-mono text-sm">
                 {logs.length === 0 ? (
-                  <p className="text-gray-400">No connection logs available. Start monitoring to view logs.</p>
+                  <p className="text-gray-800">No connection logs available. Start monitoring to view logs.</p>
                 ) : (
                   logs.map((log, idx) => (
                     <div key={idx} className={`mb-1 ${
@@ -375,7 +375,7 @@ const HikariCPDemo = () => {
                       log.includes("acquired") ? "text-blue-400" :
                       log.includes("used") ? "text-purple-400" :
                       log.includes("timeout") ? "text-red-400" :
-                      "text-gray-300"
+                      "text-gray-800"
                     }`}>
                       {log}
                     </div>

@@ -68,6 +68,10 @@
     background-color: #13171f;
 }
 
+.dark .bg-gray-200 {
+    background-color: #10141a;
+}
+
 .dark .text-gray-700 {
     color: #e2e8f0;
 }
