@@ -167,7 +167,7 @@ const MenuManagement = () => {
             </button>
           </div>
 
-          <div className="bg-gray-100 shadow-neumorphic rounded-lg p-6">
+          <div className="bg-gray-100 rounded-lg">
             <div className="mb-4">
               <p className="text-sm text-gray-500">
                 Configure which roles can access each menu item. Changes will take effect after saving.
@@ -184,26 +184,8 @@ const MenuManagement = () => {
                 <motion.div
                   key={menuItem.id}
                   variants={itemVariants}
-                  className="bg-gray-100 rounded-lg shadow-md p-4 mb-4 flex flex-col gap-2 relative"
+                  className="bg-gray-100 rounded-lg mb-4 flex flex-col gap-4 relative"
                 >
-                  <div className="flex items-center gap-2 absolute right-4 top-4">
-                    <button
-                      aria-label="Move Up"
-                      disabled={idx === 0}
-                      onClick={() => moveMenuItem(idx, -1)}
-                      className={`p-1 rounded-full border ${idx === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200'}`}
-                    >
-                      <span aria-hidden="true">↑</span>
-                    </button>
-                    <button
-                      aria-label="Move Down"
-                      disabled={idx === menuItems.length - 1}
-                      onClick={() => moveMenuItem(idx, 1)}
-                      className={`p-1 rounded-full border ${idx === menuItems.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200'}`}
-                    >
-                      <span aria-hidden="true">↓</span>
-                    </button>
-                  </div>
                   <div className="shadow-neumorphic bg-gray-100 p-4 rounded-lg">
                     <div className="flex justify-between items-center mb-2">
                       <div>
@@ -219,7 +201,7 @@ const MenuManagement = () => {
                           <button
                             key={`${menuItem.id}-${role}`}
                             onClick={() => handleRoleToggle(menuItem.id, role)}
-                            className={`px-3 py-1 text-xs rounded-full flex items-center gap-1 ${menuItem.allowedRoles.includes(role) ? "bg-purple-100 text-purple-700 shadow-neumorphic-inset-button" : "bg-gray-100 text-gray-500 shadow-neumorphic-button"}`}
+                            className={`px-3 py-1 text-s rounded-md flex items-center gap-1 ${menuItem.allowedRoles.includes(role) ? "bg-purple-100 text-purple-500 shadow-neumorphic-inset-button" : "bg-gray-100 text-gray-500 shadow-neumorphic-button"}`}
                           >
                             {menuItem.allowedRoles.includes(role) ? (
                               <Check size={12} />

@@ -201,13 +201,13 @@ export default function Categories() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => openEditModal(category)}
-                      className="p-2 rounded-md text-blue-500 transition-all"
+                      className="p-2 shadow-neumorphic-button rounded-md text-blue-500 transition-all"
                     >
                       <Edit size={18} />
                     </button>
                     <button
                       onClick={() => handleDeleteCategory(category)}
-                      className="p-2 rounded-md text-red-500 transition-all"
+                      className="p-2 shadow-neumorphic-button rounded-md text-red-500 transition-all"
                     >
                       <Trash2 size={18} />
                     </button>
