@@ -593,7 +593,8 @@ export const fetchAllFinanceEntries = async (
   token,
   filterCriteria,
   sortCriteria,
-  size = 10
+  size = 10,
+  isTransposed = false
 ) => {
   // Convert filter criteria to API parameters
   const params = {
@@ -607,20 +608,20 @@ export const fetchAllFinanceEntries = async (
     startDate: filterCriteria.dateFrom || null,
     endDate: filterCriteria.dateTo || null,
     searchTerm: filterCriteria.label || null,
-    sort: [`${sortCriteria.field},${sortCriteria.direction}`]  
+    sort: [`${sortCriteria.field},${sortCriteria.direction}`],
+    transposed: isTransposed  // Add the transposed parameter
   };
 
   // Build query string with proper URL encoding
   const queryString = Object.entries(params)
-  .filter(([_, value]) => value !== null && value !== '' && value.length !== 0)
-  .flatMap(([key, value]) => {
-    if (Array.isArray(value)) {
-      return value.map(v => `${key}=${encodeURIComponent(v)}`);
-    }
-    return `${key}=${encodeURIComponent(value)}`;
-  })
-  .join('&');
-
+    .filter(([_, value]) => value !== null && value !== '' && value.length !== 0)
+    .flatMap(([key, value]) => {
+      if (Array.isArray(value)) {
+        return value.map(v => `${key}=${encodeURIComponent(v)}`);
+      }
+      return `${key}=${encodeURIComponent(value)}`;
+    })
+    .join('&');
 
   try {
     const res = await fetch(`https://localhost:8080/api/admin/search?${queryString}`, {
@@ -636,9 +637,27 @@ export const fetchAllFinanceEntries = async (
     }
 
     const data = await res.json();
-    setTransactions(data.content);
-    setTotalPages(data.totalPages);
-    setTotalItems(data.totalElements);
+    
+    // Handle the response differently based on whether it's transposed or not
+    if (isTransposed) {
+      // For transposed data, we directly set the transposed object
+      setTransactions(data);
+      
+      // If metadata is available in the transposed response
+      if (data.metadata) {
+        setTotalItems(data.metadata.count || 0);
+        setTotalPages(1); // Transposed view typically shows all data on one page
+      } else {
+        // Fallback if metadata is not provided
+        setTotalItems(data.ids ? data.ids.length : 0);
+        setTotalPages(1);
+      }
+    } else {
+      // For standard data, we use the pagination info
+      setTransactions(data.content);
+      setTotalPages(data.totalPages);
+      setTotalItems(data.totalElements);
+    }
   } catch (err) {
     console.error("Error fetching transactions:", err);
   }

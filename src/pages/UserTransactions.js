@@ -43,6 +43,8 @@ export default function UserTransactions() {
   const [transactions, setTransactions] = useState([]);
   const [incomeData, setIncomeData] = useState([]);
   const [expenseData, setExpenseData] = useState([]);
+  const [isTransposed, setIsTransposed] = useState(false);
+
 
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem("darkMode") === "enabled" ? true : false
@@ -52,7 +54,7 @@ export default function UserTransactions() {
     field: "date",
     direction: "desc",
   });
-  
+
   const [filterCriteria, setFilterCriteria] = useState({
     type: "all",
     id: null,
@@ -68,10 +70,6 @@ export default function UserTransactions() {
 
   // Functions
   const handlePageChange = (page) => setCurrentPage(page);
-  const handlePrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNextPage = () =>
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -85,7 +83,9 @@ export default function UserTransactions() {
       currentPage,
       token,
       filterCriteria,
-      sortCriteria
+      sortCriteria,
+      itemsPerPage,
+      isTransposed
     );
     setShowFilterPopup(false);
   };
@@ -206,7 +206,8 @@ export default function UserTransactions() {
         token,
         filterCriteria,
         sortCriteria,
-        itemsPerPage
+        itemsPerPage,
+        isTransposed
       );
     }
   }, [
@@ -218,7 +219,9 @@ export default function UserTransactions() {
     filterCriteria,
     sortCriteria,
     itemsPerPage,
+    isTransposed, // Add this dependency
   ]);
+
 
   // If still checking authentication, show loading
   if (!isAuthenticated) {
@@ -334,6 +337,29 @@ export default function UserTransactions() {
                     <Filter className="h-4 w-4" />
                     Filter & Sort
                   </button>
+
+                  <button
+                    className={`px-3 py-2 text-sm rounded-lg bg-gray-100 ${isTransposed ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"
+                      } flex items-center gap-1`}
+                    onClick={() => {
+                      setIsTransposed(!isTransposed);
+                      fetchAllFinanceEntries(
+                        setTransactions,
+                        setTotalPages,
+                        setTotalItems,
+                        currentPage,
+                        token,
+                        filterCriteria,
+                        sortCriteria,
+                        itemsPerPage,
+                        !isTransposed
+                      );
+                    }}
+                  >
+                    <span className="h-4 w-4">{isTransposed ? "⇄" : "↔"}</span>
+                    {isTransposed ? "Standard View" : "Transpose View"}
+                  </button>
+
                   <button
                     className="px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button flex items-center gap-1"
                     onClick={handleDownloadUserTransactionsCsv}
@@ -352,83 +378,185 @@ export default function UserTransactions() {
               </div>
 
               <div className="mt-6 overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left text-sm text-gray-600">
-                      <th className="pb-2"></th>
-                      <th className="pb-2">USER</th>
-                      <th className="pb-2">LABEL</th>
-                      <th className="pb-2">AMOUNT</th>
-                      <th className="pb-2">CATEGORY</th>
-                      <th className="pb-2">DATE</th>
-                    </tr>
-                  </thead>
-                  <motion.tbody>
-                    {transactions.length > 0 ? (
-                      transactions.map((transaction, index) => (
-                        <motion.tr
-                          key={transaction.id}
-                          className="border-t border-gray-200"
-                          initial={{ opacity: 1, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1, duration: 0.3 }}
-                        >
-                          <td className="py-3">
-                            {transaction.type === "Expense" ? (
-                              <ArrowDownLeft className="h-4 w-4 text-red-600" />
-                            ) : (
-                              <ArrowUpRight className="h-4 w-4 text-green-600" />
-                            )}
-                          </td>
-                          <td className="py-3 font-medium text-gray-600">
-                            {usersList.find(
-                              (user) =>
-                                String(user.id) === String(transaction.userId)
-                            )?.username || "Unknown User"}
-                          </td>
-                          <td className="py-3 text-gray-700">
-                            {transaction.label}
-                          </td>
-                          <td className="py-3 text-gray-600">
-                            {transaction.amount}
-                          </td>
-                          <td className="py-3 text-gray-600">
-                            {transaction.category}
-                          </td>
-                          <td className="py-3 text-gray-600">
-                            {
-                              new Date(transaction?.date)
-                                .toISOString()
-                                .split("T")[0]
-                            }
-                          </td>
-                        </motion.tr>
-                      ))
+                <div className="min-w-full" style={{ overflowX: 'auto' }}>
+                  <table
+                    className="w-full border-collapse"
+                    style={{ tableLayout: 'fixed' }} // Prevents overflow[2][5]
+                  >
+                    {!isTransposed ? (
+                      <>
+                        <thead>
+                          <tr className="text-left text-sm text-gray-600">
+                            <th className="pb-2 w-10"></th>
+                            <th className="pb-2 w-32">USER</th>
+                            <th className="pb-2 w-40">LABEL</th>
+                            <th className="pb-2 w-24">AMOUNT</th>
+                            <th className="pb-2 w-32">CATEGORY</th>
+                            <th className="pb-2 w-32">DATE</th>
+                          </tr>
+                        </thead>
+                        <motion.tbody>
+                          {Array.isArray(transactions) && transactions.length > 0 ? (
+                            transactions.map((transaction, index) => (
+                              <motion.tr
+                                key={transaction.id}
+                                className="border-t border-gray-200"
+                                initial={{ opacity: 1, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1, duration: 0.3 }}
+                              >
+                                <td className="py-3">
+                                  {transaction.type === "Expense" ? (
+                                    <ArrowDownLeft className="h-4 w-4 text-red-600" />
+                                  ) : (
+                                    <ArrowUpRight className="h-4 w-4 text-green-600" />
+                                  )}
+                                </td>
+                                <td className="py-3 font-medium text-gray-600 truncate whitespace-nowrap">
+                                  {usersList.find(
+                                    (user) => String(user.id) === String(transaction.userId)
+                                  )?.username || "Unknown User"}
+                                </td>
+                                <td className="py-3 text-gray-700 truncate whitespace-nowrap">
+                                  {transaction.label}
+                                </td>
+                                <td className="py-3 text-gray-600 truncate whitespace-nowrap">
+                                  {transaction.amount}
+                                </td>
+                                <td className="py-3 text-gray-600 truncate whitespace-nowrap">
+                                  {transaction.category}
+                                </td>
+                                <td className="py-3 text-gray-600 truncate whitespace-nowrap">
+                                  {new Date(transaction?.date).toISOString().split("T")[0]}
+                                </td>
+                              </motion.tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="6" className="py-6 text-center text-gray-600">
+                                No transactions found
+                              </td>
+                            </tr>
+                          )}
+                        </motion.tbody>
+                      </>
                     ) : (
-                      <tr>
-                        <td
-                          colSpan="6"
-                          className="py-6 text-center text-gray-600"
-                        >
-                          No transactions found
-                        </td>
-                      </tr>
-                    )}
-                  </motion.tbody>
-                </table>
+                      // Transposed View with Pagination and Styling
+                      (() => {
+                        // Pagination logic for transposed view
+                        const total = transactions.ids ? transactions.ids.length : 0;
+                        const startIdx = currentPage * itemsPerPage;
+                        const endIdx = Math.min(startIdx + itemsPerPage, total);
 
-                {/* Pagination */}
-                {transactions.length > 0 && (
-                  <Pagination
-                    currentPage={currentPage}
-                    onPageChange={handlePageChange}
-                    totalPages={totalPages}
-                    itemsPerPage={itemsPerPage}
-                    setItemsPerPage={setItemsPerPage}
-                    totalItems={totalItems}
-                  />
-                )}
+                        const paged = (arr) =>
+                          arr ? arr.slice(startIdx, endIdx) : [];
+
+                        return (
+                          <>
+                            <thead>
+                              <tr className="text-left text-sm text-gray-600">
+                                <th className="pb-2 w-32">FIELD</th>
+                                {transactions.ids &&
+                                  paged(transactions.ids).map((id, idx) => (
+                                    <th key={id} className="pb-2 w-32">
+                                      ITEM {startIdx + idx + 1}
+                                    </th>
+                                  ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr className="border-t border-gray-200">
+                                <td className="py-3 font-medium text-gray-600">Type</td>
+                                {paged(transactions.types).map((type, idx) => (
+                                  <td key={idx} className="py-3 pl-0">
+                                    <div className="flex items-center gap-1">
+                                      {type === "Expense" ? (
+                                        <ArrowDownLeft className="h-4 w-4 text-red-600" />
+                                      ) : (
+                                        <ArrowUpRight className="h-4 w-4 text-green-600" />
+                                      )}
+                                      <span className={type === "Expense" ? "text-red-600 text-xs" : "text-green-600 text-xs"}>
+                                        {type}
+                                      </span>
+                                    </div>
+                                  </td>
+                                ))}
+                              </tr>
+                              <tr className="border-t border-gray-200">
+                                <td className="py-3 font-medium text-gray-600">User</td>
+                                {paged(transactions.userIds).map((userId, idx) => (
+                                  <td key={idx} className="py-3 font-medium text-gray-600 truncate whitespace-nowrap">
+                                    {usersList.find(
+                                      (user) => String(user.id) === String(userId)
+                                    )?.username || "Unknown User"}
+                                  </td>
+                                ))}
+                              </tr>
+                              <tr className="border-t border-gray-200">
+                                <td className="py-3 font-medium text-gray-600">Label</td>
+                                {paged(transactions.labels).map((label, idx) => (
+                                  <td key={idx} className="py-3 text-gray-600 truncate whitespace-nowrap">
+                                    {label}
+                                  </td>
+                                ))}
+                              </tr>
+                              <tr className="border-t border-gray-200">
+                                <td className="py-3 font-medium text-gray-600">Amount</td>
+                                {paged(transactions.amounts).map((amount, idx) => (
+                                  <td key={idx} className="py-3 text-gray-600 truncate whitespace-nowrap">
+                                    {amount}
+                                  </td>
+                                ))}
+                              </tr>
+                              <tr className="border-t border-gray-200">
+                                <td className="py-3 font-medium text-gray-600">Category</td>
+                                {paged(transactions.categories).map((category, idx) => (
+                                  <td key={idx} className="py-3 text-gray-600 truncate whitespace-nowrap">
+                                    {category}
+                                  </td>
+                                ))}
+                              </tr>
+                              <tr className="border-t border-gray-200">
+                                <td className="py-3 font-medium text-gray-600">Date</td>
+                                {paged(transactions.dates).map((date, idx) => (
+                                  <td key={idx} className="py-3 text-gray-600 truncate whitespace-nowrap">
+                                    {new Date(date).toISOString().split("T")[0]}
+                                  </td>
+                                ))}
+                              </tr>
+                            </tbody>
+                          </>
+                        );
+                      })()
+                    )}
+                  </table>
+                </div>
+                {/* Pagination for both views */}
+                {(isTransposed
+                  ? transactions.ids && transactions.ids.length > 0
+                  : Array.isArray(transactions) && transactions.length > 0) && (
+                    <Pagination
+                      currentPage={currentPage}
+                      onPageChange={handlePageChange}
+                      totalPages={
+                        isTransposed
+                          ? Math.ceil((transactions.ids ? transactions.ids.length : 0) / itemsPerPage)
+                          : totalPages
+                      }
+                      itemsPerPage={itemsPerPage}
+                      setItemsPerPage={setItemsPerPage}
+                      totalItems={
+                        isTransposed
+                          ? transactions.ids
+                            ? transactions.ids.length
+                            : 0
+                          : totalItems
+                      }
+                    />
+                  )}
               </div>
+
+
             </div>
           </div>
         </motion.div>
