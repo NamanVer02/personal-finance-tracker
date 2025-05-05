@@ -1,6 +1,34 @@
-# Getting Started with Create React App
+# Personal Finance Tracker - Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is the frontend application for the Personal Finance Tracker, built with React. It provides a modern, responsive UI for managing personal finances, including dashboards, transaction management, category management, AI assistant, and more.
+
+## Features
+
+- User authentication with JWT and 2FA support
+- Dashboard with income/expense graphs and statistics
+- Add, edit, delete, and filter transactions
+- Category management (add, edit, delete categories)
+- Role-based menu and access control (Admin, Accountant, User)
+- AI Assistant for financial queries
+- CSV import/export for transactions
+- Dark mode support
+- Connection pool and cache monitoring (for admins)
+- Responsive design
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v16+ recommended)
+- npm or yarn
+
+### Installation
+
+1. Navigate to the frontend directory:
+
+   ```bash
+   cd personal-finance-tracker-frontend
+   ```
 
 ## Available Scripts
 
