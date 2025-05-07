@@ -565,7 +565,7 @@ export const fetchFinanceEntries = async (
 
   try {
     const res = await fetch(`https://localhost:8080/api/search?${queryString}`, {
-      method: "GET",
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',

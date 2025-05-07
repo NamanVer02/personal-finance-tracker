@@ -208,7 +208,6 @@ export default function Signup() {
       // If registration is successful, log the user in
       toast.success("Registration successful");
       const qrCodeBase64 = data.qrCodeBase64;
-      console.log(qrCodeBase64);
 
       navigate("/setup-2fa", {
         state: {
