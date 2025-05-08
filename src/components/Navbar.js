@@ -12,7 +12,7 @@ import {
   User,
   BadgeDollarSign,
   Tags,
-  BarChart2
+  BarChart2,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -176,20 +176,38 @@ export default function Navbar({
                   menuItems.map((item) => (
                     <button
                       key={item.id}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === item.path ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                        location.pathname === item.path
+                          ? "shadow-neumorphic-inset-button"
+                          : "shadow-neumorphic-button"
+                      }`}
                       onClick={() => {
                         setMobileMenuOpen(false);
                         navigate(item.path);
                       }}
                     >
                       {/* Dynamically render icon based on icon name */}
-                      {item.icon === "BarChart3" && <BarChart3 className="h-4 w-4 text-gray-600" />}
-                      {item.icon === "User" && <User className="h-4 w-4 text-gray-600" />}
-                      {item.icon === "Users" && <Users className="h-4 w-4 text-gray-600" />}
-                      {item.icon === "BadgeDollarSign" && <BadgeDollarSign className="h-4 w-4 text-gray-600" />}
-                      {item.icon === "Tags" && <Tags className="h-4 w-4 text-gray-600" />}
-                      {item.icon === "MessageCircle" && <MessageCircle className="h-4 w-4 text-gray-600" />}
-                      {item.icon === "Menu" && <MenuIcon className="h-4 w-4 text-gray-600" />}
+                      {item.icon === "BarChart3" && (
+                        <BarChart3 className="h-4 w-4 text-gray-600" />
+                      )}
+                      {item.icon === "User" && (
+                        <User className="h-4 w-4 text-gray-600" />
+                      )}
+                      {item.icon === "Users" && (
+                        <Users className="h-4 w-4 text-gray-600" />
+                      )}
+                      {item.icon === "BadgeDollarSign" && (
+                        <BadgeDollarSign className="h-4 w-4 text-gray-600" />
+                      )}
+                      {item.icon === "Tags" && (
+                        <Tags className="h-4 w-4 text-gray-600" />
+                      )}
+                      {item.icon === "MessageCircle" && (
+                        <MessageCircle className="h-4 w-4 text-gray-600" />
+                      )}
+                      {item.icon === "Menu" && (
+                        <MenuIcon className="h-4 w-4 text-gray-600" />
+                      )}
                       {item.name}
                     </button>
                   ))
@@ -197,7 +215,11 @@ export default function Navbar({
                   // Fallback menu items if server request fails
                   <>
                     <button
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/dashboard" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                        location.pathname === "/dashboard"
+                          ? "shadow-neumorphic-inset-button"
+                          : "shadow-neumorphic-button"
+                      }`}
                       onClick={() => {
                         setMobileMenuOpen(false);
                         navigate("/dashboard");
@@ -207,7 +229,11 @@ export default function Navbar({
                       Dashboard
                     </button>
                     <button
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/user-dashboard" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                        location.pathname === "/user-dashboard"
+                          ? "shadow-neumorphic-inset-button"
+                          : "shadow-neumorphic-button"
+                      }`}
                       onClick={() => {
                         setMobileMenuOpen(false);
                         navigate("/user-dashboard");
@@ -216,7 +242,39 @@ export default function Navbar({
                       <User className="h-4 w-4 text-gray-600" />
                       User Dashboard
                     </button>
+                    <button
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                        location.pathname === "/chat"
+                          ? "shadow-neumorphic-inset-button"
+                          : "shadow-neumorphic-button"
+                      }`}
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        navigate("/chat");
+                      }}
+                    >
+                      <MessageCircle className="h-4 w-4 text-gray-600" />
+                      Chat
+                    </button>
                   </>
+                )}
+
+                {/* Standalone Chat button that appears regardless of server menu items */}
+                {!menuItems.some((item) => item.path === "/chat") && (
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/chat"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/chat");
+                    }}
+                  >
+                    <MessageCircle className="h-4 w-4 text-gray-600" />
+                    Chat
+                  </button>
                 )}
 
                 <button
@@ -312,17 +370,35 @@ export default function Navbar({
                 menuItems.map((item) => (
                   <button
                     key={item.id}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === item.path ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === item.path
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
                     onClick={() => navigate(item.path)}
                   >
                     {/* Dynamically render icon based on icon name */}
-                    {item.icon === "BarChart3" && <BarChart3 className="h-4 w-4 text-gray-600" />}
-                    {item.icon === "User" && <User className="h-4 w-4 text-gray-600" />}
-                    {item.icon === "Users" && <Users className="h-4 w-4 text-gray-600" />}
-                    {item.icon === "BadgeDollarSign" && <BadgeDollarSign className="h-4 w-4 text-gray-600" />}
-                    {item.icon === "Tags" && <Tags className="h-4 w-4 text-gray-600" />}
-                    {item.icon === "MessageCircle" && <MessageCircle className="h-4 w-4 text-gray-600" />}
-                    {item.icon === "Menu" && <MenuIcon className="h-4 w-4 text-gray-600" />}
+                    {item.icon === "BarChart3" && (
+                      <BarChart3 className="h-4 w-4 text-gray-600" />
+                    )}
+                    {item.icon === "User" && (
+                      <User className="h-4 w-4 text-gray-600" />
+                    )}
+                    {item.icon === "Users" && (
+                      <Users className="h-4 w-4 text-gray-600" />
+                    )}
+                    {item.icon === "BadgeDollarSign" && (
+                      <BadgeDollarSign className="h-4 w-4 text-gray-600" />
+                    )}
+                    {item.icon === "Tags" && (
+                      <Tags className="h-4 w-4 text-gray-600" />
+                    )}
+                    {item.icon === "MessageCircle" && (
+                      <MessageCircle className="h-4 w-4 text-gray-600" />
+                    )}
+                    {item.icon === "Menu" && (
+                      <MenuIcon className="h-4 w-4 text-gray-600" />
+                    )}
                     {item.name}
                   </button>
                 ))
@@ -330,20 +406,58 @@ export default function Navbar({
                 // Fallback menu items if server request fails
                 <>
                   <button
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/dashboard" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/dashboard"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
                     onClick={() => navigate("/dashboard")}
                   >
                     <BarChart3 className="h-4 w-4 text-gray-600" />
                     Dashboard
                   </button>
                   <button
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/user-dashboard" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/user-dashboard"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
                     onClick={() => navigate("/user-dashboard")}
                   >
                     <User className="h-4 w-4 text-gray-600" />
                     User Dashboard
                   </button>
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/chat"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
+                    onClick={() => {
+                      navigate("/chat");
+                    }}
+                  >
+                    <MessageCircle className="h-4 w-4 text-gray-600" />
+                    Chat
+                  </button>
                 </>
+              )}
+
+              {/* Standalone Chat button that appears regardless of server menu items */}
+              {!menuItems.some((item) => item.path === "/chat") && (
+                <button
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/chat"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                  onClick={() => {
+                    navigate("/chat");
+                  }}
+                >
+                  <MessageCircle className="h-4 w-4 text-gray-600" />
+                  Chat
+                </button>
               )}
             </div>
           </div>
@@ -366,10 +480,11 @@ export default function Navbar({
                   const message = toggleDarkMode();
                   toast.info(message);
                 }}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${isDarkMode
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+                  isDarkMode
                     ? "bg-gray-100 text-white"
                     : "bg-gray-100 text-gray-700"
-                  } shadow-neumorphic-button`}
+                } shadow-neumorphic-button`}
               >
                 {isDarkMode ? (
                   <Sun className="h-4 w-4 text-gray-600" />
@@ -390,18 +505,25 @@ export default function Navbar({
               {currentUser?.roles?.includes("ROLE_ADMIN") && (
                 <button
                   onClick={() => navigate("/cache-metrics")}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/cache-metrics" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/cache-metrics"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
                 >
                   <BarChart3 className="h-4 w-4 text-gray-600" />
                   Cache Metrics
                 </button>
               )}
 
-
               {currentUser?.roles?.includes("ROLE_ADMIN") && (
                 <button
                   onClick={() => navigate("/connection-pooling")}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${location.pathname === "/connection-pooling" ? "shadow-neumorphic-inset-button" : "shadow-neumorphic-button"}`}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/connection-pooling"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
                 >
                   <BarChart2 className="h-4 w-4 text-gray-600" />
                   Connection Pooling

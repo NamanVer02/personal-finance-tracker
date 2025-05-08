@@ -14,40 +14,42 @@ import Categories from "./pages/Categories";
 import MenuManagement from "./pages/MenuManagement";
 import HikariCPDemo from "./pages/HikariCPDemo";
 import CacheMonitor from "./pages/CacheMonitor";
+import ChatPage from "./pages/ChatPage";
 
 const App = () => {
-    useEffect(() => {
-        // Check localStorage for dark mode preference
-        const savedDarkMode = localStorage.getItem("darkMode");
-        if (savedDarkMode === "enabled") {
-          document.documentElement.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-        }
-      }, []);
-    
-    return (
-        <div clasname="no-scrollbar cursor-none">
-        {/* <CustomCursor /> */}
-        <Routes>
-            <Route path="/dashboard" element={<Dashboard/>} />
-            <Route path="/user-transactions" element={<UserTransactions />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/ai-assistant" element={<AiAssistant/>} />
-            <Route path="/setup-2fa" element={<GoogleAuthSetup />} />
-            <Route path="/accountant-dashboard" element={<AccountantDashboard />} />
-            <Route path="/user-dashboard" element={<UserDashboard />} />
-            <Route path="/user-role-management" element={<UserRoleManagement />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/menu-management" element={<MenuManagement />} />
-            <Route path="/" element={<Login />} />
-            <Route path="*" element={<Login />} />
-            <Route path="/connection-pooling" element={<HikariCPDemo />} />
-            <Route path="/cache-metrics" element={<CacheMonitor />} />
-        </Routes>
-        </div>
-    );
+  useEffect(() => {
+    // Check localStorage for dark mode preference
+    const savedDarkMode = localStorage.getItem("darkMode");
+    if (savedDarkMode === "enabled") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  return (
+    <div clasname="no-scrollbar cursor-none">
+      {/* <CustomCursor /> */}
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/user-transactions" element={<UserTransactions />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/ai-assistant" element={<AiAssistant />} />
+        <Route path="/setup-2fa" element={<GoogleAuthSetup />} />
+        <Route path="/accountant-dashboard" element={<AccountantDashboard />} />
+        <Route path="/user-dashboard" element={<UserDashboard />} />
+        <Route path="/user-role-management" element={<UserRoleManagement />} />
+        <Route path="/categories" element={<Categories />} />
+        <Route path="/menu-management" element={<MenuManagement />} />
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/" element={<Login />} />
+        <Route path="*" element={<Login />} />
+        <Route path="/connection-pooling" element={<HikariCPDemo />} />
+        <Route path="/cache-metrics" element={<CacheMonitor />} />
+      </Routes>
+    </div>
+  );
 };
 
 export default App;
