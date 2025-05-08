@@ -30,9 +30,7 @@ const ChatPage = () => {
 
       <div className="lg:ml-64 p-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-700">
-            Chat
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-700">Chat</h1>
           <p className="text-gray-600">
             Connect and communicate with other users
           </p>
