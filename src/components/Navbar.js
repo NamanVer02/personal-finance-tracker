@@ -13,6 +13,7 @@ import {
   BadgeDollarSign,
   Tags,
   BarChart2,
+  Mail,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -316,6 +317,57 @@ export default function Navbar({
                   Import CSV
                 </button>
 
+                {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/cache-metrics"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/cache-metrics");
+                    }}
+                  >
+                    <BarChart3 className="h-4 w-4 text-gray-600" />
+                    Cache Metrics
+                  </button>
+                )}
+
+                {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/connection-pooling"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/connection-pooling");
+                    }}
+                  >
+                    <BarChart2 className="h-4 w-4 text-gray-600" />
+                    Connection Pooling
+                  </button>
+                )}
+
+                {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                  <button
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                      location.pathname === "/email-monitor"
+                        ? "shadow-neumorphic-inset-button"
+                        : "shadow-neumorphic-button"
+                    }`}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/email-monitor");
+                    }}
+                  >
+                    <Mail className="h-4 w-4 text-gray-600" />
+                    Email Rate Monitor
+                  </button>
+                )}
+
                 <button
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 shadow-neumorphic-button text-red-600"
                   onClick={() => {
@@ -433,9 +485,7 @@ export default function Navbar({
                         ? "shadow-neumorphic-inset-button"
                         : "shadow-neumorphic-button"
                     }`}
-                    onClick={() => {
-                      navigate("/chat");
-                    }}
+                    onClick={() => navigate("/chat")}
                   >
                     <MessageCircle className="h-4 w-4 text-gray-600" />
                     Chat
@@ -451,9 +501,7 @@ export default function Navbar({
                       ? "shadow-neumorphic-inset-button"
                       : "shadow-neumorphic-button"
                   }`}
-                  onClick={() => {
-                    navigate("/chat");
-                  }}
+                  onClick={() => navigate("/chat")}
                 >
                   <MessageCircle className="h-4 w-4 text-gray-600" />
                   Chat
@@ -527,6 +575,20 @@ export default function Navbar({
                 >
                   <BarChart2 className="h-4 w-4 text-gray-600" />
                   Connection Pooling
+                </button>
+              )}
+
+              {currentUser?.roles?.includes("ROLE_ADMIN") && (
+                <button
+                  onClick={() => navigate("/email-monitor")}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-gray-100 ${
+                    location.pathname === "/email-monitor"
+                      ? "shadow-neumorphic-inset-button"
+                      : "shadow-neumorphic-button"
+                  }`}
+                >
+                  <Mail className="h-4 w-4 text-gray-600" />
+                  Email Rate Monitor
                 </button>
               )}
 

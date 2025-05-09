@@ -14,6 +14,7 @@ import Categories from "./pages/Categories";
 import MenuManagement from "./pages/MenuManagement";
 import HikariCPDemo from "./pages/HikariCPDemo";
 import CacheMonitor from "./pages/CacheMonitor";
+import EmailRateMonitor from "./pages/EmailRateMonitor";
 import ChatPage from "./pages/ChatPage";
 
 const App = () => {
@@ -47,6 +48,7 @@ const App = () => {
         <Route path="*" element={<Login />} />
         <Route path="/connection-pooling" element={<HikariCPDemo />} />
         <Route path="/cache-metrics" element={<CacheMonitor />} />
+        <Route path="/email-monitor" element={<EmailRateMonitor />} />
       </Routes>
     </div>
   );

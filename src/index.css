@@ -76,6 +76,18 @@
     background-color: #10141a;
 }
 
+.dark .bg-red-50 {
+    background-color: #2f0101;
+}
+
+.dark .bg-green-50 {
+    background-color: #00270b;
+}
+
+.dark .bg-yellow-50 {
+    background-color: #332c00;
+}
+
 .dark .text-gray-700 {
     color: #e2e8f0;
 }
