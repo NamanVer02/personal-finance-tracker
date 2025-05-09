@@ -16,7 +16,7 @@ import { useAuth } from "../AuthContext";
 import Navbar from "../components/Navbar";
 
 const AdminUserRolesPage = () => {
-    const { logout } = useAuth();
+  const { logout } = useAuth();
 
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([
@@ -83,10 +83,12 @@ const AdminUserRolesPage = () => {
   const handleEditUser = (user) => {
     setEditingUser(user);
     setSelectedRoles(user.roles.map((role) => role.name));
-    
+
     // If user doesn't have a version property, log a warning
     if (user.version === undefined) {
-      console.warn('User object does not have version information for optimistic locking');
+      console.warn(
+        "User object does not have version information for optimistic locking"
+      );
     }
   };
 
@@ -106,40 +108,46 @@ const AdminUserRolesPage = () => {
   };
 
   const handleRemoveRole = async (userId, roleName) => {
-  const user = users.find(u => u.id === userId);
-  if (!user) {
-    toast.error("User not found");
-    return;
-  }
-  if (user.roles.length === 1) {
-    toast.error("Cannot remove user's only role");
-    return;
-  }
-  try {
-      const response = await fetch(
-        `https://localhost:8080/api/admin/users/${userId}/roles/${roleName}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    const user = users.find((u) => u.id === userId);
+    if (!user) return;
+
+    try {
+      // Include version for optimistic locking
+      const url = `https://localhost:8080/api/admin/users/${userId}/roles/${roleName}?version=${user.version}`;
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Handle version conflict
+      if (response.status === 409) {
+        toast.error(
+          "This user was updated by someone else. Refreshing data...",
+          { autoClose: 5000, closeButton: true }
+        );
+        refreshUsers();
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("Failed to remove role");
       }
 
-      // Update the user in local state
+      const updatedUser = await response.json();
+
+      // Update the user in local state with new version
       setUsers((prev) =>
-        prev.map((user) => {
-          if (user.id === userId) {
+        prev.map((u) => {
+          if (u.id === userId) {
             return {
-              ...user,
-              roles: user.roles.filter((r) => r.name !== roleName),
+              ...u,
+              roles: u.roles.filter((r) => r.name !== roleName),
+              version: updatedUser.version, // Update version
             };
           }
-          return user;
+          return u;
         })
       );
 
@@ -151,33 +159,50 @@ const AdminUserRolesPage = () => {
   };
 
   const handleAddRole = async (userId, roleName) => {
+    const user = users.find((u) => u.id === userId);
+    if (!user) return;
+
     try {
-      const response = await fetch(
-        `https://localhost:8080/api/admin/users/${userId}/roles/${roleName}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({}),
-        }
-      );
+      // Include version for optimistic locking
+      const url = `https://localhost:8080/api/admin/users/${userId}/roles/${roleName}?version=${user.version}`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Handle version conflict
+      if (response.status === 409) {
+        toast.error(
+          "This user was updated by someone else. Refreshing data...",
+          { autoClose: 5000, closeButton: true }
+        );
+        refreshUsers();
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("Failed to add role");
       }
 
-      // Update the user in local state
+      const updatedUser = await response.json();
+
+      // Update the user in local state with new version
       setUsers((prev) =>
-        prev.map((user) => {
-          if (user.id === userId) {
-            const updatedRoles = [...user.roles];
+        prev.map((u) => {
+          if (u.id === userId) {
+            const updatedRoles = [...u.roles];
             if (!updatedRoles.some((r) => r.name === roleName)) {
               updatedRoles.push({ name: roleName });
             }
-            return { ...user, roles: updatedRoles };
+            return {
+              ...u,
+              roles: updatedRoles,
+              version: updatedUser.version, // Update version
+            };
           }
-          return user;
+          return u;
         })
       );
 
@@ -193,11 +218,11 @@ const AdminUserRolesPage = () => {
 
     try {
       // Include version in the request body if available
-      const requestBody = { 
+      const requestBody = {
         roleNames: selectedRoles,
-        version: editingUser.version // Include version for optimistic locking
+        version: editingUser.version, // Include version for optimistic locking
       };
-      
+
       const response = await fetch(
         `https://localhost:8080/api/admin/users/${editingUser.id}/roles`,
         {
@@ -209,7 +234,7 @@ const AdminUserRolesPage = () => {
           body: JSON.stringify(requestBody),
         }
       );
-      
+
       // Handle version conflict (409 Conflict status)
       if (response.status === 409) {
         toast.error(
@@ -227,15 +252,15 @@ const AdminUserRolesPage = () => {
 
       // Get updated user data with new version from response
       const updatedUser = await response.json();
-      
+
       // Update user in the local state with new version
       setUsers((prev) =>
         prev.map((user) => {
           if (user.id === editingUser.id) {
-            return { 
-              ...user, 
+            return {
+              ...user,
               roles: selectedRoles.map((name) => ({ name })),
-              version: updatedUser.version // Update version from response
+              version: updatedUser.version, // Update version from response
             };
           }
           return user;
@@ -276,7 +301,7 @@ const AdminUserRolesPage = () => {
           Authorization: `Bearer ${authToken}`,
         },
       });
-      
+
       // Display toast when refreshing data after version conflict
       if (editingUser) {
         setEditingUser(null);
@@ -302,34 +327,53 @@ const AdminUserRolesPage = () => {
   };
 
   const handleExpireAccount = async (userId) => {
+    const user = users.find((u) => u.id === userId);
+    if (!user) return;
+
     try {
-      const response = await fetch(
-        `https://localhost:8080/api/admin/users/${userId}/expire`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // Include version for optimistic locking
+      const url = `https://localhost:8080/api/admin/users/${userId}/expire?version=${user.version}`;
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Handle version conflict
+      if (response.status === 409) {
+        toast.error(
+          "This user was updated by someone else. Refreshing data...",
+          { autoClose: 5000, closeButton: true }
+        );
+        refreshUsers();
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("Failed to expire account");
       }
 
       const updatedUser = await response.json();
-      
-      // Update the user in local state
+
+      // Update the user in local state with new version
       setUsers((prev) =>
-        prev.map((user) => {
-          if (user.id === userId) {
-            return { ...user, expired: true, expirationDate: updatedUser.expirationDate };
+        prev.map((u) => {
+          if (u.id === userId) {
+            return {
+              ...u,
+              expired: true,
+              expirationDate: updatedUser.expirationDate,
+              version: updatedUser.version, // Update version
+            };
           }
-          return user;
+          return u;
         })
       );
 
-      toast.success(`Account for ${updatedUser.username} will be expired in 7 days if not logged in`);
+      toast.success(
+        `Account for ${updatedUser.username} will be expired in 7 days if not logged in`
+      );
     } catch (error) {
       console.error("Error expiring account:", error);
       toast.error("Failed to expire account");
@@ -337,34 +381,53 @@ const AdminUserRolesPage = () => {
   };
 
   const handleUnexpireAccount = async (userId) => {
+    const user = users.find((u) => u.id === userId);
+    if (!user) return;
+
     try {
-      const response = await fetch(
-        `https://localhost:8080/api/admin/users/${userId}/unexpire`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // Include version for optimistic locking
+      const url = `https://localhost:8080/api/admin/users/${userId}/unexpire?version=${user.version}`;
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Handle version conflict
+      if (response.status === 409) {
+        toast.error(
+          "This user was updated by someone else. Refreshing data...",
+          { autoClose: 5000, closeButton: true }
+        );
+        refreshUsers();
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("Failed to unexpire account");
       }
 
       const updatedUser = await response.json();
-      
-      // Update the user in local state
+
+      // Update the user in local state with new version
       setUsers((prev) =>
-        prev.map((user) => {
-          if (user.id === userId) {
-            return { ...user, expired: false, expirationDate: null };
+        prev.map((u) => {
+          if (u.id === userId) {
+            return {
+              ...u,
+              expired: false,
+              expirationDate: null,
+              version: updatedUser.version, // Update version
+            };
           }
-          return user;
+          return u;
         })
       );
 
-      toast.success(`Account for ${updatedUser.username} is no longer marked for expiration`);
+      toast.success(
+        `Account for ${updatedUser.username} is no longer marked for expiration`
+      );
     } catch (error) {
       console.error("Error unexpiring account:", error);
       toast.error("Failed to unexpire account");
@@ -473,7 +536,10 @@ const AdminUserRolesPage = () => {
                           <td className="py-4">
                             {user.username}
                             {user.version !== undefined && (
-                              <span className="text-xs text-gray-500 ml-2" title="Version for optimistic locking">
+                              <span
+                                className="text-xs text-gray-500 ml-2"
+                                title="Version for optimistic locking"
+                              >
                                 v{user.version}
                               </span>
                             )}
@@ -563,7 +629,10 @@ const AdminUserRolesPage = () => {
                   Select roles to assign to this user:
                 </p>
                 {editingUser.version !== undefined && (
-                  <span className="text-xs text-gray-500" title="This version number helps prevent conflicts when multiple admins edit roles simultaneously">
+                  <span
+                    className="text-xs text-gray-500"
+                    title="This version number helps prevent conflicts when multiple admins edit roles simultaneously"
+                  >
                     Version: {editingUser.version}
                   </span>
                 )}
@@ -579,7 +648,9 @@ const AdminUserRolesPage = () => {
                     id={`role-${role}`}
                     checked={selectedRoles.includes(role)}
                     onChange={() => handleRoleToggle(role)}
-                    disabled={selectedRoles.length <= 1 && selectedRoles.includes(role)}
+                    disabled={
+                      selectedRoles.length <= 1 && selectedRoles.includes(role)
+                    }
                     className="mr-3 h-4 w-4"
                   />
                   <label htmlFor={`role-${role}`} className="flex-grow">
@@ -599,7 +670,10 @@ const AdminUserRolesPage = () => {
                       onClick={() => handleRemoveRole(editingUser.id, role)}
                       className="p-1 rounded-full hover:bg-purple-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Remove role"
-                      disabled={selectedRoles.length <= 1 || editingUser.id === currentUser?.id}
+                      disabled={
+                        selectedRoles.length <= 1 ||
+                        editingUser.id === currentUser?.id
+                      }
                     >
                       <XCircle size={18} className="text-red-600" />
                     </button>

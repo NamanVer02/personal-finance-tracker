@@ -20,7 +20,7 @@ const PasswordResetModal = ({ isOpen, onClose, username = '' }) => {
 
     setLoading(true);
     try {
-      const response = await fetch('https://localhost:8080/api/auth/forgot-password', {
+      const response = await fetch('https://locahlhost:8080/api/auth/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
